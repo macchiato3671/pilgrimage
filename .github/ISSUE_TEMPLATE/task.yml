@@ -1,4 +1,4 @@
-name: 작업
+name: 작업 이슈
 description: 기능 구현 외 일반 작업 이슈를 작성합니다.
 title: "[TASK] "
 labels: ["task"]
