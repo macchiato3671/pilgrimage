@@ -1,0 +1,4 @@
+﻿필드명,타입,필수,설명,예시
+title,String,YES,여행의 제목,부산 국밥 투어
+beginDate,String,YES,여행 시작일,2026-06-10
+endDate,String,YES,여행 종료일,2026-06-12

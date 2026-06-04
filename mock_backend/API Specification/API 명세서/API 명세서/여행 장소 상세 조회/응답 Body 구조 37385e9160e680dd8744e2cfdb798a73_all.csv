@@ -1,0 +1,12 @@
+﻿필드명,설명,예시,타입
+placeId,관광지 고유 ID,1,Int
+contentId,관광지 공공데이터 고유 ID,1,Int
+name,관광지의 이름,해운대,String
+address,관광지의 위치,부산 해운대구 우동,String
+latitude,관광지의 위도,35.1727271517301,Double
+longitude,관광지의 경도,129.148399576019,Double
+imgUrl,관광지의 사진 URL,https://pcmap.place.naver.com/place/11491806/photo#,String
+description,관굉지의 설명,해운대 해수욕장입니다.,String
+contentType,,,Object
+contentType.contentTypeId,관광지 카테고리 고유 ID,12,Int
+contentType.name,관광지 카테고리,관광지,String

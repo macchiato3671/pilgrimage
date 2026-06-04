@@ -1,0 +1,9 @@
+﻿Error Code,Message,Status,발생 조건
+,,,
+INVALID_OR_EXPIRED_TOKEN,Authentication token is missing or expired.,401,JWT가 없거나 만료된 경우.
+MEMBER_ACCESS_DENIED,Member access is denied.,403,본인 계정에 대한 접근 권한이 없는 경우.
+INVALID_WITHDRAWAL_REASON,Invalid withdrawal reason.,400,탈퇴 사유 형식이 유효하지 않은 경우.
+MEMBER_NOT_FOUND,Member not found.,404,인증된 회원 정보를 찾을 수 없는 경우.
+INVALID_PASSWORD,Invalid password.,400,입력한 비밀번호가 현재 비밀번호와 일치하지 않는 경우.
+MEMBER_ALREADY_WITHDRAWN,Member has already been withdrawn.,409,이미 탈퇴 처리된 회원인 경우.
+-,-,204,회원 탈퇴 처리 성공. 응답 Body 없음.

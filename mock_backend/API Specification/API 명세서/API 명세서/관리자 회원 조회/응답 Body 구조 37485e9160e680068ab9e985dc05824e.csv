@@ -1,0 +1,7 @@
+﻿필드명,타입,설명,예시
+status,ENUM,회원 상태입니다.,ACTIVE
+createdAt,DATETIME,회원 생성 시각입니다.,2026-06-03
+memberId,INT,회원 고유 ID입니다.,1
+nickname,STRING,회원 닉네임입니다.,rainbuilt
+role,ENUM,회원 권한입니다.,ADMIN
+email,STRING,회원 이메일입니다.,mailto:member@example.com

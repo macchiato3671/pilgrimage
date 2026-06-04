@@ -1,0 +1,25 @@
+﻿API ID,기능명,메서드,엔드포인트,설명,인증필요?,권한,비고
+API-001,드라마 리스트 조회,GET,api/v1/dramas,검색 페이지에서 드라마의 리스트를 보여준다.,NO,"ADMIN, LOGOUT-USER, USER",
+API-002,드라마 씬 리스트 조회,GET,api/v1/dramas/{dramaId},드라마를 클릭하면 해당 드라마의 씬 목록 을 보여준다.,NO,"ADMIN, LOGOUT-USER, USER",
+API-003,드라마 검색 조회,GET,api/v1/dramas/search,Query Param의 Query Content를 기반으로 유효한 드라마의 리스트를 보여준다.,NO,"ADMIN, LOGOUT-USER, USER",
+API-004,드라마 씬 조회,GET,api/v1/dramas/{dramaId}/scenes,드라마가 가지는 scene들의 list를 조회,NO,"ADMIN, LOGOUT-USER, USER",
+API-005,드라마 씬 세부 조회,GET,api/v1/scenes/{sceneId},scene의 세부정보를 조회,NO,"ADMIN, LOGOUT-USER, USER",
+API-006,위시 리스트에 씬 추가,POST,api/v1/wishlist/{sceneId},scene을 wishlist에 추가,YES,"ADMIN, LOGOUT-USER, USER",
+API-007,사용자 위시 리스트 조회,GET,api/v1/wishlist,로그인한 사용자의 위시리스트에 등록된 scene목록을 조회합니다.,YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-008,위시리스트에서 씬 제거,DELETE,api/v1/wishlist/{wishlistId},지정한 위시리스트 항목 ID에 해당하는 항목을 사용자의 위시리스트에서 삭제한다.,YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-009,여행 일정 만들기,POST,api/v1/plans,"사용자가 선택한 기간, 여행 제목 정보를 기반으로 새로운 여행 일정(틀)을 생성한다.",YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-010,여행 일정 리스트 조회,GET,api/v1/plans,로그인한 사용자가 생성한 여행 일정 목록을 조회한다.,YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-011,여행 일정 상세 조회,GET,api/v1/plans/{planId},지정한 여행 일정 ID에 해당하는 여행 계획의 상세 정보를 조회한다.,YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-012,여행 장소 상세 조회,GET,api/v1/places/{placeId},지정한 장소 ID에 해당하는 여행 장소의 상세 정보를 조회한다.,NO,"ADMIN, LOGOUT-USER, USER",
+API-013,드라마 씬 주변 관광지 조회,GET,api/v1/scenes/{sceneId}/nearby-attractions,지정한 드라마 씬 ID를 기준으로 해당 촬영지 주변의 관광지 목록을 조회한다.,NO,"ADMIN, LOGOUT-USER, USER",
+API-014,여행 계획 수정,PUT,api/v1/plans/{planId},"로그인한 Member가 본인의 여행 계획 제목, 여행 기간, 세부 일정 정보를 수정합니다.",YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-015,여행 계획 삭제,DELETE,api/v1/plans/{planId},사용자가 생성한 여행 계획을 삭제합니다.,YES,"ADMIN, USER",LOGOUT-USER: 브라우저 저장소 사용
+API-016,로그인,POST,api/v1/auth/login,사용자의 로그인 정보를 검증하고 인증 토큰을 발급합니다.,NO,LOGOUT-USER,
+API-017,회원가입,POST,api/v1/members,신규 Member의 회원 정보를 등록하여 계정을 생성합니다.,NO,LOGOUT-USER,
+API-018,회원 정보 조회,GET,api/v1/me,로그인한 Member의 회원 정보를 조회합니다.,YES,"ADMIN, USER",
+API-019,회원 정보 수정,PATCH,api/v1/me,"로그인한 사용자의 닉네임, 프로필 등 회원 정보를 수정합니다.",YES,"ADMIN, USER",
+API-020,회원 삭제,DELETE,api/v1/me,"로그인한 사용자의 회원 계정을 탈퇴 처리합니다. 탈퇴 후 해당 계정은 비활성화되며, 서비스 이용 및 로그인이 제한됩니다.",YES,"ADMIN, USER",
+API-021,관리자 회원 목록 조회,GET,api/v1/members,서비스에 가입된 회원 목록을 조회합니다.,YES,ADMIN,
+API-022,관리자 회원 조회,GET,api/v1/members/{memberId},서비스에 가입된 특정 사용자의 정보를 조회합니다.,YES,ADMIN,
+API-023,관리자 회원 정보 수정,PATCH,api/v1/members/{memberId},서비스에 가입된 특정 회원의 정보를 수정합니다.,YES,ADMIN,
+API-024,관리자 회원 삭제,DELETE,api/v1/members/{memberId},서비스에 가입된 특정 사용자를 탈퇴시킵니다.,YES,ADMIN,

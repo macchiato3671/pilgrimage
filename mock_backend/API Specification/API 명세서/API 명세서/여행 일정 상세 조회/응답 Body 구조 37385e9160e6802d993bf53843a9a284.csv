@@ -1,0 +1,30 @@
+﻿필드명,타입,설명,예시
+planId,Int,plan의 고유 ID,1
+title,String,plan의 제목,부산 국밥 투어
+createdAt,String,plan이 만들어진 날짜,2026-06-03T17:30:00
+updatedAt,String,plan이 수정된 날짜,2026-06-03T17:30:00
+beginDate,String,plan의 시작일,2026-06-12
+endDate,String,plan의 종료일,2026-06-15
+details[],,,
+details[].place,Object,,
+details[].place.placeId,Int,관광지의 고유 ID,1
+details[].place.name,String,관광지의 이름,해운대
+details[].place.address,String,관광지의 위치,부산 해운대구 우동
+details[].place.latitude,Double,관광지의 위도,35.1727271517301
+details[].place.longitude,Double,관광지의 경도,129.148399576019
+details[].place.imgUrl,String,관광지의 사진 url,https://pcmap.place.naver.com/place/11491806/photo#
+details[].place.description,String,관광지의 설명,해운대 해수욕장입니다.
+details.place.contentType,Object,,
+details.place.contentType.contentTypeId,Int,관광지 카테고리 고유 ID,12
+details.place.contentType.name,String,관광지 카테고리,관광지
+details[].scene,Object,,
+details[].scene.sceneId,Int,씬의 고유 ID,1
+details[].scene.name,String,씬의 이름,제부119지역대 촬영지
+details[].scene.description,String,씬의 설명,제부119지역대 촬영지이다.
+details[].scene.address,String,씬의 위치,경기 화성시 만세구 서신면 해안길 156-5
+details[].scene.latitude,Double,씬의 위도,37.1634621695429
+details[].scene.longitude,Double,씬의 경도,126.621453575266
+details[].scene.imgUrl,String,씬의 사진 url,https://blog.kakaocdn.net/dna/bE5jWy/dJMcaiKfJJ2/AAAAAAAAAAAAAAAAAAAAALSnBkSSB6Ais1VAUxsdXB2i09sAX_5zSh1ojDpaMzfr/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1782831599&allow_ip=&allow_referer=&signature=v%2B6PIaA7QLQHG9jM7sCVQsFp978%3D
+details[].dayNo,Int,여행 일정의 몇 일차인지,1
+details[].beginTime,String,여행 일정 시작 시간,10:30:00
+details[].endTime,String,여행 일정 종료 시간,14:00:00

@@ -1,0 +1,8 @@
+﻿필드명,설명,예시,타입
+,,,
+role,회원 권한입니다. 서버 내부에서는 INT 값으로 매핑됩니다.,USER,ENUM
+createdAt,회원 가입 일시입니다.,2026-06-03T13:30:00,DATETIME
+email,회원 이메일입니다.,mailto:member@example.com,STRING
+memberId,회원 고유 ID입니다.,1,INT
+nickname,회원 닉네임입니다.,트립메이트,STRING
+status,회원 상태입니다. 서버 내부에서는 INT 값으로 매핑됩니다.,ACTIVE,ENUM

@@ -1,0 +1,10 @@
+﻿Error Code,Message,Status,발생 조건
+-,-,204,회원 탈퇴 처리 성공
+INVALID_OR_EXPIRED_TOKEN,Authentication token is missing or expired.,401,JWT가 없거나 만료된 경우.
+ADMIN_AUTHORITY_REQUIRED,Admin privileges are required.,403,JWT는 유효하지만 ADMIN 권한이 없는 경우.
+CANNOT_DELETE_SELF,You cannot delete your own account.,409,관리자가 자기 자신의 계정을 탈퇴 처리하려고 하는 경우.
+USER_HAS_ACTIVE_DEPENDENCIES,User cannot be withdrawn due to active dependencies.,422,"진행 중인 주문, 결제, 정산, 신고 처리 등 즉시 탈퇴를 막는 의존성이 있는 경우."
+USER_NOT_FOUND,User not found.,404,탈퇴 처리할 대상 사용자가 존재하지 않는 경우.
+INVALID_USER_ID,Invalid user ID.,400,userId 형식이 잘못된 경우.
+USER_ALREADY_WITHDRAWN,User has already been withdrawn.,409,대상 사용자가 이미 탈퇴 처리된 경우.
+CANNOT_DELETE_SUPER_ADMIN,Super admin accounts cannot be deleted.,409,최고 관리자 또는 보호 계정을 탈퇴 처리하려고 하는 경우.

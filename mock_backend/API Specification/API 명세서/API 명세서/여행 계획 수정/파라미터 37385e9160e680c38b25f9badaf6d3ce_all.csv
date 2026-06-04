@@ -1,0 +1,4 @@
+﻿이름,구분,설명,예시,타입,필수
+,,,,,
+planId,PATH,수정할 여행 계획의 고유 ID입니다.,1,INT,YES
+Authorization,HEADER,JWT Access Token입니다. Bearer 형식으로 전달합니다.,Bearer {accessToken},STRING,YES

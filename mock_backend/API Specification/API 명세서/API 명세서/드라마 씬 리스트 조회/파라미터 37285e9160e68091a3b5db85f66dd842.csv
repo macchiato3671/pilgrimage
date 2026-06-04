@@ -1,0 +1,2 @@
+﻿이름,구분,타입,필수,설명,예시
+dramaId,PATH,INT,YES,drama의 고유 id,"1, 1557"
