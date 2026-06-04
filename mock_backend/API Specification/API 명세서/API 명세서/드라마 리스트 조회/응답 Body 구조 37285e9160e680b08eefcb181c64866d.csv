@@ -1,0 +1,7 @@
+﻿필드명,타입,설명,예시
+dramas,List<Drama>,드라마 목록,-
+dramas[].id,Int,드라마 고유 id,"1, 2, 1557"
+dramas[].title,String,드라마 제목,“I use arch btw”
+dramas[].genres,List<Genre>,드라마 장르들,
+dramas[].posterUrl,String,드라마 표지 url,
+dramas[].releasedAt,LocalDate,드라마 출시일,"""2026-06-02”"

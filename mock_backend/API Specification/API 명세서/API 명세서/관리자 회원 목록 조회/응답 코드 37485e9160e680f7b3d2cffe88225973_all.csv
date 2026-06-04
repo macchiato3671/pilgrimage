@@ -1,0 +1,7 @@
+﻿Error Code,Message,Status,발생 조건
+,,,
+INVALID_MEMBER_FILTER,Invalid member filter.,400,"role, status 등 회원 필터 값이 유효하지 않은 경우."
+INVALID_PAGE_PARAMETER,Invalid page parameter.,400,page 또는 size 값이 유효하지 않은 경우.
+ADMIN_AUTHORITY_REQUIRED,Admin privileges are required.,403,JWT는 유효하지만 ADMIN 권한이 없는 경우.
+-,Member list has been retrieved.,200,회원 목록 조회 성공.
+INVALID_OR_EXPIRED_TOKEN,Authentication token is missing or expired.,401,JWT가 없거나 만료된 경우.

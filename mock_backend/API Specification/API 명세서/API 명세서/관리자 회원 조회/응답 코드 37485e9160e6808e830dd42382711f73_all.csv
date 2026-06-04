@@ -1,0 +1,6 @@
+﻿Error Code,Message,Status,발생 조건
+ADMIN_AUTHORITY_REQUIRED,Admin privileges are required.,403,JWT는 유효하지만 ADMIN 권한이 없는 경우.
+INVALID_MEMBER_ID,Invalid member ID.,400,memberId 형식이 잘못된 경우.
+INVALID_OR_EXPIRED_TOKEN,Authentication token is missing or expired.,401,JWT가 없거나 만료된 경우.
+MEMBER_NOT_FOUND,Member not found.,404,조회할 대상 회원이 존재하지 않는 경우.
+-,Member information has been retrieved.,200,회원 정보 조회 성공.

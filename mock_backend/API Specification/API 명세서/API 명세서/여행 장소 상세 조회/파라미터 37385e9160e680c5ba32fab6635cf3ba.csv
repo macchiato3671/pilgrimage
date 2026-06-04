@@ -1,0 +1,2 @@
+﻿이름,구분,타입,필수,설명,예시
+placeId,PATH,INT,YES,관광지 고유 ID,1

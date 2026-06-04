@@ -1,0 +1,7 @@
+# sceneId
+
+구분: PATH
+설명: scene의 고유 ID
+예시: 1
+타입: INT
+필수: YES

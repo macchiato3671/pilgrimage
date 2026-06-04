@@ -1,0 +1,13 @@
+﻿필드명,설명,예시,타입
+,,,
+accessToken,인증이 필요한 API 호출에 사용할 JWT Access Token입니다.,eyJhbGciOiJIUzI1NiJ9...,STRING
+member.nickname,로그인한 Member의 닉네임입니다.,여행자,STRING
+member.memberId,로그인한 Member의 고유 ID입니다.,1,INT
+member,로그인한 Member 정보입니다.,"{""memberId"":1,""email"":""mailto:member@example.com"",""nickname"":""여행자"",""role"":""USER"",""status"":""ACTIVE""}",OBJECT
+member.status,로그인한 Member의 상태입니다. 서버에서는 내부 DB INT 값으로 매핑합니다.,ACTIVE,ENUM
+expiresIn,Access Token 만료까지 남은 시간입니다. 초 단위입니다.,3600,INT
+member.role,로그인한 Member의 권한입니다. 서버에서는 내부 DB INT 값으로 매핑합니다.,USER,ENUM
+http://member.email,로그인한 Member의 이메일입니다.,mailto:member@example.com,STRING
+tokenType,토큰 인증 방식입니다.,Bearer,STRING
+refreshToken,Access Token 재발급에 사용할 JWT Refresh Token입니다.,eyJhbGciOiJIUzI1NiJ9...,STRING
+member.createdAt,로그인한 Member가 생성된 일시입니다.,2026-06-03T10:00:00,DATETIME

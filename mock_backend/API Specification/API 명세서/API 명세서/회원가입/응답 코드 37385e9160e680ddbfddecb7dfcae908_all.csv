@@ -1,0 +1,8 @@
+﻿Error Code,Message,Status,발생 조건
+,,,
+EMAIL_ALREADY_EXISTS,Email already exists.,409,이미 가입된 이메일로 회원가입을 요청한 경우
+INVALID_PASSWORD,Invalid password format.,400,비밀번호 형식이 정책에 맞지 않는 경우
+INVALID_NICKNAME,Invalid nickname format.,400,닉네임 형식이 정책에 맞지 않는 경우
+MEMBER_CREATED,Member created successfully.,201,회원가입이 정상적으로 완료된 경우
+INVALID_EMAIL,Invalid email format.,400,이메일 형식이 올바르지 않은 경우
+REQUIRED_FIELD_MISSING,Required field is missing.,400,"email, password, nickname 중 필수 값이 누락된 경우"

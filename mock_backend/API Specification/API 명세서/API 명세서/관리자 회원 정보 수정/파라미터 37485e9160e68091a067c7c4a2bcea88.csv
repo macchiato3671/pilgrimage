@@ -1,0 +1,3 @@
+﻿이름,구분,타입,필수,설명,예시
+memberId,PATH,INT,YES,수정할 대상 회원 ID입니다.,1
+Authorization,HEADER,STRING,YES,JWT Access Token입니다. Bearer 형식으로 전달합니다.,Bearer {accessToken}

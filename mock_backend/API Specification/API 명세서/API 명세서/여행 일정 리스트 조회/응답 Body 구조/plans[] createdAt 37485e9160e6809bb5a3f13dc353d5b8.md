@@ -1,0 +1,5 @@
+# plans[].createdAt
+
+설명: plan이 만들어진 날짜
+예시: 2026-06-02
+타입: String
