@@ -1,0 +1,43 @@
+name: 작업
+description: 기능 구현 외 일반 작업 이슈를 작성합니다.
+title: "[TASK] "
+labels: ["task"]
+body:
+  - type: textarea
+    id: task-description
+    attributes:
+      label: 작업 설명
+      description: 수행할 작업을 설명해주세요.
+      placeholder: 예) Vue 프로젝트 초기 세팅
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 작업 내용
+      description: 해야 할 작업을 체크리스트로 작성해주세요.
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: 완료 조건
+      description: 이 이슈가 완료되었다고 판단할 기준을 작성해주세요.
+      value: |
+        - [ ] 
+    validations:
+      required: false
+
+  - type: textarea
+    id: note
+    attributes:
+      label: 참고 사항
+      description: 추가로 공유할 내용이 있다면 작성해주세요.
+    validations:
+      required: false

@@ -1,0 +1,49 @@
+name: 버그 수정
+description: 버그 발생 및 수정 이슈를 작성합니다.
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 버그 설명
+      description: 발생한 버그를 설명해주세요.
+      placeholder: 예) 로그인 후 관리자 페이지 접근 시 403 에러 발생
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 방법
+      description: 버그를 재현하는 방법을 순서대로 작성해주세요.
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 동작
+      description: 정상적으로 기대했던 동작을 작성해주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 동작
+      description: 실제로 발생한 동작을 작성해주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: note
+    attributes:
+      label: 참고 사항
+      description: 스크린샷, 로그, 에러 메시지 등이 있다면 첨부해주세요.
+    validations:
+      required: false
