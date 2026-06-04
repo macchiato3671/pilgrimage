@@ -1,0 +1,4 @@
+﻿필드명,설명,예시,타입,필수
+,,,,
+password,로그인에 사용할 Member 비밀번호입니다.,Password123!,STRING,YES
+email,로그인에 사용할 Member 이메일입니다.,mailto:member@example.com,STRING,YES

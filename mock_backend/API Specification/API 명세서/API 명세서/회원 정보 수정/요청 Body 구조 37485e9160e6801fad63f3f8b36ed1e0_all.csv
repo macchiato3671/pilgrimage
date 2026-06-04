@@ -1,0 +1,6 @@
+﻿필드명,설명,예시,타입,필수
+,,,,
+email,변경할 회원 이메일입니다.,mailto:member@example.com,STRING,NO
+newPassword,변경할 새 비밀번호입니다.,,STRING,NO
+nickname,변경할 회원 닉네임입니다.,rainbuilt,STRING,NO
+currentPassword,비밀번호 변경 시 현재 비밀번호입니다.,,STRING,NO

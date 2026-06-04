@@ -1,0 +1,14 @@
+﻿필드명,타입,설명,예시
+,,,
+hasNext,BOOLEAN,다음 페이지 존재 여부입니다.,true
+members[].nickname,STRING,회원 닉네임입니다.,rainbuilt
+members[].memberId,INT,회원 고유 ID입니다.,1
+members[].status,ENUM,회원 상태입니다.,ACTIVE
+size,INT,페이지당 회원 수입니다.,20
+totalElements,INT,전체 회원 수입니다.,135
+totalPages,INT,전체 페이지 수입니다.,7
+members[].email,STRING,회원 이메일입니다.,mailto:member@example.com
+members,ARRAY,조회된 회원 목록입니다.,[]
+members[].role,ENUM,회원 권한입니다.,ADMIN
+page,INT,현재 페이지 번호입니다.,0
+members[].createdAt,DATETIME,회원 생성 시각입니다.,2026-06-03

@@ -1,0 +1,10 @@
+﻿필드명,타입,설명,예시
+scenes,List<Scene>,씬 목록,
+scenes[].sceneId,Int,씬 고유 ID,1
+scenes[].dramaId,Int,드라마 고유 ID,1
+scenes[].name,String,씬 이름,제부119지역대 촬영지
+scenes[].description,String,씬 설명,제부119지역대 촬영지이다.
+scenes[].address,String,씬의 위치,경기 화성시 만세구 서신면 해안길 156-5
+scenes[].latitude,Double,씬의 위도,37.1634621695429
+scenes[].longitude,Double,씬의 경도,126.621453575266
+scenes[].imgUrl,String,씬 사진 url,https://blog.kakaocdn.net/dna/bE5jWy/dJMcaiKfJJ2/AAAAAAAAAAAAAAAAAAAAALSnBkSSB6Ais1VAUxsdXB2i09sAX_5zSh1ojDpaMzfr/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1782831599&allow_ip=&allow_referer=&signature=v%2B6PIaA7QLQHG9jM7sCVQsFp978%3D

@@ -1,0 +1,7 @@
+﻿이름,구분,타입,필수,설명,예시
+Authorization,HEADER,STRING,YES,JWT Access Token입니다. Bearer 형식으로 전달합니다.,Bearer {accessToken}
+status,QUERY,ENUM,NO,회원 상태 필터입니다.,ACTIVE
+page,QUERY,INT,NO,조회할 페이지 번호입니다. 기본값은 0입니다.,0
+role,QUERY,ENUM,NO,회원 권한 필터입니다.,ADMIN
+size,QUERY,INT,NO,페이지당 조회할 회원 수입니다. 기본값은 20입니다.,20
+keyword,QUERY,STRING,NO,회원 이메일 또는 닉네임 검색어입니다.,rainbuilt
