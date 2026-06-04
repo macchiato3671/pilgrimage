@@ -1,0 +1,3 @@
+﻿이름,구분,설명,예시,타입,필수
+memberId,PATH,탈퇴시킬 사용자 ID,"1, 2, 1557",INT,YES
+Authorization,HEADER,JWT Access Token,Bearer {token},STRING,YES

@@ -1,0 +1,5 @@
+# details[].scene.imgUrl
+
+설명: 씬의 사진 url
+예시: https://blog.kakaocdn.net/dna/bE5jWy/dJMcaiKfJJ2/AAAAAAAAAAAAAAAAAAAAALSnBkSSB6Ais1VAUxsdXB2i09sAX_5zSh1ojDpaMzfr/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1782831599&allow_ip=&allow_referer=&signature=v%2B6PIaA7QLQHG9jM7sCVQsFp978%3D
+타입: String

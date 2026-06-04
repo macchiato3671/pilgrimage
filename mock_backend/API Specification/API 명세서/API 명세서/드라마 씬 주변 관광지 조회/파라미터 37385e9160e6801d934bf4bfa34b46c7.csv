@@ -1,0 +1,7 @@
+﻿이름,구분,타입,필수,설명,예시
+,,,,,
+page,QUERY,INT,NO,페이지 번호입니다. 0부터 시작합니다.,0
+radiusKm,QUERY,DOUBLE,NO,검색 반경(km)입니다. 미전달 시 기본값 3km를 사용합니다.,3.0
+contentTypeId,QUERY,INT,NO,관광지 콘텐츠 타입 ID입니다. ContentType 기준으로 필터링합니다.,12
+size,QUERY,INT,NO,페이지 크기입니다.,10
+sceneId,PATH,INT,YES,주변 관광지를 조회할 기준 드라마 씬 ID입니다.,1

@@ -1,0 +1,12 @@
+﻿Error Code,Message,Status,발생 조건
+,,,
+INVALID_OR_EXPIRED_TOKEN,Authentication token is missing or expired.,401,JWT가 없거나 만료된 경우.
+-,Member information has been updated.,200,회원 정보 수정 성공.
+EMPTY_UPDATE_FIELDS,At least one field must be provided for update.,400,요청 Body에 수정할 필드가 하나도 없는 경우.
+INVALID_EMAIL,Invalid email.,400,이메일 형식이 유효하지 않은 경우.
+MEMBER_ACCESS_DENIED,Member access is denied.,403,본인 계정에 대한 접근 권한이 없는 경우.
+MEMBER_ALREADY_WITHDRAWN,Member has already been withdrawn.,409,이미 탈퇴 처리된 회원 정보를 수정하려고 하는 경우.
+INVALID_PASSWORD,Invalid password.,400,비밀번호 형식이 유효하지 않거나 현재 비밀번호가 일치하지 않는 경우.
+EMAIL_ALREADY_EXISTS,Email already exists.,409,변경하려는 이메일을 다른 회원이 이미 사용 중인 경우.
+INVALID_NICKNAME,Invalid nickname.,400,닉네임 형식이 유효하지 않은 경우.
+MEMBER_NOT_FOUND,Member not found.,404,인증된 회원 정보를 찾을 수 없는 경우.

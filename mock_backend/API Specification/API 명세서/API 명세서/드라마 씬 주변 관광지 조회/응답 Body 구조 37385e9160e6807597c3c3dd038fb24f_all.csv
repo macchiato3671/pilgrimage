@@ -1,0 +1,24 @@
+﻿필드명,설명,예시,타입
+,,,
+size,페이지 크기입니다.,10,INT
+radiusKm,검색에 적용된 반경(km)입니다.,3.0,DOUBLE
+attractions[].contentId,외부 관광 데이터의 콘텐츠 ID입니다.,126508,STRING
+attractions[].latitude,관광지 위도입니다.,37.5511694,DOUBLE
+attractions[].description,관광지 설명입니다.,서울의 대표 전망 명소입니다.,STRING
+attractions[].contentTypeName,관광지 콘텐츠 타입 이름입니다.,관광지,STRING
+sceneId,기준 드라마 씬 ID입니다.,1,INT
+page,현재 페이지 번호입니다.,0,INT
+attractions[].address,관광지 주소입니다.,서울특별시 용산구 남산공원길 105,STRING
+totalElements,조회 조건에 해당하는 전체 관광지 수입니다.,35,INT
+totalPages,전체 페이지 수입니다.,4,INT
+attractions[].placeId,관광지 고유 ID입니다.,101,INT
+sceneLongitude,기준 드라마 씬 촬영지 경도입니다.,126.9882266,DOUBLE
+sceneLatitude,기준 드라마 씬 촬영지 위도입니다.,37.5511694,DOUBLE
+attractions[].contentTypeId,관광지 콘텐츠 타입 ID입니다.,12,INT
+attractions[].longitude,관광지 경도입니다.,126.9882266,DOUBLE
+attractions[].imgUrl,관광지 대표 이미지 URL입니다.,https://example.com/place.jpg,STRING
+attractions[].distanceKm,기준 촬영지로부터의 거리(km)입니다.,1.2,DOUBLE
+sceneName,기준 드라마 씬 이름입니다.,남산타워 데이트 장면,STRING
+attractions[].name,관광지 이름입니다.,남산서울타워,STRING
+attractions,기준 촬영지 주변 관광지 목록입니다.,[],ARRAY
+hasNext,다음 페이지 존재 여부입니다.,true,BOOLEAN

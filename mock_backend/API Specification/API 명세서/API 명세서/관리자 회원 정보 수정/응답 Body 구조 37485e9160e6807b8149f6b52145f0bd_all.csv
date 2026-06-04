@@ -1,0 +1,9 @@
+﻿필드명,설명,예시,타입
+,,,
+createdAt,회원 생성 시각입니다. Member.created_at에 해당합니다.,2026-06-03,DATETIME
+nickname,회원 닉네임입니다.,member-nickname,STRING
+status,"수정 후 사용자 계정 상태입니다. 예: ACTIVE, SUSPENDED, WITHDRAWN",ACTIVE,ENUM
+role,"수정 후 사용자 권한입니다. 예: USER, ADMIN",USER,ENUM
+memberId,회원 고유 ID입니다. Member.member_id에 해당합니다.,1,INT
+updatedBy,수정을 수행한 관리자 ID입니다.,10,INT
+email,수정 후 사용자 이메일입니다.,mailto:user@example.com,STRING

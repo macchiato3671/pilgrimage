@@ -1,0 +1,5 @@
+﻿필드명,타입,필수,설명,예시
+,,,,
+nickname,STRING,YES,회원 닉네임입니다.,홍길동
+password,STRING,YES,회원 비밀번호입니다.,P@ssw0rd123!
+email,STRING,YES,회원 이메일입니다. 로그인 ID로 사용되며 중복될 수 없습니다.,mailto:member@example.com

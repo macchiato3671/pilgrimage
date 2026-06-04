@@ -1,0 +1,11 @@
+﻿필드명,타입,필수,설명,예시
+,,,,
+details[].dayNo,INT,YES,여행 N일차입니다. 1 이상의 값이어야 합니다.,1
+details[].placeId,INT,NO,관광지 기반 일정인 경우 사용할 장소 ID입니다. sceneId와 동시에 사용할 수 없습니다.,10
+details,ARRAY,YES,수정할 여행 계획 세부 일정 목록입니다. PUT 요청이므로 기존 세부 일정을 요청 값 기준으로 교체합니다.,"[{""dayNo"":1,""beginTime"":""09:00"",""endTime"":""11:00"",""placeId"":10}]"
+title,STRING,YES,수정할 여행 계획 제목입니다.,부산 드라마 촬영지 여행
+endDate,DATE,YES,여행 종료일입니다. TravelPlan.end_date에 매핑됩니다.,2026-07-03
+details[].beginTime,TIME,YES,세부 일정 시작 시간입니다.,09:00
+beginDate,DATE,YES,여행 시작일입니다. TravelPlan.begin_date에 매핑됩니다.,2026-07-01
+details[].endTime,TIME,YES,세부 일정 종료 시간입니다. beginTime보다 빠를 수 없습니다.,11:00
+details[].sceneId,INT,NO,드라마 촬영지 기반 일정인 경우 사용할 촬영지 ID입니다. placeId와 동시에 사용할 수 없습니다.,3

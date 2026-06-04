@@ -1,0 +1,6 @@
+﻿필드명,설명,예시,타입,필수
+nickname,"변경할 사용자 닉네임입니다. PATCH 요청에서는 수정할 필드만 포함하며, 요청 Body에는 최소 1개 이상의 수정 필드가 필요합니다.",rainbuilt,STRING,NO
+role,"변경할 사용자 권한입니다. 허용값 예: USER, ADMIN","USER, ADMIN",ENUM,NO
+status,변경할 사용자 계정 상태입니다. 허용값,"ACTIVE, SUSPENDED, WITHDRAWN",ENUM,NO
+email,변경할 회원 이메일입니다.,mailto:member@example.com,STRING,NO
+password,변경할 회원 비밀번호입니다. 서버에서 암호화한 뒤 Member.password에 저장합니다.,,STRING,NO

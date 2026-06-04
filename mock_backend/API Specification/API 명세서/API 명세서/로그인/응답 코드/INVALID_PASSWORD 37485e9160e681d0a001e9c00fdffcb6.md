@@ -1,0 +1,5 @@
+# INVALID_PASSWORD
+
+Message: Invalid password format.
+Status: 400
+발생 조건: 비밀번호 형식이 올바르지 않은 경우

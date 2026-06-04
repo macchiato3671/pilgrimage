@@ -1,0 +1,8 @@
+﻿필드명,설명,예시,타입
+plans[],,,List<TravelPlan>
+plans[].planId,plan의 고유 ID,1,Int
+plans[].title,plan의 제목,부산 국밥 투어,String
+plans[].beginDate,plan 시작일,2026-06-12,String
+plans[].endDate,plan 종료일,2026-06-13,String
+plans[].createdAt,plan이 만들어진 날짜,2026-06-02,String
+plans[].updatedAt,plan이 수정된 날짜,2026-06-03,String

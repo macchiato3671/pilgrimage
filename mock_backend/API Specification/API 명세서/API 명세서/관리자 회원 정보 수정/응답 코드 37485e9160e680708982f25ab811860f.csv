@@ -1,0 +1,14 @@
+﻿Status,Error Code,Message,발생 조건
+,,,
+400,INVALID_MEMBER_ID,Invalid member ID.,memberId 형식이 잘못된 경우.
+400,INVALID_UPDATE_FIELD,Invalid update field.,수정할 수 없는 필드가 요청 Body에 포함된 경우.
+409,CANNOT_CHANGE_OWN_ROLE,You cannot change your own role.,관리자가 자기 자신의 권한을 변경하려고 하는 경우.
+409,EMAIL_ALREADY_EXISTS,Email already exists.,변경하려는 이메일을 다른 사용자가 이미 사용 중인 경우.
+200,-,Member information has been updated.,회원 정보 수정 성공.
+403,ADMIN_AUTHORITY_REQUIRED,Admin privileges are required.,JWT는 유효하지만 ADMIN 권한이 없는 경우.
+409,CANNOT_MODIFY_SUPER_ADMIN,Super admin accounts cannot be modified.,최고 관리자 또는 보호 계정 정보를 수정하려고 하는 경우.
+401,INVALID_OR_EXPIRED_TOKEN,Authentication token is missing or expired.,JWT가 없거나 만료된 경우.
+404,MEMBER_NOT_FOUND,Member not found.,수정할 대상 회원이 존재하지 않는 경우.
+422,MEMBER_ALREADY_WITHDRAWN,Withdrawn members cannot be modified.,이미 탈퇴 처리된 회원 정보를 수정하려고 하는 경우.
+400,INVALID_MEMBER_ROLE,Invalid member role.,role 값이 허용된 회원 권한 값이 아닌 경우.
+400,INVALID_MEMBER_STATUS,Invalid member status.,status 값이 허용된 회원 상태 값이 아닌 경우.

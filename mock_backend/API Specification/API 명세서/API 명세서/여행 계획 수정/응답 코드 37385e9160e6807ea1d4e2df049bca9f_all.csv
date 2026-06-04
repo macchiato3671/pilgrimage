@@ -1,0 +1,16 @@
+﻿Error Code,Message,Status,발생 조건
+,,,
+SCENE_NOT_FOUND,Scene not found.,404,요청한 sceneId에 해당하는 촬영지가 존재하지 않는 경우
+PLAN_DETAIL_OUT_OF_RANGE,Travel plan detail is out of the travel date range.,422,세부 일정의 dayNo가 여행 기간 범위를 초과한 경우
+PLACE_NOT_FOUND,Place not found.,404,요청한 placeId에 해당하는 관광지가 존재하지 않는 경우
+UNAUTHORIZED,Authentication is required.,401,JWT Access Token이 없거나 유효하지 않은 경우
+INVALID_PLAN_DETAIL_TIME,Invalid travel plan detail time range.,400,세부 일정 시작 시간이 종료 시간보다 늦거나 시간 형식이 올바르지 않은 경우
+TRAVEL_PLAN_ACCESS_DENIED,Access to the travel plan is denied.,403,로그인한 Member가 해당 여행 계획의 소유자가 아닌 경우
+INVALID_PLAN_DETAIL,Invalid travel plan detail.,400,세부 일정의 dayNo가 1보다 작거나 필수 값이 누락된 경우
+TRAVEL_PLAN_UPDATED,Travel plan updated successfully.,200,여행 계획 수정이 정상적으로 완료된 경우
+INVALID_TRAVEL_PLAN_TITLE,Invalid travel plan title.,400,여행 계획 제목이 비어 있거나 형식이 올바르지 않은 경우
+INVALID_PLAN_DETAIL_TARGET,Invalid travel plan detail target.,400,placeId와 sceneId가 동시에 전달되었거나 둘 다 전달되지 않은 경우
+INVALID_PLAN_ID,Invalid travel plan ID.,400,planId가 숫자 형식이 아니거나 유효하지 않은 경우
+REQUIRED_FIELD_MISSING,Required field is missing.,400,"title, beginDate, endDate, details 등 필수 요청 값이 누락된 경우"
+TRAVEL_PLAN_NOT_FOUND,Travel plan not found.,404,planId에 해당하는 여행 계획이 존재하지 않는 경우
+INVALID_TRAVEL_PLAN_DATE,Invalid travel plan date range.,400,여행 시작일이 종료일보다 늦거나 날짜 형식이 올바르지 않은 경우

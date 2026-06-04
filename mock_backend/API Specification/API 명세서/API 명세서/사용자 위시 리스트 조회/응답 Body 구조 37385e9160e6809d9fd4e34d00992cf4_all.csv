@@ -1,0 +1,13 @@
+﻿필드명,설명,예시,타입
+wishlists,,,List<Wishlist>
+wishlists[].wishlistId,위시리스트 고유 ID,1,Int
+wishlists[].scene,,,Object
+wishlists[].createdAt,위시리스트에 추가된 날짜,2026-06-03T17:30:00,String
+wishlists[].scene.sceneId,scene의 고유 ID,1,Int
+wishlists[].scene.dramaId,drama의 고유 ID,1,Int
+wishlists[].scene.name,scene의 이름,제부119지역대 촬영지,String
+wishlists[].scene.description,scene의 설명,제부119지역대 촬영지이다.,String
+wishlists[].scene.address,scene의 위치,경기 화성시 만세구 서신면 해안길 156-5,String
+wishlists[].scene.latitude,scene의 위도,37.1634621695429,Double
+wishlists[].scene.longitude,scene의 경도,126.621453575266,Double
+wishlists[].scene.imgUrl,scene의 사진 url,https://blog.kakaocdn.net/dna/bE5jWy/dJMcaiKfJJ2/AAAAAAAAAAAAAAAAAAAAALSnBkSSB6Ais1VAUxsdXB2i09sAX_5zSh1ojDpaMzfr/img.jpg?credential=yqXZFxpELC7KVnFOS48ylbz2pIh7yKj8&expires=1782831599&allow_ip=&allow_referer=&signature=v%2B6PIaA7QLQHG9jM7sCVQsFp978%3D,String

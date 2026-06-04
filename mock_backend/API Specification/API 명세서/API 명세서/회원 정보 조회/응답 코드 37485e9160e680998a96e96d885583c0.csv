@@ -1,0 +1,7 @@
+﻿Status,Error Code,Message,발생 조건
+,,,
+401,UNAUTHORIZED,Authentication is required.,JWT Access Token이 없거나 유효하지 않은 경우
+404,MEMBER_NOT_FOUND,Member not found.,토큰의 memberId에 해당하는 Member가 존재하지 않는 경우
+409,MEMBER_ALREADY_WITHDRAWN,Member already withdrawn.,이미 탈퇴 처리된 Member가 본인 정보를 조회하려는 경우
+200,SUCCESS,Member retrieved successfully.,로그인한 Member 정보를 정상 조회한 경우
+403,MEMBER_ACCESS_DENIED,Member access denied.,인증된 Member가 해당 API에 접근할 권한이 없는 경우
