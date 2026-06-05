@@ -79,7 +79,8 @@ const handleSignup = async () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   if (!emailRegex.test(form.email)) {
-    return '올바른 이메일 형식이 아닙니다.'
+    errorMessage.value = '올바른 이메일 형식이 아닙니다.'
+    return 
   }
   
   if (form.password !== form.passwordConfirm) {
