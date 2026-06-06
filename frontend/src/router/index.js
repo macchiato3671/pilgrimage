@@ -14,6 +14,11 @@ const routes = [
     name: 'login',
     component: LoginView
   },
+  {
+    path: '/drama',
+    name: 'drama',
+    component: DramaView
+  }
 ]
 
 const router = createRouter({
