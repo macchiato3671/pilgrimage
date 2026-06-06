@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SignupView from '@/views/member/SignupView.vue'
 import LoginView from '@/views/member/LoginView.vue'
-import SearchView from '@/views/drama/SampleDrama.vue'
+import DramaView from '@/views/drama/DramaView.vue'
 import WishlistView from '@/views/wishlist/SampleWishlist.vue'
 import PlanListView from '@/views/plan/SamplePlan.vue'
 import MyPageView from '@/views/member/SampleMemberView.vue'
@@ -21,7 +21,7 @@ const routes = [
   {
     path: '/drama',
     name: 'drama',
-    component: SearchView
+    component: DramaView
   },
   {
     path: '/wishlist',
