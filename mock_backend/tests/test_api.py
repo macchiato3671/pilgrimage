@@ -82,6 +82,8 @@ class MockApiTestCase(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertGreaterEqual(len(body["dramas"]), 2)
         first_drama = body["dramas"][0]
+        self.assertIn("releasedAt", first_drama)
+        self.assertNotIn("releaseYear", first_drama)
         self.assertIn("genres", first_drama)
         self.assertGreaterEqual(len(first_drama["genres"]), 1)
         self.assertIn("genreId", first_drama["genres"][0])
