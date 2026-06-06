@@ -488,9 +488,7 @@ def delete_plan(plan_id: int, member: dict[str, Any] = Depends(current_member)) 
 @app.post("/api/v1/auth/login")
 def login(payload: LoginRequest) -> dict[str, Any]:
     member = next((item for item in state["members"].values() if item["email"] == payload.email), None)
-    if not member:
-        raise error(status.HTTP_404_NOT_FOUND, "MEMBER_NOT_FOUND", "Member not found.")
-    if member["password"] != payload.password:
+    if not member or member["password"] != payload.password:
         raise error(status.HTTP_401_UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid email or password.")
     if member["status"] != "ACTIVE":
         raise error(status.HTTP_403_FORBIDDEN, "MEMBER_ACCESS_DENIED", "Member access is denied.")
