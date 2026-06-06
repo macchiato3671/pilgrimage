@@ -155,6 +155,10 @@ state: dict[str, Any] = {
             "title": "선재 업고 튀어",
             "name": "선재 업고 튀어",
             "description": "서울과 수원을 배경으로 한 청춘 로맨스 드라마입니다.",
+            "genres": [
+                {"genreId": 1, "name": "로맨스"},
+                {"genreId": 2, "name": "판타지"},
+            ],
             "posterUrl": "https://picsum.photos/seed/drama-1/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-1/640/360",
             "releaseYear": 2024,
@@ -164,6 +168,10 @@ state: dict[str, Any] = {
             "title": "이상한 변호사 우영우",
             "name": "이상한 변호사 우영우",
             "description": "제주와 서울의 장소를 담은 휴먼 법정 드라마입니다.",
+            "genres": [
+                {"genreId": 3, "name": "휴먼"},
+                {"genreId": 4, "name": "법정"},
+            ],
             "posterUrl": "https://picsum.photos/seed/drama-2/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-2/640/360",
             "releaseYear": 2022,
@@ -488,9 +496,7 @@ def delete_plan(plan_id: int, member: dict[str, Any] = Depends(current_member)) 
 @app.post("/api/v1/auth/login")
 def login(payload: LoginRequest) -> dict[str, Any]:
     member = next((item for item in state["members"].values() if item["email"] == payload.email), None)
-    if not member:
-        raise error(status.HTTP_404_NOT_FOUND, "MEMBER_NOT_FOUND", "Member not found.")
-    if member["password"] != payload.password:
+    if not member or member["password"] != payload.password:
         raise error(status.HTTP_401_UNAUTHORIZED, "INVALID_CREDENTIALS", "Invalid email or password.")
     if member["status"] != "ACTIVE":
         raise error(status.HTTP_403_FORBIDDEN, "MEMBER_ACCESS_DENIED", "Member access is denied.")

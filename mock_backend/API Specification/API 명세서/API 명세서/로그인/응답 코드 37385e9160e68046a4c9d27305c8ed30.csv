@@ -5,4 +5,3 @@
 403,MEMBER_ACCESS_DENIED,Member access is denied.,탈퇴 또는 정지 상태 등으로 로그인할 수 없는 Member인 경우
 400,INVALID_PASSWORD,Invalid password format.,비밀번호 형식이 올바르지 않은 경우
 401,INVALID_CREDENTIALS,Invalid email or password.,이메일 또는 비밀번호가 일치하지 않는 경우
-404,MEMBER_NOT_FOUND,Member not found.,요청한 이메일에 해당하는 Member가 존재하지 않는 경우

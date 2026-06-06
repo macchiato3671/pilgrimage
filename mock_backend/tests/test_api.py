@@ -81,6 +81,11 @@ class MockApiTestCase(unittest.TestCase):
         status, body = self.client.get("/api/v1/dramas")
         self.assertEqual(status, 200)
         self.assertGreaterEqual(len(body["dramas"]), 2)
+        first_drama = body["dramas"][0]
+        self.assertIn("genres", first_drama)
+        self.assertGreaterEqual(len(first_drama["genres"]), 1)
+        self.assertIn("genreId", first_drama["genres"][0])
+        self.assertIn("name", first_drama["genres"][0])
 
         status, body = self.client.get("/api/v1/dramas/1")
         self.assertEqual(status, 200)
@@ -116,6 +121,20 @@ class MockApiTestCase(unittest.TestCase):
         status, body = self.client.get("/api/v1/me", token=body["accessToken"])
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "USER")
+
+    def test_login_failures_return_401(self) -> None:
+        for email, password in (
+            ("member@example.com", "wrong-password"),
+            ("missing@example.com", "Password123!"),
+        ):
+            with self.subTest(email=email):
+                status, body = self.client.post(
+                    "/api/v1/auth/login",
+                    {"email": email, "password": password},
+                )
+                self.assertEqual(status, 401)
+                self.assertEqual(body["detail"]["errorCode"], "INVALID_CREDENTIALS")
+                self.assertEqual(body["detail"]["message"], "Invalid email or password.")
 
     def test_wishlist_mutation_flow(self) -> None:
         status, body = self.client.post("/api/v1/wishlist/2", token="user-token")
