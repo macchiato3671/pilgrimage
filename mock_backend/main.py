@@ -161,7 +161,7 @@ state: dict[str, Any] = {
             ],
             "posterUrl": "https://picsum.photos/seed/drama-1/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-1/640/360",
-            "releaseYear": 2024,
+            "releasedAt": "2024-01-01",
         },
         2: {
             "dramaId": 2,
@@ -174,7 +174,7 @@ state: dict[str, Any] = {
             ],
             "posterUrl": "https://picsum.photos/seed/drama-2/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-2/640/360",
-            "releaseYear": 2022,
+            "releasedAt": "2022-06-29",
         },
     },
     "scenes": {
