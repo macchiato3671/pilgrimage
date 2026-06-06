@@ -104,6 +104,17 @@ class MockApiTestCase(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("attractions", body)
 
+    def test_drama_order_condition_sorts_by_year_and_genre(self) -> None:
+        status, body = self.client.get("/api/v1/dramas?OrderCondition=YEAR")
+        self.assertEqual(status, 200)
+        years = [drama["releaseYear"] for drama in body["dramas"]]
+        self.assertEqual(years, sorted(years))
+
+        status, body = self.client.get("/api/v1/dramas?OrderCondition=GENRE")
+        self.assertEqual(status, 200)
+        genres = [drama["genres"][0]["name"] for drama in body["dramas"]]
+        self.assertEqual(genres, sorted(genres))
+
     def test_excluded_apis_return_404(self) -> None:
         status, _ = self.client.get("/api/v1/dramas/search")
         self.assertEqual(status, 404)
