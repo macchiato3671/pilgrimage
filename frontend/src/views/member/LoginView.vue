@@ -41,8 +41,10 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { signin } from '@/api/memberApi'
+import { useAuthStore } from '@/stores/authStore';
 
-const router = useRouter()
+const router = useRouter();
+const authStore = useAuthStore();
 
 const form = reactive({
   email: '',
@@ -81,8 +83,8 @@ const handleSignin = async () => {
       errorMessage.value = '로그인 응답에 토큰이 없습니다.'
       return
     }
-    localStorage.setItem('accessToken', data.accessToken);
-
+    
+    authStore.login(data)
     console.log('로그인 성공:', data)
     alert('로그인이 완료되었습니다.')
 
