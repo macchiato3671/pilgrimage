@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import SignupView from '@/views/member/SignupView.vue'
 import LoginView from '@/views/member/LoginView.vue'
 import DramaView from '@/views/drama/DramaView.vue'
+import WishlistView from '@/views/wishlist/SampleWishlist.vue'
+import PlanListView from '@/views/plan/SamplePlan.vue'
+import MyPageView from '@/views/member/SampleMemberView.vue'
 //import HomeView from '@/views/HomeView.vue'
 
 const routes = [
@@ -19,6 +22,21 @@ const routes = [
     path: '/drama',
     name: 'drama',
     component: DramaView
+  },
+  {
+    path: '/wishlist',
+    name: 'wishlist',
+    component: WishlistView
+  },
+  {
+    path: '/plans',
+    name: 'plans',
+    component: PlanListView
+  },
+  {
+    path: '/mypage',
+    name: 'mypage',
+    component: MyPageView
   }
 ]
 

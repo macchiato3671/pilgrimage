@@ -1,10 +1,13 @@
-<script setup>
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
-  <RouterView />
+  <AppLayout>
+    <RouterView />
+  </AppLayout>
 </template>
+
+<script setup>
+  import { RouterView } from 'vue-router'
+  import AppLayout from '@/components/layout/AppLayout.vue'
+</script>
 
 <style scoped>
 

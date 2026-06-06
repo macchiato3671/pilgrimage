@@ -1,5 +1,7 @@
 <template>
-    <h1>PlanList Page</h1>
+    <div>
+
+    </div>
 </template>
 
 <script setup>
