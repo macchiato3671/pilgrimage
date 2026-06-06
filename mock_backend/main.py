@@ -155,6 +155,10 @@ state: dict[str, Any] = {
             "title": "선재 업고 튀어",
             "name": "선재 업고 튀어",
             "description": "서울과 수원을 배경으로 한 청춘 로맨스 드라마입니다.",
+            "genres": [
+                {"genreId": 1, "name": "로맨스"},
+                {"genreId": 2, "name": "판타지"},
+            ],
             "posterUrl": "https://picsum.photos/seed/drama-1/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-1/640/360",
             "releaseYear": 2024,
@@ -164,6 +168,10 @@ state: dict[str, Any] = {
             "title": "이상한 변호사 우영우",
             "name": "이상한 변호사 우영우",
             "description": "제주와 서울의 장소를 담은 휴먼 법정 드라마입니다.",
+            "genres": [
+                {"genreId": 3, "name": "휴먼"},
+                {"genreId": 4, "name": "법정"},
+            ],
             "posterUrl": "https://picsum.photos/seed/drama-2/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-2/640/360",
             "releaseYear": 2022,
