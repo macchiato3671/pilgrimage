@@ -117,6 +117,20 @@ class MockApiTestCase(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(body["role"], "USER")
 
+    def test_login_failures_return_401(self) -> None:
+        for email, password in (
+            ("member@example.com", "wrong-password"),
+            ("missing@example.com", "Password123!"),
+        ):
+            with self.subTest(email=email):
+                status, body = self.client.post(
+                    "/api/v1/auth/login",
+                    {"email": email, "password": password},
+                )
+                self.assertEqual(status, 401)
+                self.assertEqual(body["detail"]["errorCode"], "INVALID_CREDENTIALS")
+                self.assertEqual(body["detail"]["message"], "Invalid email or password.")
+
     def test_wishlist_mutation_flow(self) -> None:
         status, body = self.client.post("/api/v1/wishlist/2", token="user-token")
         self.assertEqual(status, 201)
