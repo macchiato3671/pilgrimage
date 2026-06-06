@@ -95,22 +95,31 @@ const sidebarItems = computed(() => {
   return [];
 });
 const groupedDramas = computed(() => {
-  return sidebarItems.value.map((sidebarItem) => {
-    const dramasInGroup = rawData.value.filter((drama) => {
-      if (orderCondition.value.trim().toUpperCase() === "YEAR")
-        return new Date(drama.releasedAt).getFullYear() === sidebarItem;
+  const condition = orderCondition.value.trim().toUpperCase();
+  const groupMap = new Map();
 
-      if (orderCondition.value.trim().toUpperCase() === "GENRE")
-        return drama.genres?.some((genre) => genre.name === sidebarItem);
+  sidebarItems.value.forEach((item) => {
+    groupMap.set(item, []);
+  });
 
-      return false;
-    });
-
-    return {
-      name: sidebarItem,
-      dramas: dramasInGroup,
+  rawData.value.forEach((drama) => {
+    if (condition === 'YEAR') {
+      const year = new Date(drama.releasedAt).getFullYear();
+      if (groupMap.has(year))
+        groupMap.get(year).push(drama);
+    }
+    if (condition === 'GENRE') {
+      drama.genres?.forEach((genre) => {
+        if (groupMap.has(genre.name))
+          groupMap.get(genre.name).push(drama);
+      });
     };
   });
+
+  return sidebarItems.value.map((item) => ({
+    name: item,
+    dramas: groupMap.get(item),
+  }));
 });
 
 const scrollToSection = (item) => {
