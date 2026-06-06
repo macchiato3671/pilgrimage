@@ -77,20 +77,36 @@ const handleSignin = async () => {
 
     const data = await signin(requestBody)
 
-    console.log('로그인 성공:', data)
+    if (!data?.accessToken) {
+      errorMessage.value = '로그인 응답에 토큰이 없습니다.'
+      return
+    }
+    localStorage.setItem('accessToken', data.accessToken);
 
+    console.log('로그인 성공:', data)
     alert('로그인이 완료되었습니다.')
 
-    localStorage.setItem('accessToken', data.accessToken);
     router.push('/search')
   } catch (error) {
     console.error('로그인 실패:', error)
 
     if(!error.status){
       errorMessage.value = '서버와 연결할 수 없습니다.'
+      return;
     }
-    else{
+
+    const errorCode = error.errorCode
+
+    if (errorCode === 'INVALID_EMAIL') {
+      errorMessage.value = '이메일 형식이 올바르지 않습니다.'
+    } else if (errorCode === 'INVALID_PASSWORD') {
+      errorMessage.value = '비밀번호 형식이 올바르지 않습니다.'
+    } else if (errorCode === 'INVALID_CREDENTIALS') {
       errorMessage.value = '이메일 또는 비밀번호가 올바르지 않습니다.'
+    } else if (errorCode === 'MEMBER_ACCESS_DENIED') {
+      errorMessage.value = '탈퇴 또는 정지된 계정입니다.'
+    } else {
+      errorMessage.value = '로그인 중 오류가 발생했습니다.'
     }
   } finally {
     isLoading.value = false
