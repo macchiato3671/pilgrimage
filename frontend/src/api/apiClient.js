@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios from 'axios';
+import { useAuthStore } from '@/stores/authStore';
 
 const baseConfig = {
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -18,7 +19,8 @@ export const authApiClient = axios.create(baseConfig)
  */
 authApiClient.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('accessToken')
+    const authStore = useAuthStore()
+    const accessToken = authStore.accessToken
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`
@@ -46,13 +48,19 @@ const createApiError = (error) => {
   const status = error.response?.status
   const data = error.response?.data
 
+  const errorCode =
+    data?.errorCode ||
+    data?.detail?.errorCode
+
   const message =
     data?.message ||
+    data?.detail?.message ||
     error.message ||
     '요청 처리 중 오류가 발생했습니다.'
 
   return {
     status,
+    errorCode,
     message,
     data,
     originalError: error,
@@ -81,7 +89,8 @@ const handleAuthError = (error) => {
   console.error('[Auth API Error]', apiError.status, apiError.message)
 
   if (apiError.status === 401) {
-    localStorage.removeItem('accessToken')
+    const authStore = useAuthStore()
+    authStore.logout()
 
     if (window.location.pathname !== '/login') {
       window.location.href = '/login'

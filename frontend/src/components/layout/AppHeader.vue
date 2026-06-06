@@ -17,7 +17,7 @@
     </form>
 
     <nav class="right-menu">
-      <template v-if="isLoggedIn">
+      <template v-if="authStore.isLoggedIn">
         <button type="button" @click="handleLogout">로그아웃</button>
         <RouterLink to="/mypage">마이페이지</RouterLink>
       </template>
@@ -30,25 +30,15 @@
 </template>
 
 <script setup>
-  import { ref, watch } from 'vue'
-  import { RouterLink, useRoute, useRouter } from 'vue-router'
+  import { ref } from 'vue'
+  import { RouterLink, useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/authStore'
 
   const router = useRouter()
-  const route = useRoute()
+  const authStore = useAuthStore();
 
   const keyword = ref('')
-  const isLoggedIn = ref(!!localStorage.getItem('accessToken'))
 
-  const updateLoginState = () => {
-    isLoggedIn.value = !!localStorage.getItem('accessToken')
-  }
-
-  watch(
-    () => route.fullPath,
-    () => {
-      updateLoginState()
-    }
-  )
 
   const handleSearch = () => {
     const keywordTrim = keyword.value.trim();
@@ -66,9 +56,8 @@
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken')
-    updateLoginState()
-    router.push('/login')
+    authStore.logout();
+    router.push('/login');
   }
 </script>
 
