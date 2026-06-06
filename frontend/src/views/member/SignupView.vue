@@ -47,6 +47,10 @@
         {{ isLoading ? '가입 중...' : '가입하기' }}
       </button>
     </form>
+
+    <button type="button" @click="goBack">
+      ‹ Go back
+    </button>
   </div>
 </template>
 
@@ -67,6 +71,10 @@ const form = reactive({
 const errorMessage = ref('')
 const successMessage = ref('')
 const isLoading = ref(false)
+
+const goBack = () => {
+  router.back()
+}
 
 const handleSignup = async () => {
   errorMessage.value = ''
