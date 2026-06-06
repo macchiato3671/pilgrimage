@@ -110,6 +110,16 @@ def place_payload(place: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def drama_list_payload(drama: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": drama["dramaId"],
+        "title": drama["title"],
+        "genres": deepcopy(drama["genres"]),
+        "posterUrl": drama["posterUrl"],
+        "releasedAt": drama["releasedAt"],
+    }
+
+
 def plan_payload(plan: dict[str, Any]) -> dict[str, Any]:
     return {
         "planId": plan["planId"],
@@ -325,7 +335,7 @@ def list_dramas(
         dramas = [drama for drama in dramas if lowered in drama["title"].lower() or lowered in drama["description"].lower()]
     if orderCondition and orderCondition.upper() in {"DESC", "LATEST"}:
         dramas = list(reversed(dramas))
-    return {"dramas": deepcopy(dramas)}
+    return {"dramas": [drama_list_payload(drama) for drama in dramas]}
 
 
 @app.get("/api/v1/dramas/search", include_in_schema=False)
