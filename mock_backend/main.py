@@ -323,8 +323,14 @@ def list_dramas(
     if keyword:
         lowered = keyword.lower()
         dramas = [drama for drama in dramas if lowered in drama["title"].lower() or lowered in drama["description"].lower()]
-    if orderCondition and orderCondition.upper() in {"DESC", "LATEST"}:
-        dramas = list(reversed(dramas))
+    if orderCondition:
+        order_condition = orderCondition.upper()
+        if order_condition == "YEAR":
+            dramas = sorted(dramas, key=lambda drama: drama["releaseYear"])
+        elif order_condition == "GENRE":
+            dramas = sorted(dramas, key=lambda drama: drama["genres"][0]["name"] if drama["genres"] else "")
+        elif order_condition in {"DESC", "LATEST"}:
+            dramas = list(reversed(dramas))
     return {"dramas": deepcopy(dramas)}
 
 
