@@ -1,5 +1,5 @@
 <template>
-    <h1>PlanList Page</h1>
+    <h1>My Page</h1>
 </template>
 
 <script setup>
