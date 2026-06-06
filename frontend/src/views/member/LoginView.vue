@@ -29,6 +29,11 @@
         {{ isLoading ? '로그인 중...' : '로그인' }}
       </button>
     </form>
+    
+    <div>
+      <span>아직 회원이 아니신가요?</span>
+      <RouterLink to="/signup">회원가입</RouterLink>
+    </div>
   </div>
 </template>
 
