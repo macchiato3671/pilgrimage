@@ -47,6 +47,10 @@
         {{ isLoading ? '가입 중...' : '가입하기' }}
       </button>
     </form>
+
+    <button type="button" @click="goBack">
+      ‹ Go back
+    </button>
   </div>
 </template>
 
@@ -65,8 +69,11 @@ const form = reactive({
 })
 
 const errorMessage = ref('')
-const successMessage = ref('')
 const isLoading = ref(false)
+
+const goBack = () => {
+  router.back()
+}
 
 const handleSignup = async () => {
   errorMessage.value = ''
@@ -100,7 +107,6 @@ const handleSignup = async () => {
     const data = await signup(requestBody)
 
     console.log('회원가입 성공:', data)
-    successMessage.value = '회원가입이 완료되었습니다.'
 
     form.nickname = ''
     form.email = ''
@@ -111,7 +117,28 @@ const handleSignup = async () => {
     router.push('/login')
   } catch (error) {
     console.error('회원가입 실패:', error)
-    errorMessage.value = error.message || '회원가입에 실패했습니다.'
+    
+    if (!error.status) {
+      errorMessage.value = '서버와 연결할 수 없습니다.'
+      return
+    }
+
+    const errorCode = error.errorCode
+
+    if (errorCode === 'EMAIL_ALREADY_EXISTS') {
+      errorMessage.value = '이미 가입된 이메일입니다.'
+    } else if (errorCode === 'INVALID_EMAIL') {
+      errorMessage.value = '이메일 형식이 올바르지 않습니다.'
+    } else if (errorCode === 'INVALID_PASSWORD') {
+      errorMessage.value = '비밀번호 형식이 올바르지 않습니다.'
+    } else if (errorCode === 'INVALID_NICKNAME') {
+      errorMessage.value = '닉네임 형식이 올바르지 않습니다.'
+    } else if (errorCode === 'REQUIRED_FIELD_MISSING') {
+      errorMessage.value = '필수 입력값을 모두 입력해주세요.'
+    } else {
+      errorMessage.value = '회원가입 중 오류가 발생했습니다.'
+    }
+
   } finally {
     isLoading.value = false
   }
