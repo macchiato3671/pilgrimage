@@ -5,6 +5,7 @@ import DramaView from '@/views/drama/DramaView.vue'
 import WishlistView from '@/views/wishlist/SampleWishlist.vue'
 import PlanListView from '@/views/plan/SamplePlan.vue'
 import MyPageView from '@/views/member/MyPage.vue'
+import TestMapView from '@/views/test/TestMapView.vue'
 //import HomeView from '@/views/HomeView.vue'
 
 const routes = [
@@ -37,7 +38,12 @@ const routes = [
     path: '/mypage',
     name: 'mypage',
     component: MyPageView
-  }
+  },
+  {
+    path: '/map-test',
+    name: 'map-test',
+    component: TestMapView,
+  },
 ]
 
 const router = createRouter({
