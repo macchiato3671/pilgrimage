@@ -110,6 +110,16 @@ def place_payload(place: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def drama_list_payload(drama: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": drama["dramaId"],
+        "title": drama["title"],
+        "genres": deepcopy(drama["genres"]),
+        "posterUrl": drama["posterUrl"],
+        "releasedAt": drama["releasedAt"],
+    }
+
+
 def plan_payload(plan: dict[str, Any]) -> dict[str, Any]:
     return {
         "planId": plan["planId"],
@@ -161,7 +171,7 @@ state: dict[str, Any] = {
             ],
             "posterUrl": "https://picsum.photos/seed/drama-1/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-1/640/360",
-            "releaseYear": 2024,
+            "releasedAt": "2024-01-01",
         },
         2: {
             "dramaId": 2,
@@ -174,7 +184,7 @@ state: dict[str, Any] = {
             ],
             "posterUrl": "https://picsum.photos/seed/drama-2/320/480",
             "imgUrl": "https://picsum.photos/seed/drama-2/640/360",
-            "releaseYear": 2022,
+            "releasedAt": "2022-06-29",
         },
     },
     "scenes": {
@@ -326,12 +336,12 @@ def list_dramas(
     if orderCondition:
         order_condition = orderCondition.upper()
         if order_condition == "YEAR":
-            dramas = sorted(dramas, key=lambda drama: drama["releaseYear"])
+            dramas = sorted(dramas, key=lambda drama: drama["releasedAt"])
         elif order_condition == "GENRE":
             dramas = sorted(dramas, key=lambda drama: drama["genres"][0]["name"] if drama["genres"] else "")
         elif order_condition in {"DESC", "LATEST"}:
             dramas = list(reversed(dramas))
-    return {"dramas": deepcopy(dramas)}
+    return {"dramas": [drama_list_payload(drama) for drama in dramas]}
 
 
 @app.get("/api/v1/dramas/search", include_in_schema=False)
