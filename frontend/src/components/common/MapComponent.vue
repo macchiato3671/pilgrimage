@@ -17,42 +17,33 @@ const props = defineProps({
   },
 })
 
+// EMITS
+const emit = defineEmits([
+  'ready',
+])
+
 // DATA
 const APP_KEY = import.meta.env.VITE_KAKAO_MAP_KEY
 const mapContainer = ref(null)
-const map = ref(null)
 
 // METHODS
 const loadKakaoMapScript = () => {
   return new Promise((resolve, reject) => {
-    // 1. Check whether Kakao map script is already loaded or not.
     if (window?.kakao?.maps) {
-      // 1.1. If Kakao map script is already loaded, then resolve the promise with Kakao map Javascript object.
       resolve(window.kakao)
       return
     }
 
-    // 2. Upon case no Kakao map script is loaded, create a (Java)script element on the document.
     const script = document.createElement('script')
     script.type = 'text/javascript'
-
-    // 2.1. Set script element's source as Kakao map Javascript SDK
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${APP_KEY}&autoload=false`
-
-    // 2.2. Set script's onload behavior
-    // 2.2.1. Wait until the script is fully loaded. (Kakao map script is fully downloaded and loaded)
+    script.onerror = reject
     script.onload = () => {
-      // 2.2.2. Then wait until the kakao.map SDK is fully loaded.
       window.kakao.maps.load(() => {
-        // 2.2.3. When everything is ready, then resolve the promise with Kakao map Javascript object.
         resolve(window.kakao)
       })
     }
 
-    // 2.3. Set script element's onerror behavior (as reject the promise with an error)
-    script.onerror = reject
-
-    // 3. Actual attachment of the script element to the document
     document.head.appendChild(script)
   })
 }
@@ -65,7 +56,12 @@ const createMap = async () => {
     level: 3,
   }
 
-  map.value = new kakao.maps.Map(mapContainer.value, options)
+  const map = new kakao.maps.Map(mapContainer.value, options)
+
+  emit('ready', {
+    kakao,
+    map,
+  })
 }
 
 // ON MOUNT
