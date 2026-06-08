@@ -1,8 +1,8 @@
 <template>
   <main>
     <SceneCard 
-      :component-w = 'componentW'
-      :component-h = 'componentH'
+      :width = 'componentW'
+      :height = 'componentH'
 
       name = "샌즈 전"
       description = "와! 언더테일 아시는구나! 샌즈 정.말.쎕.니.다."
@@ -18,6 +18,6 @@
 import SceneCard from '@/components/drama/SceneCard.vue'
 import { ref } from 'vue'
 
-const componentW = ref('400px')
-const componentH = ref('200px')
+const componentW = ref('500px')
+const componentH = ref('auto')
 </script>
