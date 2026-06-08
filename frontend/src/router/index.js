@@ -5,7 +5,7 @@ import DramaView from '@/views/drama/DramaView.vue'
 import WishlistView from '@/views/wishlist/SampleWishlist.vue'
 import PlanListView from '@/views/plan/SamplePlan.vue'
 import MyPageView from '@/views/member/MyPage.vue'
-import TestMapView from '@/views/test/TestMapView.vue'
+import TestSceneCard from '@/views/test/TestSceneCard.vue'
 //import HomeView from '@/views/HomeView.vue'
 
 const routes = [
@@ -40,9 +40,9 @@ const routes = [
     component: MyPageView
   },
   {
-    path: '/map-test',
-    name: 'map-test',
-    component: TestMapView,
+    path: '/scene-card-test',
+    name: 'scene-card-test',
+    component: TestSceneCard,
   },
 ]
 
