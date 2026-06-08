@@ -4,47 +4,75 @@
     <p>이름: {{ name }}</p>
     <p>설명: {{ description }}</p>
     <p>주소: {{ address }}</p>
-    <p>위도, 경도: {{ latitude }}, {{ longitude }} </p>
+    <p>위도, 경도: {{ latitude }}, {{ longitude }}</p>
+    <div>
+      <button @click="toggleWishlist">{{isWishlisted ? '🌟' : '⭐'}}</button>
+      <button @click="viewDetail">👀</button>
+    </div>
   </article>
 </template>
 
 <script setup>
-  // PROPS
-  const props = defineProps({
-    width: {
-      type: String,
-      default: '600px',
-    },
-    height: {
-      type: String,
-      default: 'auto',
-    },
+// PROPS
+const props = defineProps({
+  width: {
+    type: String,
+    default: '600px',
+  },
+  height: {
+    type: String,
+    default: 'auto',
+  },
 
-    name: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      default: '',
-    },
-    address: {
-      type: String,
-      default: '',
-    },
-    latitude: {
-      type: [String, Number],
-      default: '',
-    },
-    longitude: {
-      type: [String, Number],
-      default: '',
-    },
-    imgUrl: {
-      type: String,
-      default: 'https://preview.redd.it/average-arch-linux-user-oh-and-did-you-know-that-i-use-arch-v0-na6opzjr42601.jpg?auto=webp&s=8b6bdf29b84d290ec88ac778c8dc836a642bd6f9',
-    }
-  })
+  sceneId: {
+    type: [String, Number],
+    required: true
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    default: '',
+  },
+  address: {
+    type: String,
+    default: '',
+  },
+  latitude: {
+    type: [String, Number],
+    default: '',
+  },
+  longitude: {
+    type: [String, Number],
+    default: '',
+  },
+  imgUrl: {
+    type: String,
+    default: 'https://preview.redd.it/average-arch-linux-user-oh-and-did-you-know-that-i-use-arch-v0-na6opzjr42601.jpg?auto=webp&s=8b6bdf29b84d290ec88ac778c8dc836a642bd6f9',
+  },
+
+  isWishlisted: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+// EMITS
+const emit = defineEmits([
+  'toggle-wishlist',
+  'view-detail',
+])
+
+// METHODS
+const toggleWishlist = () => emit('toggle-wishlist', {
+  sceneId: props.sceneId,
+  isWishlisted: props.isWishlisted
+})
+const viewDetail = () => emit('view-detail', {
+  sceneId: props.sceneId,
+})
 </script>
 
 <style lang="scss" scoped>
