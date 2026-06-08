@@ -1,37 +1,61 @@
 <template> 
-  <main class="component">
-    <img class="thumbnail" :src="props.imgUrl" alt="씬 이미지"/>
-    <p>{{ props.name }}</p>
-    <p>{{ props.description }}</p>
-    <p>{{ props.address }}</p>
-    <p>{{ props.latitude }}, {{ props.longitude }}</p>
-  </main>
+  <article class="component">
+    <img class="thumbnail" :src="imgUrl" :alt='`${name} 씬 이미지`'/>
+    <p>이름: {{ name }}</p>
+    <p>설명: {{ description }}</p>
+    <p>주소: {{ address }}</p>
+    <p>위도, 경도: {{ latitude }}, {{ longitude }} </p>
+  </article>
 </template>
 
 <script setup>
   // PROPS
   const props = defineProps({
-    componentW: String,
-    componentH: String,
+    width: {
+      type: String,
+      default: '600px',
+    },
+    height: {
+      type: String,
+      default: 'auto',
+    },
 
-    name: String,
-    description: String,
-    address: String,
-    latitude: String,
-    longitude: String,
-    imgUrl: String,
+    name: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      default: '',
+    },
+    address: {
+      type: String,
+      default: '',
+    },
+    latitude: {
+      type: [String, Number],
+      default: '',
+    },
+    longitude: {
+      type: [String, Number],
+      default: '',
+    },
+    imgUrl: {
+      type: String,
+      default: 'https://preview.redd.it/average-arch-linux-user-oh-and-did-you-know-that-i-use-arch-v0-na6opzjr42601.jpg?auto=webp&s=8b6bdf29b84d290ec88ac778c8dc836a642bd6f9',
+    }
   })
 </script>
 
 <style lang="scss" scoped>
 .component {
-  width:  v-bind('props.componentW');
-  height: v-bind('props.componentH');
+  width:  v-bind('props.width');
+  height: v-bind('props.height');
   background-color: lightgray;
 }
 
 .thumbnail {
-  width: 33%;
+  width: 50%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
