@@ -4,6 +4,8 @@ import LoginView from '@/views/member/LoginView.vue'
 import DramaView from '@/views/drama/DramaView.vue'
 import WishlistView from '@/views/wishlist/SampleWishlist.vue'
 import MyPageView from '@/views/member/MyPage.vue'
+import TestSceneCard from '@/views/test/TestSceneCard.vue'
+import SceneList from '@/views/scene/SceneList.vue'
 import TestMapView from '@/views/test/TestMapView.vue'
 import PlanView from '@/views/plan/PlanView.vue'
 import PlanDetailView from '@/views/plan/PlanDetailView.vue'
@@ -37,9 +39,14 @@ const routes = [
     component: MyPageView
   },
   {
-    path: '/map-test',
-    name: 'map-test',
-    component: TestMapView,
+    path: '/scene-card-test',
+    name: 'scene-card-test',
+    component: TestSceneCard,
+  },
+  {
+    path: '/dramas/:dramaId/scenes',
+    name: 'scenes',
+    component: SceneList,
   },
   {
     path: '/plans/create',

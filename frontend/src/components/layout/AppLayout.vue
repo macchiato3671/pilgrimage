@@ -14,6 +14,7 @@ import AppHeader from './AppHeader.vue'
 
 <style scoped>
 main {
+  width: 80vw;
   min-height: calc(100vh - 68px);
 }
 </style>
