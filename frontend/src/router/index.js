@@ -3,13 +3,12 @@ import SignupView from '@/views/member/SignupView.vue'
 import LoginView from '@/views/member/LoginView.vue'
 import DramaView from '@/views/drama/DramaView.vue'
 import WishlistView from '@/views/wishlist/SampleWishlist.vue'
-import PlanListView from '@/views/plan/SamplePlan.vue'
 import MyPageView from '@/views/member/MyPage.vue'
 import TestMapView from '@/views/test/TestMapView.vue'
 import PlanView from '@/views/plan/PlanView.vue'
 import PlanDetailView from '@/views/plan/PlanDetailView.vue'
 import TempPlanView from '@/views/plan/TempPlanView.vue'
-//import HomeView from '@/views/HomeView.vue'
+import PlanList from '@/views/plan/PlanList.vue'
 
 const routes = [
   {
@@ -31,11 +30,6 @@ const routes = [
     path: '/wishlist',
     name: 'wishlist',
     component: WishlistView
-  },
-  {
-    path: '/plans',
-    name: 'plans',
-    component: PlanListView
   },
   {
     path: '/mypage',
@@ -66,6 +60,11 @@ const routes = [
     path: '/search',
     name: 'PlanButtonTemp',
     component: TempPlanView,
+  },
+  {
+    path: '/plans',
+    name: 'planList',
+    component: PlanList,
   }
 ]
 
