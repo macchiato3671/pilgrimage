@@ -1,11 +1,11 @@
 <template> 
   <article class="component">
     <img class="thumbnail" :src="imgUrl" :alt='`${name} 씬 이미지`'/>
-    <p>이름: {{ name }}</p>
-    <p>설명: {{ description }}</p>
-    <p>주소: {{ address }}</p>
-    <p>위도, 경도: {{ latitude }}, {{ longitude }}</p>
-    <div>
+    <div class="details">
+      <p>이름: {{ name }}</p>
+      <p>주소: {{ address }}</p>
+    </div>
+    <div class="interactions">
       <button @click="toggleWishlist">{{isWishlisted ? '🌟' : '⭐'}}</button>
       <button @click="viewDetail">👀</button>
     </div>
@@ -15,15 +15,6 @@
 <script setup>
 // PROPS
 const props = defineProps({
-  width: {
-    type: String,
-    default: '600px',
-  },
-  height: {
-    type: String,
-    default: 'auto',
-  },
-
   sceneId: {
     type: [String, Number],
     required: true
@@ -31,10 +22,6 @@ const props = defineProps({
   name: {
     type: String,
     required: true,
-  },
-  description: {
-    type: String,
-    default: '',
   },
   address: {
     type: String,
@@ -80,14 +67,30 @@ const viewDetail = () => emit('view-detail', {
 
 <style lang="scss" scoped>
 .component {
-  width:  v-bind('props.width');
-  height: v-bind('props.height');
+  width:  100%;
+  height: auto;
   background-color: lightgray;
+  display: flex;
+  gap: 8px;
 }
 
 .thumbnail {
-  width: 100%;
+  flex: 33;
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  min-width: 0;
+}
+
+.details {
+  flex: 57;
+  min-width: 0;
+}
+
+.interactions {
+  flex: 10;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
 }
 </style>
