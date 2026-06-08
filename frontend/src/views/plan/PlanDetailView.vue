@@ -1,11 +1,11 @@
 <template>
-    <h1>My Page</h1>
+    <h1>detail page</h1>
 </template>
 
 <script setup>
 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 
 </style>
