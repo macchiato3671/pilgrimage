@@ -29,7 +29,7 @@ import SceneCard from '@/components/drama/SceneCard.vue'
 
 const router = useRouter()
 
-const componentW = ref('500px')
+const componentW = ref('100%')
 const componentH = ref('auto')
 
 const scenes = ref([
