@@ -1,9 +1,22 @@
 <template>
   <main class='main'>
-    <MapComponent 
+    <!-- <MapComponent 
       class="map"
       @ready="handleMapReady"
-    />
+    /> -->
+    <div class="map">
+      <SceneDetail 
+        v-if="selectedScene"
+        :scene-id="selectedScene.sceneId"
+        :name="selectedScene.name"
+        :address="selectedScene.address"
+        :latitude="selectedScene.latitude"
+        :longitude="selectedScene.longitude"
+        :img-url="selectedScene.imgUrl"
+      />
+
+      <p v-else>씬을 선택해주세요.</p>
+    </div>
     <div class="scene-list">
       <SceneCard
         v-for="scene in scenes"
@@ -12,7 +25,6 @@
 
         :scene-id="scene.sceneId"
         :name="scene.name"
-        :description="scene.description"
         :address="scene.address"
         :latitude="scene.latitude"
         :longitude="scene.longitude"
@@ -28,9 +40,10 @@
 <script setup>
 import { fetchSceneList } from '@/api/sceneApi';
 import MapComponent from '@/components/common/MapComponent.vue';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import SceneCard from '@/components/drama/SceneCard.vue'
+import SceneCard from '@/components/scene/SceneCard.vue'
+import SceneDetail from '@/components/scene/SceneDetail.vue';
 
 // ROUTE
 const route = useRoute()
@@ -42,6 +55,14 @@ const mapSdk = ref(null)
 const map = ref(null)
 const scenes = ref([])
 const markers = ref([])
+const selectedSceneId = ref(null)
+
+// COMPUTED
+const selectedScene = computed(() => {
+  return scenes.value.find((scene) => {
+    return String(scene.sceneId) === String(selectedSceneId.value)
+  })
+})
 
 // METHODS
 const handleMapReady = ({ _mapSdk, _map  }) => {
@@ -105,7 +126,7 @@ const handleToggleWishlist = ({ sceneId }) => {
   console.log(sceneId)
 }
 const handleViewDetail = ({ sceneId }) => {
-  router.push(`/scenes/${sceneId}`)
+  selectedSceneId.value = sceneId
 }
 
 // ON MOUNT
@@ -122,16 +143,19 @@ onMounted(() => {
 }
 
 .map {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   height: 80vh;
   border: 1px solid black;
 }
 
 .scene-list {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
+
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 
   height: 80vh;
   min-height: 0;
