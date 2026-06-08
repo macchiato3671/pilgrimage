@@ -52,10 +52,10 @@
   const errorMessage = ref('');
 
   onMounted(() => {
-    fetchPlan();
+    fetchPlans();
   });
 
-  const fetchPlan = async () => {
+  const fetchPlans = async () => {
     isLoading.value = true;
     errorMessage.value = '';
 

@@ -5,8 +5,8 @@ export const makePlan = (requestBody) => {
   return authApiClient.post('/plans', requestBody);
 };
 
-export const getPlans = (requestBody) => {
-  return authApiClient.get('/plans', requestBody);
+export const getPlans = () => {
+  return authApiClient.get('/plans');
 };
 
 export const deletePlan = (planId) => {
