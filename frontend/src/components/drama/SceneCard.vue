@@ -50,7 +50,7 @@ const props = defineProps({
   },
   imgUrl: {
     type: String,
-    default: 'https://preview.redd.it/average-arch-linux-user-oh-and-did-you-know-that-i-use-arch-v0-na6opzjr42601.jpg?auto=webp&s=8b6bdf29b84d290ec88ac778c8dc836a642bd6f9',
+    default: import.meta.env.VITE_NO_IMAGE_URL,
   },
 
   isWishlisted: {
@@ -58,6 +58,9 @@ const props = defineProps({
     default: false,
   },
 })
+
+// DATA
+
 
 // EMITS
 const emit = defineEmits([
@@ -83,7 +86,7 @@ const viewDetail = () => emit('view-detail', {
 }
 
 .thumbnail {
-  width: 50%;
+  width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
