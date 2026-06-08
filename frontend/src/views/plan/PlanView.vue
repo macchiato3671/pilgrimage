@@ -22,8 +22,8 @@
           {{ errorMessage }}
         </p>
 
-        <button type="submit">
-          계획 세우러 떠나기
+        <button type="submit" :disabled="isSubmitting">
+          {{ isSubmitting ? '생성 중...' : '계획 세우러 떠나기' }}
         </button>
       </form>
     </section>
@@ -65,6 +65,7 @@
     const title = ref('');
     const beginDate = ref('');
     const endDate = ref('');
+    const isSubmitting = ref(false);
 
     const errorMessage = ref('');
 
@@ -90,42 +91,51 @@
     }
 
     const handleCreatePlan = async () => {
+      if (isSubmitting.value) {
+        return;
+      }
+
+      isSubmitting.value = true;
       errorMessage.value = '';
 
-      if(!title.value.trim()){
-        errorMessage.value = '제목을 입력해주세요.';
-        return;
+      try{
+        if(!title.value.trim()){
+          errorMessage.value = '제목을 입력해주세요.';
+          return;
+        }
+
+        if(!beginDate.value){
+          errorMessage.value = '시작일을 입력해주세요.';
+          return;
+        }
+
+        if(!endDate.value){
+          errorMessage.value = '종료일을 입력해주세요.';
+          return;
+        }
+
+        if(beginDate.value > endDate.value){
+          errorMessage.value = '오는 날은 가는 날보다 빠를 수 없습니다.';
+          return;
+        }
+
+        const requestBody = {
+          title: title.value,
+          beginDate: beginDate.value,
+          endDate: endDate.value
+        };
+
+        const isLoggedIn = !!authStore.accessToken;
+
+        if(isLoggedIn) {
+          await createServerPlan(requestBody);
+          return;
+        }
+
+        createLocalPlan(requestBody);
+      } finally {
+        isSubmitting.value = false;
       }
-
-      if(!beginDate.value){
-        errorMessage.value = '시작일을 입력해주세요.';
-        return;
-      }
-
-      if(!endDate.value){
-        errorMessage.value = '종료일을 입력해주세요.';
-        return;
-      }
-
-      if(beginDate.value > endDate.value){
-        errorMessage.value = '오는 날은 가는 날보다 빠를 수 없습니다.';
-        return;
-      }
-
-      const requestBody = {
-        title: title.value,
-        beginDate: beginDate.value,
-        endDate: endDate.value
-      };
-
-      const isLoggedIn = !!authStore.accessToken;
-
-      if(isLoggedIn) {
-        await createServerPlan(requestBody);
-        return;
-      }
-
-      createLocalPlan(requestBody);
     }
 
     const createServerPlan = async (requestBody) => {
