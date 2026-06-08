@@ -18,8 +18,8 @@ const componentHeight = ref('400px')
 const kakaoSdk = ref(null)
 const kakaoMap = ref(null)
 
-const handleMapReady = ({ kakao, map }) => {
-  kakaoSdk.value = kakao
-  kakaoMap.value = map
+const handleMapReady = ({ _mapSdk, _map }) => {
+  kakaoSdk.value = _mapSdk
+  kakaoMap.value = _map
 }
 </script>
