@@ -3,11 +3,14 @@ import SignupView from '@/views/member/SignupView.vue'
 import LoginView from '@/views/member/LoginView.vue'
 import DramaView from '@/views/drama/DramaView.vue'
 import WishlistView from '@/views/wishlist/SampleWishlist.vue'
-import PlanListView from '@/views/plan/SamplePlan.vue'
 import MyPageView from '@/views/member/MyPage.vue'
 import TestSceneCard from '@/views/test/TestSceneCard.vue'
 import SceneList from '@/views/scene/SceneList.vue'
-//import HomeView from '@/views/HomeView.vue'
+import TestMapView from '@/views/test/TestMapView.vue'
+import PlanView from '@/views/plan/PlanView.vue'
+import PlanDetailView from '@/views/plan/PlanDetailView.vue'
+import TempPlanView from '@/views/plan/TempPlanView.vue'
+import PlanList from '@/views/plan/PlanList.vue'
 
 const routes = [
   {
@@ -31,11 +34,6 @@ const routes = [
     component: WishlistView
   },
   {
-    path: '/plans',
-    name: 'plans',
-    component: PlanListView
-  },
-  {
     path: '/mypage',
     name: 'mypage',
     component: MyPageView
@@ -50,6 +48,31 @@ const routes = [
     name: 'scenes',
     component: SceneList,
   },
+  {
+    path: '/plans/create',
+    name: 'planCreate',
+    component: PlanView,
+  },
+  {
+    path: '/plans/:planId',
+    name: 'planDetail',
+    component: PlanDetailView,
+  },
+  {
+    path: '/plans/local/:localPlanId',
+    name: 'localPlanDetail',
+    component: PlanDetailView,
+  },
+  {
+    path: '/search',
+    name: 'PlanButtonTemp',
+    component: TempPlanView,
+  },
+  {
+    path: '/plans',
+    name: 'planList',
+    component: PlanList,
+  }
 ]
 
 const router = createRouter({
