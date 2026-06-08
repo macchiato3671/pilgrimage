@@ -41,16 +41,65 @@ const dramaId = route.params.dramaId
 const mapSdk = ref(null)
 const map = ref(null)
 const scenes = ref([])
+const markers = ref([])
 
 // METHODS
 const handleMapReady = ({ _mapSdk, _map  }) => {
   mapSdk.value = _mapSdk
   map.value = _map
+
+  renderMarkers()
+}
+const clearMarkers = () => {
+  markers.value.forEach((marker) => {
+    marker.setMap(null)
+  })
+  markers.value = []
+}
+const renderMarkers = () => {
+  if (!mapSdk.value || !map.value) return
+  if (!scenes.value.length) return
+
+  const kakao = mapSdk.value
+  const kakaoMap = map.value
+
+  clearMarkers()
+
+  const bounds = new kakao.maps.LatLngBounds()
+
+  scenes.value.forEach((scene) => {
+    const lat = Number(scene.latitude)
+    const lng = Number(scene.longitude)
+
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return
+
+    const position = new kakao.maps.LatLng(lat, lng)
+
+    const marker = new kakao.maps.Marker({
+      map: kakaoMap,
+      position,
+    })
+
+    markers.value.push(marker)
+    bounds.extend(position)
+  })
+
+  if (markers.value.length === 0) return
+
+  if (markers.value.length === 1) {
+    kakaoMap.setCenter(markers.value[0].getPosition())
+    kakaoMap.setLevel(3)
+    return
+  }
+
+  kakaoMap.setBounds(bounds)
 }
 const fetchData = async () => {
   const response = await fetchSceneList(dramaId)
   scenes.value = response.scenes
   console.log(scenes.value)
+
+  renderMarkers()
 }
 const handleToggleWishlist = ({ sceneId }) => {
   console.log(sceneId)
