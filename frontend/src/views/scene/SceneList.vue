@@ -43,8 +43,8 @@ const map = ref(null)
 const scenes = ref([])
 
 // METHODS
-const handleMapReady = ({ _sdk, _map  }) => {
-  mapSdk.value = _sdk
+const handleMapReady = ({ _mapSdk, _map  }) => {
+  mapSdk.value = _mapSdk
   map.value = _map
 }
 const fetchData = async () => {

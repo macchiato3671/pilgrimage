@@ -59,8 +59,8 @@ const createMap = async () => {
   const map = new kakao.maps.Map(mapContainer.value, options)
 
   emit('ready', {
-    kakao,
-    map,
+    _mapSdk: kakao,
+    _map: map,
   })
 }
 
