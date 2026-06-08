@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 // PROPS
 const props = defineProps({
@@ -25,6 +25,11 @@ const emit = defineEmits([
 // DATA
 const APP_KEY = import.meta.env.VITE_KAKAO_MAP_KEY
 const mapContainer = ref(null)
+const map = ref(null)
+const mapSdk = ref(null)
+
+let resizeObserver = null
+let resizeAnimationFrameId = null
 
 // METHODS
 const loadKakaoMapScript = () => {
@@ -47,26 +52,57 @@ const loadKakaoMapScript = () => {
     document.head.appendChild(script)
   })
 }
+const setupResizeObserver = () => {
+  if (!mapContainer.value) return
+
+  resizeObserver = new ResizeObserver(() => {
+    if (!map.value) return;
+
+    if (resizeAnimationFrameId)
+      cancelAnimationFrame(resizeAnimationFrameId)
+
+      resizeAnimationFrameId = requestAnimationFrame(() => {
+        const { width, height } = mapContainer.value.getBoundingClientRect()
+        if (width === 0 || height === 0) return
+        const center = map.value.getCenter()
+        map.value.relayout()
+        map.value.setCenter(center)
+      })
+  })
+
+  resizeObserver.observe(mapContainer.value)
+}
 
 const createMap = async () => {
-  const kakao = await loadKakaoMapScript()
+  mapSdk.value = await loadKakaoMapScript()
   
   const options = {
-    center: new kakao.maps.LatLng(37.5665, 126.9780),
+    center: new mapSdk.value.maps.LatLng(37.5665, 126.9780),
     level: 3,
   }
 
-  const map = new kakao.maps.Map(mapContainer.value, options)
+  map.value = new mapSdk.value.maps.Map(mapContainer.value, options)
+
+  setupResizeObserver()
 
   emit('ready', {
-    _mapSdk: kakao,
-    _map: map,
+    _mapSdk: mapSdk.value,
+    _map: map.value,
   })
 }
 
 // ON MOUNT
 onMounted(() => {
   createMap()
+})
+onBeforeUnmount(() => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+  }
+
+  if (resizeAnimationFrameId) {
+    cancelAnimationFrame(resizeAnimationFrameId)
+  }
 })
 </script>
 

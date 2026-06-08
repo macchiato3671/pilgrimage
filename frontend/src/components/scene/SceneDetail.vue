@@ -8,6 +8,11 @@
     <p>설명: {{ description }}</p>
     <br/>
     <p>위도: {{ latitude }}, 경도: {{ longitude }}</p>
+    <br/>
+    <label>돌아가기 </label>
+    <button @click="emit('exitDetail')">❌</button>
+    <label>{{isWishlisted ? '  찜풀기 ' : '  찜하기 '}}</label>
+    <button @click="emit('toggleWishlist')">{{isWishlisted ? '🌟' : '⭐'}}</button>
   </article>
 </template>
 
@@ -42,7 +47,15 @@ defineProps({
     type: String,
     default: import.meta.env.VITE_NO_IMAGE_URL,
   },
+
+  isWishlisted: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+// EMIT
+const emit = defineEmits(['exitDetail', 'toggleWishlist'])
 </script>
 
 <style lang="scss" scoped>
