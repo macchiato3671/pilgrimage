@@ -6,6 +6,9 @@ import WishlistView from '@/views/wishlist/SampleWishlist.vue'
 import PlanListView from '@/views/plan/SamplePlan.vue'
 import MyPageView from '@/views/member/MyPage.vue'
 import TestMapView from '@/views/test/TestMapView.vue'
+import PlanView from '@/views/plan/PlanView.vue'
+import PlanDetailView from '@/views/plan/PlanDetailView.vue'
+import TempPlanView from '@/views/plan/TempPlanView.vue'
 //import HomeView from '@/views/HomeView.vue'
 
 const routes = [
@@ -44,6 +47,26 @@ const routes = [
     name: 'map-test',
     component: TestMapView,
   },
+  {
+    path: '/plans/create',
+    name: 'planCreate',
+    component: PlanView,
+  },
+  {
+    path: '/plans/:planId',
+    name: 'planDetail',
+    component: PlanDetailView,
+  },
+  {
+    path: '/plans/local/:localPlanId',
+    name: 'localPlanDetail',
+    component: PlanDetailView,
+  },
+  {
+    path: '/search',
+    name: 'PlanButtonTemp',
+    component: TempPlanView,
+  }
 ]
 
 const router = createRouter({
