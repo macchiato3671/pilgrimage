@@ -25,7 +25,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import SceneCard from '@/components/drama/SceneCard.vue'
+import SceneCard from '@/components/scene/SceneCard.vue'
 
 const router = useRouter()
 

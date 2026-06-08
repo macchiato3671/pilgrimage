@@ -1,12 +1,11 @@
 <template>
   <main class='main'>
-    <!-- <MapComponent 
-      class="map"
-      @ready="handleMapReady"
-    /> -->
-    <div class="map">
-      <SceneDetail 
+    <section class="section-left">
+      <SceneDetail
         v-if="selectedScene"
+        class="detail"
+        @exit-detail="handleExitDetail"
+
         :scene-id="selectedScene.sceneId"
         :name="selectedScene.name"
         :address="selectedScene.address"
@@ -14,9 +13,11 @@
         :longitude="selectedScene.longitude"
         :img-url="selectedScene.imgUrl"
       />
-
-      <p v-else>씬을 선택해주세요.</p>
-    </div>
+      <MapComponent 
+        class="map"
+        @ready="handleMapReady"
+      />
+    </section>
     <div class="scene-list">
       <SceneCard
         v-for="scene in scenes"
@@ -41,13 +42,12 @@
 import { fetchSceneList } from '@/api/sceneApi';
 import MapComponent from '@/components/common/MapComponent.vue';
 import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import SceneCard from '@/components/scene/SceneCard.vue'
 import SceneDetail from '@/components/scene/SceneDetail.vue';
 
 // ROUTE
 const route = useRoute()
-const router = useRouter()
 const dramaId = route.params.dramaId
 
 // DATA
@@ -115,6 +115,29 @@ const renderMarkers = () => {
 
   kakaoMap.setBounds(bounds)
 }
+const renderSelectedMarker = () => {
+  if (!mapSdk.value || !map.value) return
+  if (!selectedScene.value) return
+
+  const kakao = mapSdk.value
+  const kakaoMap = map.value
+
+  clearMarkers()
+
+  const lat = Number(selectedScene.value.latitude)
+  const lng = Number(selectedScene.value.longitude)
+  if (Number.isNaN(lat) || Number.isNaN(lng)) return
+
+  const position = new kakao.maps.LatLng(lat, lng)
+  const marker = new kakao.maps.Marker({
+    map: kakaoMap,
+    position,
+  })
+  markers.value.push(marker)
+
+  kakaoMap.setCenter(markers.value[0].getPosition())
+  kakaoMap.setLevel(6)
+}
 const fetchData = async () => {
   const response = await fetchSceneList(dramaId)
   scenes.value = response.scenes
@@ -125,8 +148,13 @@ const fetchData = async () => {
 const handleToggleWishlist = ({ sceneId }) => {
   console.log(sceneId)
 }
-const handleViewDetail = ({ sceneId }) => {
+const handleViewDetail = async ({ sceneId }) => {
   selectedSceneId.value = sceneId
+  renderSelectedMarker()
+}
+const handleExitDetail = () => {
+  selectedSceneId.value = null
+  renderMarkers()
 }
 
 // ON MOUNT
@@ -142,10 +170,24 @@ onMounted(() => {
   gap: 16px;
 }
 
+.section-left {
+  flex: 1;
+  min-width: 0;
+  height: 80vh;
+  border: 1px solid black;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px
+}
+.detail {
+  flex: 2 1 0;
+  min-width: 0;
+  border: 1px solid black;
+}
 .map {
   flex: 1 1 0;
   min-width: 0;
-  height: 80vh;
   border: 1px solid black;
 }
 
