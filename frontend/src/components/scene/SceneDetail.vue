@@ -1,29 +1,29 @@
 <template> 
   <article class="component">
     <img class="thumbnail" :src="imgUrl" :alt='`${name} 씬 이미지`'/>
-    <p>이름: {{ name }}</p>
-    <p>설명: {{ description }}</p>
+    <br/>
+    <h2>{{ name }}</h2>
     <p>주소: {{ address }}</p>
-    <p>위도, 경도: {{ latitude }}, {{ longitude }}</p>
-    <div>
-      <button @click="toggleWishlist">{{isWishlisted ? '🌟' : '⭐'}}</button>
-      <button @click="viewDetail">👀</button>
-    </div>
+    <br/>
+    <p>설명: {{ description }}</p>
+    <br/>
+    <p>위도: {{ latitude }}, 경도: {{ longitude }}</p>
+    <br/>
+    <label>돌아가기 </label>
+    <button @click="emit('exitDetail')">❌</button>
+    <label>{{isWishlisted ? '  찜풀기 ' : '  찜하기 '}}</label>
+    <button @click="emit('toggleWishlist', {
+      sceneId,
+      isWishlisted,
+    })">
+      {{isWishlisted ? '🌟' : '⭐'}}
+    </button>
   </article>
 </template>
 
 <script setup>
 // PROPS
-const props = defineProps({
-  width: {
-    type: String,
-    default: '600px',
-  },
-  height: {
-    type: String,
-    default: 'auto',
-  },
-
+defineProps({
   sceneId: {
     type: [String, Number],
     required: true
@@ -59,29 +59,13 @@ const props = defineProps({
   },
 })
 
-// DATA
-
-
-// EMITS
-const emit = defineEmits([
-  'toggle-wishlist',
-  'view-detail',
-])
-
-// METHODS
-const toggleWishlist = () => emit('toggle-wishlist', {
-  sceneId: props.sceneId,
-  isWishlisted: props.isWishlisted
-})
-const viewDetail = () => emit('view-detail', {
-  sceneId: props.sceneId,
-})
+// EMIT
+const emit = defineEmits(['exitDetail', 'toggleWishlist'])
 </script>
 
 <style lang="scss" scoped>
 .component {
-  width:  v-bind('props.width');
-  height: v-bind('props.height');
+  height: 100%;
   background-color: lightgray;
 }
 
@@ -89,5 +73,6 @@ const viewDetail = () => emit('view-detail', {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  min-width: 0;
 }
 </style>

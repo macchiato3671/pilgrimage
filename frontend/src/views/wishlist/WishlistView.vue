@@ -70,7 +70,7 @@
 <script setup>
   import { computed, nextTick, onMounted, ref } from 'vue';
   import MapComponent from '@/components/common/MapComponent.vue';
-  import SceneCard from '@/components/drama/SceneCard.vue';
+  import SceneCard from '@/components/scene/SceneCard.vue';
   import SceneDetailCard from '@/components/scene/SceneDetailCard.vue';
   import { getWishlist, deleteWishlist } from '@/api/wishlistApi';
   import { useAuthStore } from '@/stores/authStore';
