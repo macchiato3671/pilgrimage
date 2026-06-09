@@ -85,7 +85,6 @@ class MockApiTestCase(unittest.TestCase):
         self.assertEqual(set(first_drama), {"id", "title", "genres", "posterUrl", "releasedAt"})
         self.assertIsInstance(first_drama["id"], int)
         self.assertIn("releasedAt", first_drama)
-        self.assertNotIn("releaseYear", first_drama)
         self.assertIn("genres", first_drama)
         self.assertGreaterEqual(len(first_drama["genres"]), 1)
         self.assertIn("genreId", first_drama["genres"][0])
@@ -107,8 +106,9 @@ class MockApiTestCase(unittest.TestCase):
     def test_drama_order_condition_sorts_by_year_and_genre(self) -> None:
         status, body = self.client.get("/api/v1/dramas?OrderCondition=YEAR")
         self.assertEqual(status, 200)
-        years = [drama["releaseYear"] for drama in body["dramas"]]
-        self.assertEqual(years, sorted(years))
+        released_dates = [drama["releasedAt"] for drama in body["dramas"]]
+        self.assertEqual(released_dates, sorted(released_dates))
+        self.assertTrue(all(set(drama) == {"id", "title", "genres", "posterUrl", "releasedAt"} for drama in body["dramas"]))
 
         status, body = self.client.get("/api/v1/dramas?OrderCondition=GENRE")
         self.assertEqual(status, 200)
@@ -165,8 +165,9 @@ class MockApiTestCase(unittest.TestCase):
         self.assertNotIn("sceneId", wishlist)
         self.assertEqual(wishlist["scene"]["sceneId"], 2)
 
-        status, body = self.client.delete(f"/api/v1/wishlist/{wishlist_id}", token="user-token")
+        status, body = self.client.delete("/api/v1/wishlist/2", token="user-token")
         self.assertEqual(status, 200)
+        self.assertEqual(body["sceneId"], 2)
         self.assertTrue(body["deleted"])
 
     def test_travel_plan_mutation_flow(self) -> None:
