@@ -95,16 +95,16 @@
 
   onMounted(() => {
     fetchData();
-  })
+  });
 
   const fetchData = async () => {
     isLoading.value = true;
     errorMessage.value = '';
 
     try {
-      if(authStore.isLoggedIn){
+      if(authStore.isLoggedIn) {
         await fetchServerData();
-      } else{
+      } else {
         fetchLocalData();
       }
 
@@ -118,9 +118,9 @@
   };
 
   const fetchServerData = async() => {
-      const response = await getWishlist();
+    const response = await getWishlist();
 
-      wishlists.value = response.wishlists ?? [];
+    wishlists.value = response.wishlists ?? [];
   };
 
   const fetchLocalData = () => {
