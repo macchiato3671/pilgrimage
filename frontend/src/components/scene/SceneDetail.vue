@@ -12,7 +12,12 @@
     <label>돌아가기 </label>
     <button @click="emit('exitDetail')">❌</button>
     <label>{{isWishlisted ? '  찜풀기 ' : '  찜하기 '}}</label>
-    <button @click="emit('toggleWishlist')">{{isWishlisted ? '🌟' : '⭐'}}</button>
+    <button @click="emit('toggleWishlist', {
+      _sceneId: sceneId,
+      _isWishlisted: isWishlisted,
+    })">
+      {{isWishlisted ? '🌟' : '⭐'}}
+    </button>
   </article>
 </template>
 
