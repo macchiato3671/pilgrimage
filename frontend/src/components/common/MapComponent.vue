@@ -61,13 +61,13 @@ const setupResizeObserver = () => {
     if (resizeAnimationFrameId)
       cancelAnimationFrame(resizeAnimationFrameId)
 
-      resizeAnimationFrameId = requestAnimationFrame(() => {
-        const { width, height } = mapContainer.value.getBoundingClientRect()
-        if (width === 0 || height === 0) return
-        const center = map.value.getCenter()
-        map.value.relayout()
-        map.value.setCenter(center)
-      })
+    resizeAnimationFrameId = requestAnimationFrame(() => {
+      const { width, height } = mapContainer.value.getBoundingClientRect()
+      if (width === 0 || height === 0) return
+      const center = map.value.getCenter()
+      map.value.relayout()
+      map.value.setCenter(center)
+    })
   })
 
   resizeObserver.observe(mapContainer.value)
