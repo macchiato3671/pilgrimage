@@ -183,12 +183,21 @@
     selectedScene.value = targetWishlist.scene;
 
     await nextTick();
+    await waitForPaint();
 
     if (map.value) {
       map.value.relayout();
     }
 
     renderSelectedMarker(targetWishlist.scene);
+  };
+
+  const waitForPaint = () => {
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(resolve);
+      });
+    });
   };
 
   const renderSelectedMarker = (scene) => {
@@ -210,8 +219,8 @@
 
     markers.value.push(marker);
 
-    kakaoMap.setCenter(position);
     kakaoMap.setLevel(3);
+    kakaoMap.setCenter(position);
   };
 
   const createPosition = (scene) => {
@@ -229,6 +238,7 @@
     selectedScene.value = null;
 
     await nextTick();
+    await waitForPaint();
 
     if (map.value) {
       map.value.relayout();
