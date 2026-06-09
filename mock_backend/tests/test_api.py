@@ -158,7 +158,12 @@ class MockApiTestCase(unittest.TestCase):
 
         status, body = self.client.get("/api/v1/wishlist", token="user-token")
         self.assertEqual(status, 200)
-        self.assertTrue(any(item["wishlistId"] == wishlist_id for item in body["wishlist"]))
+        wishlist = next(item for item in body["wishlists"] if item["wishlistId"] == wishlist_id)
+        self.assertIn("createdAt", wishlist)
+        self.assertIn("scene", wishlist)
+        self.assertNotIn("memberId", wishlist)
+        self.assertNotIn("sceneId", wishlist)
+        self.assertEqual(wishlist["scene"]["sceneId"], 2)
 
         status, body = self.client.delete(f"/api/v1/wishlist/{wishlist_id}", token="user-token")
         self.assertEqual(status, 200)
