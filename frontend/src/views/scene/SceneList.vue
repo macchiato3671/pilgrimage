@@ -9,6 +9,7 @@
 
         :scene-id="selectedScene.sceneId"
         :name="selectedScene.name"
+        :description="selectedScene.description"
         :address="selectedScene.address"
         :latitude="selectedScene.latitude"
         :longitude="selectedScene.longitude"
@@ -162,8 +163,7 @@ const fetchScenes = async () => {
 const fetchWishes = async () => {
   if (auth.isLoggedIn) {
     const response = await getWishlist()
-    console.log(response)
-    wishedSceneIds.value = response.wishlists.map((wish) => String(wish.sceneId))
+    wishedSceneIds.value = response.wishlists.map((wish) => String(wish.scene.sceneId))
   }
   else { // TODO: fetch wishes from localStorage if not logged in
     console.error("Not Implemented")
