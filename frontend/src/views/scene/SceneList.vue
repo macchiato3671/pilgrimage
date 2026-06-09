@@ -160,36 +160,38 @@ const fetchScenes = async () => {
   renderMarkers()
 }
 const fetchWishes = async () => {
-
   if (auth.isLoggedIn) {
     const response = await getWishlist()
-    wishedSceneIds.value = response.wishlists.map((wish) => wish.sceneId)
+    console.log(response)
+    wishedSceneIds.value = response.wishlists.map((wish) => String(wish.sceneId))
   }
   else { // TODO: fetch wishes from localStorage if not logged in
     console.error("Not Implemented")
   }
 }
 
-const isWished = sceneId => wishedSceneIds.value.includes(sceneId)
+const isWished = sceneId => wishedSceneIds.value.includes(String(sceneId))
 const addWishSceneId = (sceneId) => {
-  if (wishedSceneIds.value.includes(sceneId)) return
-  wishedSceneIds.value.push(sceneId)
+  const id = String(sceneId)
+  if (wishedSceneIds.value.includes(id)) return
+  wishedSceneIds.value.push(id)
 }
 const deleteWishSceneId = (sceneId) => {
-  wishedSceneIds.value = wishedSceneIds.value.filter(id => id !== sceneId)
+  const id = String(sceneId)
+  wishedSceneIds.value = wishedSceneIds.value.filter(wishedSceneId => wishedSceneId !== id)
 }
 
-const handleToggleWishlist = async ({ _sceneId, _isWishlisted }) => {
+const handleToggleWishlist = async ({ sceneId, isWishlisted }) => {
   if (auth.isLoggedIn) {
-    if (_isWishlisted) {
-      const response = await deleteWishlist(_sceneId)
+    if (isWishlisted) {
+      const response = await deleteWishlist(sceneId)
       if (response.status === 200)
-        deleteWishSceneId(_sceneId)
+        deleteWishSceneId(sceneId)
     }
     else {
-      const response = await addWishlist(_sceneId)
-      if (response.status === 200)
-        addWishSceneId(_sceneId)
+      const response = await addWishlist(sceneId)
+      if (response.status === 201)
+        addWishSceneId(sceneId)
     }
   }
   else { // TODO: manage wishes from localStorage if not logged in
