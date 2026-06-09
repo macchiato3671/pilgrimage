@@ -305,6 +305,14 @@ def get_scene(scene_id: int) -> dict[str, Any]:
     return scene
 
 
+def wishlist_payload(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "wishlistId": item["wishlistId"],
+        "createdAt": item["createdAt"],
+        "scene": scene_payload(get_scene(item["sceneId"])),
+    }
+
+
 def get_plan_for_member(plan_id: int, member: dict[str, Any]) -> dict[str, Any]:
     plan = state["plans"].get(plan_id)
     if not plan:
@@ -420,9 +428,8 @@ def get_wishlist(member: dict[str, Any] = Depends(current_member)) -> dict[str, 
     items = []
     for item in state["wishlist"].values():
         if item["memberId"] == member["memberId"]:
-            scene = state["scenes"].get(item["sceneId"])
-            items.append({**deepcopy(item), "scene": scene_payload(scene)} if scene else deepcopy(item))
-    return {"wishlist": items}
+            items.append(wishlist_payload(item))
+    return {"wishlists": items}
 
 
 @app.delete("/api/v1/wishlist/{wishlist_id}")
