@@ -8,6 +8,6 @@ export const addWishlist = (sceneId) => {
   return authApiClient.post(`/wishlist/${sceneId}`);
 };
 
-export const deleteWishlist = (wishlistId) => {
-  return authApiClient.delete(`/wishlist/${wishlistId}`);
+export const deleteWishlist = (sceneId) => {
+  return authApiClient.delete(`/wishlist/${sceneId}`);
 };

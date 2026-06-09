@@ -2,13 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import SignupView from '@/views/member/SignupView.vue'
 import LoginView from '@/views/member/LoginView.vue'
 import DramaView from '@/views/drama/DramaView.vue'
-import WishlistView from '@/views/wishlist/SampleWishlist.vue'
+import WishlistView from '@/views/wishlist/WishlistView.vue'
 import MyPageView from '@/views/member/MyPage.vue'
 import TestSceneCard from '@/views/test/TestSceneCard.vue'
 import SceneList from '@/views/scene/SceneList.vue'
 import PlanView from '@/views/plan/PlanView.vue'
 import PlanDetailView from '@/views/plan/PlanDetailView.vue'
-import TempPlanView from '@/views/plan/TempPlanView.vue'
 import PlanList from '@/views/plan/PlanList.vue'
 
 const routes = [
@@ -61,11 +60,6 @@ const routes = [
     path: '/plans/local/:localPlanId',
     name: 'localPlanDetail',
     component: PlanDetailView,
-  },
-  {
-    path: '/search',
-    name: 'PlanButtonTemp',
-    component: TempPlanView,
   },
   {
     path: '/plans',
