@@ -13,8 +13,8 @@
     <button @click="emit('exitDetail')">❌</button>
     <label>{{isWishlisted ? '  찜풀기 ' : '  찜하기 '}}</label>
     <button @click="emit('toggleWishlist', {
-      _sceneId: sceneId,
-      _isWishlisted: isWishlisted,
+      sceneId,
+      isWishlisted,
     })">
       {{isWishlisted ? '🌟' : '⭐'}}
     </button>
