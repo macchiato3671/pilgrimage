@@ -184,14 +184,12 @@ const deleteWishSceneId = (sceneId) => {
 const handleToggleWishlist = async ({ sceneId, isWishlisted }) => {
   if (auth.isLoggedIn) {
     if (isWishlisted) {
-      const response = await deleteWishlist(sceneId)
-      if (response.status === 200)
-        deleteWishSceneId(sceneId)
+      await deleteWishlist(sceneId)
+      deleteWishSceneId(sceneId)
     }
     else {
-      const response = await addWishlist(sceneId)
-      if (response.status === 201)
-        addWishSceneId(sceneId)
+      await addWishlist(sceneId)
+      addWishSceneId(sceneId)
     }
   }
   else { // TODO: manage wishes from localStorage if not logged in
