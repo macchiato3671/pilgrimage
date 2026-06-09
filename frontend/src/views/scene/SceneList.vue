@@ -5,6 +5,7 @@
         v-if="selectedScene"
         class="detail"
         @exit-detail="handleExitDetail"
+        @toggle-wishlist="handleToggleWishlist"
 
         :scene-id="selectedScene.sceneId"
         :name="selectedScene.name"
@@ -12,6 +13,8 @@
         :latitude="selectedScene.latitude"
         :longitude="selectedScene.longitude"
         :img-url="selectedScene.imgUrl"
+
+        :is-wishlisted="isWished(selectedScene.sceneId)"
       />
       <MapComponent 
         class="map"
@@ -31,6 +34,8 @@
         :longitude="scene.longitude"
         :img-url="scene.imgUrl"
 
+        :is-wishlisted="isWished(scene.sceneId)"
+
         @toggle-wishlist="handleToggleWishlist"
         @view-detail="handleViewDetail"
       />
@@ -45,6 +50,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import SceneCard from '@/components/scene/SceneCard.vue'
 import SceneDetail from '@/components/scene/SceneDetail.vue';
+import { addWishlist, deleteWishlist, getWishlist } from '@/api/wishlistApi';
+import { useAuthStore } from '@/stores/authStore';
 
 // ROUTE
 const route = useRoute()
@@ -56,6 +63,9 @@ const map = ref(null)
 const scenes = ref([])
 const markers = ref([])
 const selectedSceneId = ref(null)
+const wishedSceneIds = ref([])
+
+const auth = useAuthStore()
 
 // COMPUTED
 const selectedScene = computed(() => {
@@ -139,14 +149,52 @@ const renderSelectedMarker = () => {
   kakaoMap.setLevel(6)
 }
 const fetchData = async () => {
+  await fetchScenes()
+  await fetchWishes()
+}
+const fetchScenes = async () => {
   const response = await fetchSceneList(dramaId)
   scenes.value = response.scenes
   console.log(scenes.value)
 
   renderMarkers()
 }
-const handleToggleWishlist = ({ sceneId }) => {
-  console.log(sceneId)
+const fetchWishes = async () => {
+
+  if (auth.isLoggedIn) {
+    const response = await getWishlist()
+    wishedSceneIds.value = response.wishlists.map((wish) => wish.sceneId)
+  }
+  else { // TODO: fetch wishes from localStorage if not logged in
+    console.error("Not Implemented")
+  }
+}
+
+const isWished = sceneId => wishedSceneIds.value.includes(sceneId)
+const addWishSceneId = (sceneId) => {
+  if (wishedSceneIds.value.includes(sceneId)) return
+  wishedSceneIds.value.push(sceneId)
+}
+const deleteWishSceneId = (sceneId) => {
+  wishedSceneIds.value = wishedSceneIds.value.filter(id => id !== sceneId)
+}
+
+const handleToggleWishlist = async ({ _sceneId, _isWishlisted }) => {
+  if (auth.isLoggedIn) {
+    if (_isWishlisted) {
+      const response = await deleteWishlist(_sceneId)
+      if (response.status === 200)
+        deleteWishSceneId(_sceneId)
+    }
+    else {
+      const response = await addWishlist(_sceneId)
+      if (response.status === 200)
+        addWishSceneId(_sceneId)
+    }
+  }
+  else { // TODO: manage wishes from localStorage if not logged in
+
+  }
 }
 const handleViewDetail = async ({ sceneId }) => {
   selectedSceneId.value = sceneId
