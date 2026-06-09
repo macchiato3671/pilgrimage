@@ -38,7 +38,7 @@
             :src="drama.posterUrl"
             :alt="`${drama.title} 포스터`"
           />
-          <h3>{{ drama.title }}</h3>
+          <h3 @click="gotoDramaScenes(drama.id)">{{ drama.title }}</h3>
           <p>
             출시일: {{ drama.releasedAt }}
           </p>
@@ -58,6 +58,9 @@
 <script setup>
 import { fetchDramaList } from '@/api/dramaApi';
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 const orderCondition = ref("YEAR");
 
@@ -149,6 +152,9 @@ const fetchData = async () => {
     isLoading.value = false;
   }
 };
+const gotoDramaScenes = (dramaId) => {
+  router.push(`/dramas/${dramaId}/scenes`)
+}
 
 const handleFilter = (filterValue) => {
   orderCondition.value = filterValue.trim().toUpperCase();
