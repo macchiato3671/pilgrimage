@@ -26,6 +26,8 @@ describe('localApiClient', () => {
     await localApiClient.post('/wishlist/1', {
       name: 'scene one',
       address: 'seoul',
+      latitude: 37.5665,
+      longitude: 126.978,
     })
 
     const created = await localApiClient.get('/wishlist')
@@ -44,6 +46,7 @@ describe('localApiClient', () => {
       title: 'trip',
       beginDate: '2026-06-10',
       endDate: '2026-06-11',
+      details: [],
     })
 
     assert.ok(plan.planId)
