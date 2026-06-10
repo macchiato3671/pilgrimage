@@ -27,8 +27,6 @@ export const localDeleteWishlists = (sceneId) => {
 
 export const localPostPlan = (body) => {
   const plans = getLocalPlans()
-  const exists = plans[body.planId] !== undefined
-  if (exists) return body
   plans[body.planId] = body
   localStorage.setItem('plans', JSON.stringify(plans))
   return body
