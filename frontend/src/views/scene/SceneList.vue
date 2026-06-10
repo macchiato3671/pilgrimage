@@ -51,8 +51,13 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import SceneCard from '@/components/scene/SceneCard.vue'
 import SceneDetail from '@/components/scene/SceneDetail.vue';
-import { addWishlist, deleteWishlist, getWishlist } from '@/api/wishlistApi';
 import { useAuthStore } from '@/stores/authStore';
+import {
+  addSceneToWishlist,
+  fetchWishlists,
+  getWishlistSceneIds,
+  removeSceneFromWishlist,
+} from '@/services/wishlistService';
 
 // ROUTE
 const route = useRoute()
@@ -65,6 +70,7 @@ const scenes = ref([])
 const markers = ref([])
 const selectedSceneId = ref(null)
 const wishedSceneIds = ref([])
+const pendingWishlistSceneIds = ref([])
 
 const auth = useAuthStore()
 
@@ -161,16 +167,12 @@ const fetchScenes = async () => {
   renderMarkers()
 }
 const fetchWishes = async () => {
-  if (auth.isLoggedIn) {
-    const response = await getWishlist()
-    wishedSceneIds.value = response.wishlists.map((wish) => String(wish.scene.sceneId))
-  }
-  else { // TODO: fetch wishes from localStorage if not logged in
-    console.error("Not Implemented")
-  }
+  const response = await fetchWishlists({ isLoggedIn: auth.isLoggedIn })
+  wishedSceneIds.value = getWishlistSceneIds(response.wishlists)
 }
 
 const isWished = sceneId => wishedSceneIds.value.includes(String(sceneId))
+const isWishlistPending = sceneId => pendingWishlistSceneIds.value.includes(String(sceneId))
 const addWishSceneId = (sceneId) => {
   const id = String(sceneId)
   if (wishedSceneIds.value.includes(id)) return
@@ -180,20 +182,46 @@ const deleteWishSceneId = (sceneId) => {
   const id = String(sceneId)
   wishedSceneIds.value = wishedSceneIds.value.filter(wishedSceneId => wishedSceneId !== id)
 }
+const addPendingWishlistSceneId = (sceneId) => {
+  const id = String(sceneId)
+  if (pendingWishlistSceneIds.value.includes(id)) return
+  pendingWishlistSceneIds.value.push(id)
+}
+const deletePendingWishlistSceneId = (sceneId) => {
+  const id = String(sceneId)
+  pendingWishlistSceneIds.value = pendingWishlistSceneIds.value.filter(pendingSceneId => pendingSceneId !== id)
+}
 
 const handleToggleWishlist = async ({ sceneId, isWishlisted }) => {
-  if (auth.isLoggedIn) {
+  if (isWishlistPending(sceneId)) return
+
+  const targetScene = scenes.value.find((scene) => String(scene.sceneId) === String(sceneId))
+  if (!targetScene) return
+
+  addPendingWishlistSceneId(sceneId)
+
+  try {
     if (isWishlisted) {
-      await deleteWishlist(sceneId)
+      await removeSceneFromWishlist({
+        sceneId,
+        isLoggedIn: auth.isLoggedIn,
+      })
       deleteWishSceneId(sceneId)
     }
     else {
-      await addWishlist(sceneId)
+      await addSceneToWishlist({
+        scene: targetScene,
+        isLoggedIn: auth.isLoggedIn,
+      })
       addWishSceneId(sceneId)
     }
   }
-  else { // TODO: manage wishes from localStorage if not logged in
-
+  catch (error) {
+    console.error(error)
+    alert('위시리스트 처리에 실패했습니다.')
+  }
+  finally {
+    deletePendingWishlistSceneId(sceneId)
   }
 }
 const handleViewDetail = async ({ sceneId }) => {
