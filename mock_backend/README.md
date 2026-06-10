@@ -20,9 +20,11 @@ Swagger UI:
 http://127.0.0.1:8000/docs
 ```
 
-수제 테스트용 PowerShell 시나리오는 `MANUAL_TESTS.md`를 참고하세요.
+수제 테스트용 PowerShell 시나리오는 `docs/MANUAL_TESTS.md`를 참고하세요.
 
-자동 테스트 실행 방법은 `TESTING.md`를 참고하세요.
+자동 테스트 실행 방법은 `docs/TESTING.md`를 참고하세요.
+
+현재 mock backend 코드 기준 API 명세는 `docs/api_spec.md`를 참고하세요.
 
 ## Auth Tokens
 
