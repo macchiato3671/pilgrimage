@@ -16,6 +16,7 @@
         :img-url="selectedScene.imgUrl"
 
         :is-wishlisted="isWished(selectedScene.sceneId)"
+        :is-wishlist-pending="isWishlistPending(selectedScene.sceneId)"
       />
       <MapComponent 
         class="map"
@@ -36,6 +37,7 @@
         :img-url="scene.imgUrl"
 
         :is-wishlisted="isWished(scene.sceneId)"
+        :is-wishlist-pending="isWishlistPending(scene.sceneId)"
 
         @toggle-wishlist="handleToggleWishlist"
         @view-detail="handleViewDetail"
