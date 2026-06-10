@@ -134,81 +134,71 @@ const createPlan = (body = {}, planId = body.planId ?? body.localPlanId ?? `loca
   }
 }
 
+const getPlans = ({ id }) => id ? localGetPlan(id) : localGetPlans()
+
+const postWishlist = ({ id, body }) => {
+  assertValid(hasValue(id), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+
+  const wishlist = createWishlist(id, body)
+  const exists = localGetWishlists().wishlists.some((item) => {
+    return String(item.scene?.sceneId) === String(wishlist.scene.sceneId)
+  })
+
+  if (exists) {
+    throwLocalApiError(409, 'WISHLIST_ALREADY_EXISTS', '이미 위시리스트에 추가된 씬입니다.')
+  }
+
+  localPostWishlists(wishlist)
+  return wishlist
+}
+
+const postPlan = ({ body }) => {
+  const plan = createPlan(body)
+  localPostPlan(plan)
+  return plan
+}
+
+const putPlan = ({ id, body }) => {
+  assertValid(hasValue(id), 400, 'INVALID_PLAN_ID', 'Invalid travel plan ID.')
+
+  const current = localGetPlan(id).plan
+  assertValid(current, 404, 'TRAVEL_PLAN_NOT_FOUND', 'Travel plan not found.')
+
+  const plan = createPlan(body, id)
+  localPutPlan(plan.planId, plan)
+  return plan
+}
+
+const handlers = {
+  get: {
+    wishlist: localGetWishlists,
+    plans: getPlans,
+  },
+  post: {
+    wishlist: postWishlist,
+    plans: postPlan,
+  },
+  put: {
+    plans: putPlan,
+  },
+  delete: {
+    wishlist: ({ id }) => localDeleteWishlists(id),
+    plans: ({ id }) => localDeletePlan(id),
+  },
+}
+
+const request = (method, path, body) => {
+  const [resource, id] = parts(path)
+  const handler = handlers[method]?.[resource]
+
+  if (!handler) throwEndpointNotFound()
+
+  return handler({ id, body })
+}
+
 export const localApiClient = {
-  async get(path) {
-    const [resource, id] = parts(path)
-
-    if (resource === 'wishlist') {
-      return localGetWishlists()
-    }
-
-    if (resource === 'plans' && id) {
-      return localGetPlan(id)
-    }
-
-    if (resource === 'plans') {
-      return localGetPlans()
-    }
-
-    throwEndpointNotFound()
-  },
-
-  async post(path, body) {
-    const [resource, id] = parts(path)
-
-    if (resource === 'wishlist') {
-      assertValid(hasValue(id), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
-
-      const wishlist = createWishlist(id, body)
-      const exists = localGetWishlists().wishlists.some((item) => {
-        return String(item.scene?.sceneId) === String(wishlist.scene.sceneId)
-      })
-
-      if (exists) {
-        throwLocalApiError(409, 'WISHLIST_ALREADY_EXISTS', '이미 위시리스트에 추가된 씬입니다.')
-      }
-
-      localPostWishlists(wishlist)
-      return wishlist
-    }
-
-    if (resource === 'plans') {
-      const plan = createPlan(body)
-      localPostPlan(plan)
-      return plan
-    }
-
-    throwEndpointNotFound()
-  },
-
-  async put(path, body) {
-    const [resource, id] = parts(path)
-
-    if (resource === 'plans') {
-      assertValid(hasValue(id), 400, 'INVALID_PLAN_ID', 'Invalid travel plan ID.')
-
-      const current = localGetPlan(id).plan
-      assertValid(current, 404, 'TRAVEL_PLAN_NOT_FOUND', 'Travel plan not found.')
-
-      const plan = createPlan(body, id)
-      localPutPlan(plan.planId, plan)
-      return plan
-    }
-
-    throwEndpointNotFound()
-  },
-
-  async delete(path) {
-    const [resource, id] = parts(path)
-
-    if (resource === 'wishlist') {
-      return localDeleteWishlists(id)
-    }
-
-    if (resource === 'plans') {
-      return localDeletePlan(id)
-    }
-
-    throwEndpointNotFound()
-  },
+  get: async (path) => request('get', path),
+  post: async (path, body) => request('post', path, body),
+  put: async (path, body) => request('put', path, body),
+  delete: async (path) => request('delete', path),
 }
