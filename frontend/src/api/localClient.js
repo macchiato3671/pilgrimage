@@ -13,30 +13,82 @@ const parts = (path) => path.split('/').filter(Boolean)
 
 const hasValue = (value) => value !== undefined && value !== null && value !== ''
 
-const assertValid = (condition, message) => {
-  if (!condition) throw new Error(message)
+const hasText = (value) => typeof value === 'string' && value.trim() !== ''
+
+const createLocalApiError = (status, errorCode, message) => ({
+  ...new Error(message),
+  status,
+  errorCode,
+  message,
+  data: { errorCode, message },
+  originalError: new Error(message),
+})
+
+const throwLocalApiError = (status, errorCode, message) => {
+  throw createLocalApiError(status, errorCode, message)
+}
+
+const assertValid = (condition, status, errorCode, message) => {
+  if (!condition) throwLocalApiError(status, errorCode, message)
+}
+
+const isValidDate = (value) => {
+  const date = new Date(value)
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+    && !Number.isNaN(date.getTime())
+    && date.toISOString().slice(0, 10) === value
+}
+
+const isValidTime = (value) => {
+  return /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value)
+}
+
+const toTimeValue = (value) => value.length === 5 ? `${value}:00` : value
+
+const getTripDays = (beginDate, endDate) => {
+  const begin = new Date(beginDate)
+  const end = new Date(endDate)
+  const dayMs = 24 * 60 * 60 * 1000
+
+  return Math.floor((end - begin) / dayMs) + 1
 }
 
 const assertValidScene = (scene) => {
-  assertValid(hasValue(scene.sceneId), 'sceneId is required')
+  assertValid(hasValue(scene.sceneId), 404, 'SCENE_NOT_FOUND', 'Scene not found.')
 
   const hasSceneBody = ['name', 'latitude', 'longitude'].some((key) => hasValue(scene[key]))
   if (!hasSceneBody) return
 
-  assertValid(hasValue(scene.name), 'scene.name is required')
-  assertValid(Number.isFinite(Number(scene.latitude)), 'scene.latitude must be a number')
-  assertValid(Number.isFinite(Number(scene.longitude)), 'scene.longitude must be a number')
+  assertValid(hasText(scene.name), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+  assertValid(Number.isFinite(Number(scene.latitude)), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
+  assertValid(Number.isFinite(Number(scene.longitude)), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
 }
 
 const assertValidPlanDetail = (detail) => {
   const hasPlace = hasValue(detail.placeId)
   const hasScene = hasValue(detail.sceneId)
 
-  assertValid(Number(detail.dayNo) >= 1, 'detail.dayNo must be greater than or equal to 1')
-  assertValid(hasValue(detail.beginTime), 'detail.beginTime is required')
-  assertValid(hasValue(detail.endTime), 'detail.endTime is required')
-  assertValid(detail.beginTime <= detail.endTime, 'detail.beginTime must be before detail.endTime')
-  assertValid(hasPlace !== hasScene, 'detail requires exactly one of placeId or sceneId')
+  assertValid(hasValue(detail.dayNo), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
+  assertValid(Number.isInteger(Number(detail.dayNo)), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
+  assertValid(Number(detail.dayNo) >= 1, 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
+  assertValid(hasValue(detail.beginTime), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
+  assertValid(hasValue(detail.endTime), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
+  assertValid(isValidTime(detail.beginTime), 400, 'INVALID_PLAN_DETAIL_TIME', 'Invalid travel plan detail time range.')
+  assertValid(isValidTime(detail.endTime), 400, 'INVALID_PLAN_DETAIL_TIME', 'Invalid travel plan detail time range.')
+  assertValid(
+    toTimeValue(detail.beginTime) <= toTimeValue(detail.endTime),
+    400,
+    'INVALID_PLAN_DETAIL_TIME',
+    'Invalid travel plan detail time range.',
+  )
+  assertValid(hasPlace !== hasScene, 400, 'INVALID_PLAN_DETAIL_TARGET', 'Invalid travel plan detail target.')
+}
+
+const assertDetailsInTripRange = (details, beginDate, endDate) => {
+  const tripDays = getTripDays(beginDate, endDate)
+  const isInRange = details.every((detail) => Number(detail.dayNo) <= tripDays)
+
+  assertValid(isInRange, 422, 'PLAN_DETAIL_OUT_OF_RANGE', 'Travel plan detail is out of the travel date range.')
 }
 
 const createWishlist = (sceneId, body = {}) => {
@@ -50,12 +102,17 @@ const createWishlist = (sceneId, body = {}) => {
 }
 
 const createPlan = (body = {}, planId = body.planId ?? body.localPlanId ?? `local-${Date.now()}`) => {
-  const details = body.details ?? []
+  const details = body.details
 
-  assertValid(hasValue(body.title), 'plan.title is required')
-  assertValid(Array.isArray(details), 'plan.details must be an array')
-  assertValid(!body.beginDate || !body.endDate || body.beginDate <= body.endDate, 'plan beginDate must be before endDate')
+  assertValid(hasText(body.title), 400, 'INVALID_TRAVEL_PLAN_TITLE', 'Invalid travel plan title.')
+  assertValid(hasValue(body.beginDate), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+  assertValid(hasValue(body.endDate), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+  assertValid(Array.isArray(details), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+  assertValid(isValidDate(body.beginDate), 400, 'INVALID_TRAVEL_PLAN_DATE', 'Invalid travel plan date range.')
+  assertValid(isValidDate(body.endDate), 400, 'INVALID_TRAVEL_PLAN_DATE', 'Invalid travel plan date range.')
+  assertValid(body.beginDate <= body.endDate, 400, 'INVALID_TRAVEL_PLAN_DATE', 'Invalid travel plan date range.')
   details.forEach(assertValidPlanDetail)
+  assertDetailsInTripRange(details, body.beginDate, body.endDate)
 
   return {
     ...body,
@@ -89,6 +146,14 @@ export const localApiClient = {
 
     if (resource === 'wishlist') {
       const wishlist = createWishlist(id, body)
+      const exists = localGetWishlists().wishlists.some((item) => {
+        return String(item.scene?.sceneId) === String(wishlist.scene.sceneId)
+      })
+
+      if (exists) {
+        throwLocalApiError(409, 'WISHLIST_ALREADY_EXISTS', '이미 위시리스트에 추가된 씬입니다.')
+      }
+
       localPostWishlists(wishlist)
       return wishlist
     }
@@ -104,6 +169,10 @@ export const localApiClient = {
     const [resource, id] = parts(path)
 
     if (resource === 'plans') {
+      const current = localGetPlan(id).plan
+      assertValid(hasValue(id), 400, 'INVALID_PLAN_ID', 'Invalid travel plan ID.')
+      assertValid(current, 404, 'TRAVEL_PLAN_NOT_FOUND', 'Travel plan not found.')
+
       const plan = createPlan(body, id)
       localPutPlan(plan.planId, plan)
       return plan
