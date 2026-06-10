@@ -15,14 +15,16 @@ const hasValue = (value) => value !== undefined && value !== null && value !== '
 
 const hasText = (value) => typeof value === 'string' && value.trim() !== ''
 
-const createLocalApiError = (status, errorCode, message) => ({
-  ...new Error(message),
-  status,
-  errorCode,
-  message,
-  data: { errorCode, message },
-  originalError: new Error(message),
-})
+const createLocalApiError = (status, errorCode, message) => {
+  const error = new Error(message)
+
+  error.status = status
+  error.errorCode = errorCode
+  error.data = { errorCode, message }
+  error.originalError = error
+
+  return error
+}
 
 const throwLocalApiError = (status, errorCode, message) => {
   throw createLocalApiError(status, errorCode, message)
@@ -33,6 +35,8 @@ const assertValid = (condition, status, errorCode, message) => {
 }
 
 const isValidDate = (value) => {
+  if (typeof value !== 'string') return false
+
   const date = new Date(value)
   return /^\d{4}-\d{2}-\d{2}$/.test(value)
     && !Number.isNaN(date.getTime())
@@ -40,6 +44,8 @@ const isValidDate = (value) => {
 }
 
 const isValidTime = (value) => {
+  if (typeof value !== 'string') return false
+
   return /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value)
 }
 
@@ -91,6 +97,10 @@ const assertDetailsInTripRange = (details, beginDate, endDate) => {
   assertValid(isInRange, 422, 'PLAN_DETAIL_OUT_OF_RANGE', 'Travel plan detail is out of the travel date range.')
 }
 
+const throwEndpointNotFound = () => {
+  throwLocalApiError(404, 'ENDPOINT_NOT_FOUND', 'Endpoint not found.')
+}
+
 const createWishlist = (sceneId, body = {}) => {
   const scene = { ...(body.scene ?? body), sceneId }
   assertValidScene(scene)
@@ -139,12 +149,16 @@ export const localApiClient = {
     if (resource === 'plans') {
       return localGetPlans()
     }
+
+    throwEndpointNotFound()
   },
 
   async post(path, body) {
     const [resource, id] = parts(path)
 
     if (resource === 'wishlist') {
+      assertValid(hasValue(id), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+
       const wishlist = createWishlist(id, body)
       const exists = localGetWishlists().wishlists.some((item) => {
         return String(item.scene?.sceneId) === String(wishlist.scene.sceneId)
@@ -163,20 +177,25 @@ export const localApiClient = {
       localPostPlan(plan)
       return plan
     }
+
+    throwEndpointNotFound()
   },
 
   async put(path, body) {
     const [resource, id] = parts(path)
 
     if (resource === 'plans') {
-      const current = localGetPlan(id).plan
       assertValid(hasValue(id), 400, 'INVALID_PLAN_ID', 'Invalid travel plan ID.')
+
+      const current = localGetPlan(id).plan
       assertValid(current, 404, 'TRAVEL_PLAN_NOT_FOUND', 'Travel plan not found.')
 
       const plan = createPlan(body, id)
       localPutPlan(plan.planId, plan)
       return plan
     }
+
+    throwEndpointNotFound()
   },
 
   async delete(path) {
@@ -189,5 +208,7 @@ export const localApiClient = {
     if (resource === 'plans') {
       return localDeletePlan(id)
     }
+
+    throwEndpointNotFound()
   },
 }
