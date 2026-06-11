@@ -54,12 +54,7 @@ import { useRoute } from 'vue-router';
 import SceneCard from '@/components/scene/SceneCard.vue'
 import SceneDetail from '@/components/scene/SceneDetail.vue';
 import { useAuthStore } from '@/stores/authStore';
-import {
-  addSceneToWishlist,
-  fetchWishlists,
-  getWishlistSceneIds,
-  removeSceneFromWishlist,
-} from '@/services/wishlistService';
+import { wishlistService } from '@/services/wishlistService';
 
 // ROUTE
 const route = useRoute()
@@ -169,8 +164,8 @@ const fetchScenes = async () => {
   renderMarkers()
 }
 const fetchWishes = async () => {
-  const response = await fetchWishlists({ isLoggedIn: auth.isLoggedIn })
-  wishedSceneIds.value = getWishlistSceneIds(response.wishlists)
+  const response = await wishlistService.fetch({ isLoggedIn: auth.isLoggedIn })
+  wishedSceneIds.value = wishlistService.getIds(response.wishlists)
 }
 
 const isWished = sceneId => wishedSceneIds.value.includes(String(sceneId))
@@ -204,14 +199,14 @@ const handleToggleWishlist = async ({ sceneId, isWishlisted }) => {
 
   try {
     if (isWishlisted) {
-      await removeSceneFromWishlist({
+      await wishlistService.remove({
         sceneId,
         isLoggedIn: auth.isLoggedIn,
       })
       deleteWishSceneId(sceneId)
     }
     else {
-      await addSceneToWishlist({
+      await wishlistService.add({
         scene: targetScene,
         isLoggedIn: auth.isLoggedIn,
       })
