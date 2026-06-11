@@ -46,6 +46,10 @@ const planDateText = computed(() => {
   return `${plan.value.beginDate} ~ ${plan.value.endDate}`
 })
 
+const formatDayDate = (date) => {
+  return `${date.getMonth() + 1}/${date.getDate()}`
+}
+
 const days = computed(() => {
   if (!plan.value) return []
 
@@ -55,8 +59,12 @@ const days = computed(() => {
   const tripDays = Math.floor((end - begin) / dayMs) + 1
 
   return Array.from({ length: tripDays }, (_, index) => {
+    const date = new Date(begin)
+    date.setDate(begin.getDate() + index)
+
     return {
       dayNo: index + 1,
+      dateText: formatDayDate(date),
     }
   })
 })

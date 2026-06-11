@@ -89,6 +89,10 @@ const draftDateText = computed(() => {
   return `${draft.value.beginDate} ~ ${draft.value.endDate}`;
 });
 
+const formatDayDate = (date) => {
+  return `${date.getMonth() + 1}/${date.getDate()}`;
+};
+
 const days = computed(() => {
   if (!draft.value?.beginDate || !draft.value?.endDate) return [];
 
@@ -98,9 +102,15 @@ const days = computed(() => {
 
   const dayCount = Math.floor((end - begin) / dayMs) + 1;
 
-  return Array.from({ length: dayCount }, (_, index) => ({
-    dayNo: index + 1,
-  }));
+  return Array.from({ length: dayCount }, (_, index) => {
+    const date = new Date(begin);
+    date.setDate(begin.getDate() + index);
+
+    return {
+      dayNo: index + 1,
+      dateText: formatDayDate(date),
+    };
+  });
 });
 
 const currentDayDetails = computed(() => {
