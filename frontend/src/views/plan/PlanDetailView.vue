@@ -13,7 +13,9 @@
       :days="days"
       :active-day-no="activeDayNo"
       :current-day-details="currentDayDetails"
+      :is-saving="isSaving"
       @cancel="handleCancel"
+      @save="handleSavePlan"
       @change-day="changeActiveDay"
       @drop-to-schedule="handleDropToSchedule"
       @detail-drag-start="handleDetailDragStart"
@@ -47,11 +49,12 @@ import MapComponent from '@/components/common/MapComponent.vue';
 import PlanSchedulePanel from '@/components/plan/PlanSchedulePanel.vue';
 import PlanCandidatePanel from '@/components/plan/PlanCandidatePanel.vue';
 
-import { getPlanDraft } from '@/utils/planDraftStorage';
+import { getPlanDraft, clearPlanDraft } from '@/utils/planDraftStorage';
 import { useAuthStore } from '@/stores/authStore';
 import { getWishlist } from '@/api/wishlistApi';
 import { localApiClient } from '@/api/localClient';
 import { getNearbyAttractions } from '@/api/sceneApi';
+import { makePlan } from '@/api/planApi';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -74,15 +77,7 @@ const selectedWishItem = ref(null);
 const isTourLoading = ref(false);
 const tourMessage = ref('위시리스트를 선택하면 주변 관광지가 표시됩니다.');
 
-const updateDetailBeginTime = ({ tempId, beginTime }) => {
-  const target = details.value.find((detail) => {
-    return detail.tempId === tempId;
-  });
-
-  if (!target) return;
-
-  target.beginTime = beginTime;
-};
+const isSaving = ref(false);
 
 const draftTitle = computed(() => {
   return draft.value?.title ?? '';
@@ -93,6 +88,16 @@ const draftDateText = computed(() => {
 
   return `${draft.value.beginDate} ~ ${draft.value.endDate}`;
 });
+
+const updateDetailBeginTime = ({ tempId, beginTime }) => {
+  const target = details.value.find((detail) => {
+    return detail.tempId === tempId;
+  });
+
+  if (!target) return;
+
+  target.beginTime = beginTime;
+};
 
 const days = computed(() => {
   if (!draft.value?.beginDate || !draft.value?.endDate) return [];
@@ -561,6 +566,95 @@ const removeDetail = (tempId) => {
 
 const handleCancel = () => {
   router.back();
+};
+
+const buildPlanCreateRequest = () => {
+  return {
+    title: draft.value.title,
+    beginDate: draft.value.beginDate,
+    endDate: draft.value.endDate,
+    details: details.value
+      .slice()
+      .sort((a, b) => {
+        if (a.dayNo !== b.dayNo) {
+          return a.dayNo - b.dayNo;
+        }
+
+        const aMinutes = timeToMinutes(a.beginTime) ?? Number.MAX_SAFE_INTEGER;
+        const bMinutes = timeToMinutes(b.beginTime) ?? Number.MAX_SAFE_INTEGER;
+
+        return aMinutes - bMinutes;
+      })
+      .map((detail, index) => ({
+        dayNo: detail.dayNo,
+        sceneId: detail.sceneId,
+        placeId: detail.placeId,
+        beginTime: detail.beginTime,
+        sortOrder: index + 1,
+      })),
+  };
+};
+
+const validatePlanSave = () => {
+  if (!draft.value) {
+    return '여행 정보가 없습니다.';
+  }
+
+  if (details.value.length === 0) {
+    return '일정에 목적지를 하나 이상 추가해주세요.';
+  }
+
+  const hasInvalidTarget = details.value.some((detail) => {
+    return !hasValidTarget(detail);
+  });
+
+  if (hasInvalidTarget) {
+    return '잘못된 일정 항목이 있습니다.';
+  }
+
+  const hasEmptyTime = details.value.some((detail) => {
+    return !detail.beginTime;
+  });
+
+  if (hasEmptyTime) {
+    return '시작 시간이 비어 있는 일정이 있습니다.';
+  }
+
+  return '';
+};
+
+const handleSavePlan = async () => {
+  if (isSaving.value) return;
+
+  const errorMessage = validatePlanSave();
+
+  if (errorMessage) {
+    alert(errorMessage);
+    return;
+  }
+
+  isSaving.value = true;
+
+  try {
+    const requestBody = buildPlanCreateRequest();
+
+    if (authStore.isLoggedIn) {
+      await makePlan(requestBody);
+    } else {
+      await localApiClient.post('/plans', requestBody);
+    }
+
+    clearPlanDraft();
+
+    router.replace({
+      name: 'planList',
+    });
+  } catch (error) {
+    console.error(error);
+    alert('여행 일정 저장에 실패했습니다.');
+  } finally {
+    isSaving.value = false;
+  }
 };
 </script>
 

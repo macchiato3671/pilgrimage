@@ -7,8 +7,12 @@
 
       <h2>여행 일정</h2>
 
-      <button type="button">
-        저장
+      <button
+      type="button"
+      :disabled="isSaving"
+      @click="$emit('save')"
+      >
+      {{ isSaving ? '저장 중' : '저장' }}
       </button>
     </header>
 
@@ -76,10 +80,15 @@ defineProps({
     type: Array,
     required: true,
   },
+  isSaving: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits([
   'cancel',
+  'save',
   'change-day',
   'drop-to-schedule',
   'detail-drag-start',
