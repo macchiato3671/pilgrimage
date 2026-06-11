@@ -500,6 +500,7 @@ const moveDetailInSchedule = (event) => {
   targetDetail.beginTime = nextBeginTime;
 
   draggedItem.value = null;
+  renderScheduleMarkers();
 };
 
 const getDropInsertIndex = (event, excludeTempId = null) => {
@@ -554,6 +555,8 @@ const removeDetail = (tempId) => {
   details.value = details.value.filter((detail) => {
     return detail.tempId !== tempId;
   });
+
+  renderScheduleMarkers();
 };
 
 const handleCancel = () => {
