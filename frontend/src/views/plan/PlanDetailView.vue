@@ -610,6 +610,23 @@ const validatePlanSave = () => {
   return '';
 };
 
+const hasDuplicateBeginTime = () => {
+  const seen = new Set();
+
+  return details.value.some((detail) => {
+    const key = `${detail.dayNo}-${detail.beginTime}`;
+
+    if (!detail.beginTime) return false;
+
+    if (seen.has(key)) {
+      return true;
+    }
+
+    seen.add(key);
+    return false;
+  });
+};
+
 const handleSavePlan = async () => {
   if (isSaving.value) return;
 
@@ -618,6 +635,14 @@ const handleSavePlan = async () => {
   if (errorMessage) {
     alert(errorMessage);
     return;
+  }
+
+  if (hasDuplicateBeginTime()) {
+    const shouldContinue = confirm(
+      '같은 날짜에 시작 시간이 같은 일정이 있습니다. 그래도 저장할까요?'
+    );
+
+    if (!shouldContinue) return;
   }
 
   isSaving.value = true;

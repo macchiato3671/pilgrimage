@@ -63,39 +63,6 @@ export const setPlanBaseInfo = ({ title, beginDate, endDate }) => {
   });
 };
 
-export const setPlanDetails = (details) => {
-  const prevDraft = getPlanDraft();
-
-  if (!prevDraft) {
-    throw new Error('PLAN_DRAFT_NOT_FOUND');
-  }
-
-  return savePlanDraft({
-    ...prevDraft,
-    details,
-  });
-};
-
 export const clearPlanDraft = () => {
   sessionStorage.removeItem(STORAGE_KEY);
-};
-
-export const toPlanCreateRequest = () => {
-  const draft = getPlanDraft();
-
-  if (!draft) {
-    throw new Error('PLAN_DRAFT_NOT_FOUND');
-  }
-
-  return {
-    title: draft.title,
-    beginDate: draft.beginDate,
-    endDate: draft.endDate,
-    details: draft.details.map((detail) => ({
-      dayNo: detail.dayNo,
-      sceneId: detail.sceneId ?? null,
-      placeId: detail.placeId ?? null,
-      beginTime: detail.beginTime,
-    })),
-  };
 };

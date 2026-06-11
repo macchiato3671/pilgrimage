@@ -9,7 +9,7 @@
     <h3>{{ item.name }}</h3>
     <p>{{ item.address }}</p>
 
-    <p v-if="showDistance && item.distanceKm !== null">
+    <p v-if="showDistance && Number.isFinite(item.distanceKm)">
       {{ item.distanceKm }}km
     </p>
 
