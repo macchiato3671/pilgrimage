@@ -33,7 +33,7 @@
           :class="{ active: activeDayNo === day.dayNo }"
           @click="$emit('change-day', day.dayNo)"
         >
-          {{ day.dayNo }}일차
+          {{ day.dayNo }}일차<span v-if="day.dateText"> · {{ day.dateText }}</span>
         </button>
       </div>
 
