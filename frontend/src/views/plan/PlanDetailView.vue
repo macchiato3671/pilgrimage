@@ -7,157 +7,46 @@
       />
     </section>
 
-    <section class="schedule-section">
-      <header class="schedule-header">
-        <button type="button" @click="handleCancel">
-          취소
-        </button>
+    <PlanSchedulePanel
+      :draft-title="draftTitle"
+      :draft-date-text="draftDateText"
+      :days="days"
+      :active-day-no="activeDayNo"
+      :current-day-details="currentDayDetails"
+      @cancel="handleCancel"
+      @change-day="changeActiveDay"
+      @drop-to-schedule="handleDropToSchedule"
+      @detail-drag-start="handleDetailDragStart"
+      @drag-end="handleDragEnd"
+      @click-detail="handleClickScheduleDetail"
+      @remove-detail="removeDetail"
+      @update-begin-time="updateDetailBeginTime"
+    />
 
-        <h2>여행 일정</h2>
-
-        <button type="button">
-          저장
-        </button>
-      </header>
-
-      <section class="schedule-body">
-        <p>{{ draftTitle }}</p>
-        <p>{{ draftDateText }}</p>
-
-        <div class="day-tabs">
-          <button
-            v-for="day in days"
-            :key="day.dayNo"
-            type="button"
-            :class="{ active: activeDayNo === day.dayNo }"
-            @click="changeActiveDay(day.dayNo)"
-          >
-            {{ day.dayNo }}일차
-          </button>
-        </div>
-
-        <section
-          class="schedule-drop-area"
-          @dragover.prevent
-          @drop.prevent="handleDropToSchedule($event)"
-        >
-          <p v-if="currentDayDetails.length === 0" class="empty-message">
-            오른쪽 위시리스트에서 목적지를 드래그해서 일정을 추가하세요.
-          </p>
-
-          <article
-            v-for="detail in currentDayDetails"
-            :key="detail.tempId"
-            class="schedule-card"
-            :data-temp-id="detail.tempId"
-            draggable="true"
-            @dragstart.stop="handleDetailDragStart(detail, $event)"
-            @dragend="handleDragEnd"
-            @click="handleClickScheduleDetail(detail)"
-          >
-            <h3>{{ detail.name }}</h3>
-            <p>{{ detail.address }}</p>
-
-            <div class="time-row">
-              <label>
-                시작
-                <input
-                  v-model="detail.beginTime"
-                  type="time"
-                />
-              </label>
-            </div>
-
-            <button type="button" @click="removeDetail(detail.tempId)">
-              삭제
-            </button>
-          </article>
-        </section>
-      </section>
-    </section>
-
-    <section class="candidate-section">
-      <div class="tab-buttons">
-        <button
-          type="button"
-          :class="{ active: activeTab === 'wish' }"
-          @click="changeTab('wish')"
-        >
-          wish
-        </button>
-
-        <button
-          type="button"
-          :class="{ active: activeTab === 'tour' }"
-          @click="changeTab('tour')"
-        >
-          tour
-        </button>
-      </div>
-
-      <section v-if="activeTab === 'wish'" class="candidate-list">
-        <p v-if="wishItems.length === 0">
-          위시리스트가 없습니다.
-        </p>
-
-        <article
-          v-for="item in wishItems"
-          :key="item.key"
-          class="candidate-card"
-          draggable="true"
-          @dragstart="handleCandidateDragStart(item, $event)"
-          @dragend="handleDragEnd"
-          @click="handleClickCandidate(item)"
-        >
-          <h3>{{ item.name }}</h3>
-          <p>{{ item.address }}</p>
-
-          <button
-            type="button"
-            @click.stop="handleShowNearbyAttractions(item)"
-          >
-            주변 관광지 보기
-          </button>
-        </article>
-      </section>
-
-      <section v-if="activeTab === 'tour'" class="candidate-list">
-        <p v-if="selectedWishItem">
-          {{ selectedWishItem.name }} 주변 관광지
-        </p>
-
-        <p v-if="isTourLoading">
-          주변 관광지를 불러오는 중입니다.
-        </p>
-
-        <p v-else-if="tourItems.length === 0">
-          {{ tourMessage }}
-        </p>
-
-        <article
-          v-for="item in tourItems"
-          :key="item.key"
-          class="candidate-card"
-          draggable="true"
-          @dragstart="handleCandidateDragStart(item, $event)"
-          @dragend="handleDragEnd"
-          @click="handleClickCandidate(item)"
-        >
-          <h3>{{ item.name }}</h3>
-          <p>{{ item.address }}</p>
-          <p v-if="item.distanceKm !== null">
-            {{ item.distanceKm }}km
-          </p>
-        </article>
-      </section>
-    </section>
+    <PlanCandidatePanel
+      :active-tab="activeTab"
+      :wish-items="wishItems"
+      :tour-items="tourItems"
+      :selected-wish-item="selectedWishItem"
+      :is-tour-loading="isTourLoading"
+      :tour-message="tourMessage"
+      @change-tab="changeTab"
+      @candidate-drag-start="handleCandidateDragStart"
+      @drag-end="handleDragEnd"
+      @click-candidate="handleClickCandidate"
+      @show-nearby-attractions="handleShowNearbyAttractions"
+    />
   </main>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+
 import MapComponent from '@/components/common/MapComponent.vue';
+import PlanSchedulePanel from '@/components/plan/PlanSchedulePanel.vue';
+import PlanCandidatePanel from '@/components/plan/PlanCandidatePanel.vue';
+
 import { getPlanDraft } from '@/utils/planDraftStorage';
 import { useAuthStore } from '@/stores/authStore';
 import { getWishlist } from '@/api/wishlistApi';
@@ -184,6 +73,16 @@ const tourItems = ref([]);
 const selectedWishItem = ref(null);
 const isTourLoading = ref(false);
 const tourMessage = ref('위시리스트를 선택하면 주변 관광지가 표시됩니다.');
+
+const updateDetailBeginTime = ({ tempId, beginTime }) => {
+  const target = details.value.find((detail) => {
+    return detail.tempId === tempId;
+  });
+
+  if (!target) return;
+
+  target.beginTime = beginTime;
+};
 
 const draftTitle = computed(() => {
   return draft.value?.title ?? '';
@@ -677,92 +576,5 @@ const handleCancel = () => {
 .map {
   width: 100%;
   height: 100%;
-}
-
-.schedule-section {
-  border-left: 1px solid #ddd;
-  border-right: 1px solid #ddd;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.schedule-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.schedule-body {
-  margin-top: 24px;
-}
-
-.empty-message {
-  margin-top: 32px;
-  color: #777;
-}
-
-.candidate-section {
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.tab-buttons {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.tab-buttons button.active {
-  font-weight: 700;
-}
-
-.candidate-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.candidate-card {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.candidate-card:hover {
-  background-color: #f5f5f5;
-}
-
-.day-tabs {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  margin-bottom: 16px;
-}
-
-.day-tabs button.active {
-  font-weight: 700;
-}
-
-.schedule-drop-area {
-  min-height: 280px;
-  padding: 16px;
-  border: 1px dashed #bbb;
-  border-radius: 8px;
-}
-
-.schedule-card {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  background-color: #fff;
-}
-
-.time-row {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-  margin-bottom: 8px;
 }
 </style>
