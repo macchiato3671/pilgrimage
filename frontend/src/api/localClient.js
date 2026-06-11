@@ -49,8 +49,6 @@ const isValidTime = (value) => {
   return /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value)
 }
 
-const toTimeValue = (value) => value.length === 5 ? `${value}:00` : value
-
 const getTripDays = (beginDate, endDate) => {
   const begin = new Date(beginDate)
   const end = new Date(endDate)
