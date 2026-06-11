@@ -15,16 +15,13 @@ const hasValue = (value) => value !== undefined && value !== null && value !== '
 
 const hasText = (value) => typeof value === 'string' && value.trim() !== ''
 
-const createLocalApiError = (status, errorCode, message) => {
-  const error = new Error(message)
-
-  error.status = status
-  error.errorCode = errorCode
-  error.data = { errorCode, message }
-  error.originalError = error
-
-  return error
-}
+const createLocalApiError = (status, errorCode, message, originalError = new Error(message)) => ({
+  status,
+  errorCode,
+  message,
+  data: { detail: { errorCode, message } },
+  originalError,
+})
 
 const throwLocalApiError = (status, errorCode, message) => {
   throw createLocalApiError(status, errorCode, message)
@@ -97,6 +94,7 @@ const createWishlist = (sceneId, body = {}) => {
 
   return {
     wishlistId: body.wishlistId ?? `local-wishlist-${sceneId}`,
+    createdAt: body.createdAt ?? new Date().toISOString(),
     scene,
   }
 }
@@ -124,19 +122,24 @@ const createPlan = (body = {}, planId = body.planId ?? body.localPlanId ?? `loca
   }
 }
 
-const getPlans = ({ id }) => id ? localGetPlan(id) : localGetPlans()
+const getPlan = (id) => {
+  const plan = localGetPlan(id).plan
+  assertValid(plan, 404, 'TRAVEL_PLAN_NOT_FOUND', 'Travel plan not found.')
+
+  return plan
+}
+
+const getPlans = ({ id }) => id ? getPlan(id) : localGetPlans()
 
 const postWishlist = ({ id, body }) => {
   assertValid(hasValue(id), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
 
   const wishlist = createWishlist(id, body)
-  const exists = localGetWishlists().wishlists.some((item) => {
+  const existing = localGetWishlists().wishlists.find((item) => {
     return String(item.scene?.sceneId) === String(wishlist.scene.sceneId)
   })
 
-  if (exists) {
-    throwLocalApiError(409, 'WISHLIST_ALREADY_EXISTS', '이미 위시리스트에 추가된 씬입니다.')
-  }
+  if (existing) return existing
 
   localPostWishlists(wishlist)
   return wishlist
@@ -151,12 +154,33 @@ const postPlan = ({ body }) => {
 const putPlan = ({ id, body }) => {
   assertValid(hasValue(id), 400, 'INVALID_PLAN_ID', 'Invalid travel plan ID.')
 
-  const current = localGetPlan(id).plan
-  assertValid(current, 404, 'TRAVEL_PLAN_NOT_FOUND', 'Travel plan not found.')
+  getPlan(id)
 
   const plan = createPlan(body, id)
   localPutPlan(plan.planId, plan)
   return plan
+}
+
+const deleteWishlist = ({ id }) => {
+  assertValid(hasValue(id), 400, 'REQUIRED_FIELD_MISSING', 'Required field is missing.')
+
+  const current = localGetWishlists().wishlists.find((wishlist) => {
+    return String(wishlist.scene?.sceneId) === String(id)
+  })
+
+  assertValid(current, 404, 'WISHLIST_NOT_FOUND', 'Wishlist item not found.')
+
+  localDeleteWishlists(id)
+  return { sceneId: id, deleted: true }
+}
+
+const deletePlan = ({ id }) => {
+  assertValid(hasValue(id), 400, 'INVALID_PLAN_ID', 'Invalid travel plan ID.')
+
+  getPlan(id)
+  localDeletePlan(id)
+
+  return { planId: id, deleted: true }
 }
 
 const handlers = {
@@ -172,8 +196,8 @@ const handlers = {
     plans: putPlan,
   },
   delete: {
-    wishlist: ({ id }) => localDeleteWishlists(id),
-    plans: ({ id }) => localDeletePlan(id),
+    wishlist: deleteWishlist,
+    plans: deletePlan,
   },
 }
 
@@ -183,7 +207,13 @@ const request = (method, path, body) => {
 
   if (!handler) throwEndpointNotFound()
 
-  return handler({ id, body })
+  try {
+    return handler({ id, body })
+  } catch (error) {
+    if (error?.status) throw error
+
+    throw createLocalApiError(500, 'LOCAL_STORAGE_ERROR', error?.message ?? 'Local storage error.', error)
+  }
 }
 
 export const localApiClient = {
