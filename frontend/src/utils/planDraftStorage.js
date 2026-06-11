@@ -96,7 +96,6 @@ export const toPlanCreateRequest = () => {
       sceneId: detail.sceneId ?? null,
       placeId: detail.placeId ?? null,
       beginTime: detail.beginTime,
-      endTime: detail.endTime,
     })),
   };
 };
