@@ -10,12 +10,23 @@
     <p>위도: {{ latitude }}, 경도: {{ longitude }}</p>
     <br/>
     <label>돌아가기 </label>
-    <button @click="emit('exitDetail')">❌</button>
+    <button
+      type="button"
+      @click="emit('exitDetail')"
+    >
+      ❌
+    </button>
     <label>{{isWishlisted ? '  찜풀기 ' : '  찜하기 '}}</label>
-    <button @click="emit('toggleWishlist', {
-      sceneId,
-      isWishlisted,
-    })">
+    <button
+      type="button"
+      :aria-pressed="isWishlisted"
+      :title="isWishlisted ? '위시리스트에서 제거' : '위시리스트에 추가'"
+      :disabled="isWishlistPending"
+      @click="emit('toggleWishlist', {
+        sceneId,
+        isWishlisted,
+      })"
+    >
       {{isWishlisted ? '🌟' : '⭐'}}
     </button>
   </article>
@@ -54,6 +65,10 @@ defineProps({
   },
 
   isWishlisted: {
+    type: Boolean,
+    default: false,
+  },
+  isWishlistPending: {
     type: Boolean,
     default: false,
   },
