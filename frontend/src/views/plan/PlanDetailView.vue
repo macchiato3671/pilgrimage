@@ -1,11 +1,768 @@
 <template>
-    <h1>detail page</h1>
+  <main class="plan-detail-create">
+    <section class="map-section">
+      <MapComponent
+        class="map"
+        @ready="handleMapReady"
+      />
+    </section>
+
+    <section class="schedule-section">
+      <header class="schedule-header">
+        <button type="button" @click="handleCancel">
+          취소
+        </button>
+
+        <h2>여행 일정</h2>
+
+        <button type="button">
+          저장
+        </button>
+      </header>
+
+      <section class="schedule-body">
+        <p>{{ draftTitle }}</p>
+        <p>{{ draftDateText }}</p>
+
+        <div class="day-tabs">
+          <button
+            v-for="day in days"
+            :key="day.dayNo"
+            type="button"
+            :class="{ active: activeDayNo === day.dayNo }"
+            @click="changeActiveDay(day.dayNo)"
+          >
+            {{ day.dayNo }}일차
+          </button>
+        </div>
+
+        <section
+          class="schedule-drop-area"
+          @dragover.prevent
+          @drop.prevent="handleDropToSchedule($event)"
+        >
+          <p v-if="currentDayDetails.length === 0" class="empty-message">
+            오른쪽 위시리스트에서 목적지를 드래그해서 일정을 추가하세요.
+          </p>
+
+          <article
+            v-for="detail in currentDayDetails"
+            :key="detail.tempId"
+            class="schedule-card"
+            :data-temp-id="detail.tempId"
+            draggable="true"
+            @dragstart.stop="handleDetailDragStart(detail, $event)"
+            @dragend="handleDragEnd"
+            @click="handleClickScheduleDetail(detail)"
+          >
+            <h3>{{ detail.name }}</h3>
+            <p>{{ detail.address }}</p>
+
+            <div class="time-row">
+              <label>
+                시작
+                <input
+                  v-model="detail.beginTime"
+                  type="time"
+                />
+              </label>
+            </div>
+
+            <button type="button" @click="removeDetail(detail.tempId)">
+              삭제
+            </button>
+          </article>
+        </section>
+      </section>
+    </section>
+
+    <section class="candidate-section">
+      <div class="tab-buttons">
+        <button
+          type="button"
+          :class="{ active: activeTab === 'wish' }"
+          @click="changeTab('wish')"
+        >
+          wish
+        </button>
+
+        <button
+          type="button"
+          :class="{ active: activeTab === 'tour' }"
+          @click="changeTab('tour')"
+        >
+          tour
+        </button>
+      </div>
+
+      <section v-if="activeTab === 'wish'" class="candidate-list">
+        <p v-if="wishItems.length === 0">
+          위시리스트가 없습니다.
+        </p>
+
+        <article
+          v-for="item in wishItems"
+          :key="item.key"
+          class="candidate-card"
+          draggable="true"
+          @dragstart="handleCandidateDragStart(item, $event)"
+          @dragend="handleDragEnd"
+          @click="handleClickCandidate(item)"
+        >
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.address }}</p>
+
+          <button
+            type="button"
+            @click.stop="handleShowNearbyAttractions(item)"
+          >
+            주변 관광지 보기
+          </button>
+        </article>
+      </section>
+
+      <section v-if="activeTab === 'tour'" class="candidate-list">
+        <p v-if="selectedWishItem">
+          {{ selectedWishItem.name }} 주변 관광지
+        </p>
+
+        <p v-if="isTourLoading">
+          주변 관광지를 불러오는 중입니다.
+        </p>
+
+        <p v-else-if="tourItems.length === 0">
+          {{ tourMessage }}
+        </p>
+
+        <article
+          v-for="item in tourItems"
+          :key="item.key"
+          class="candidate-card"
+          draggable="true"
+          @dragstart="handleCandidateDragStart(item, $event)"
+          @dragend="handleDragEnd"
+          @click="handleClickCandidate(item)"
+        >
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.address }}</p>
+          <p v-if="item.distanceKm !== null">
+            {{ item.distanceKm }}km
+          </p>
+        </article>
+      </section>
+    </section>
+  </main>
 </template>
 
 <script setup>
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import MapComponent from '@/components/common/MapComponent.vue';
+import { getPlanDraft } from '@/utils/planDraftStorage';
+import { useAuthStore } from '@/stores/authStore';
+import { getWishlist } from '@/api/wishlistApi';
+import { localApiClient } from '@/api/localClient';
+import { getNearbyAttractions } from '@/api/sceneApi';
 
+const router = useRouter();
+const authStore = useAuthStore();
+
+const mapSdk = ref(null);
+const map = ref(null);
+const markers = ref([]);
+
+const draft = ref(null);
+const wishItems = ref([]);
+const activeTab = ref('wish');
+
+const activeDayNo = ref(1);
+const draggedItem = ref(null);
+const isDragging = ref(false);
+const details = ref([]);
+
+const tourItems = ref([]);
+const selectedWishItem = ref(null);
+const isTourLoading = ref(false);
+const tourMessage = ref('위시리스트를 선택하면 주변 관광지가 표시됩니다.');
+
+const draftTitle = computed(() => {
+  return draft.value?.title ?? '';
+});
+
+const draftDateText = computed(() => {
+  if (!draft.value) return '';
+
+  return `${draft.value.beginDate} ~ ${draft.value.endDate}`;
+});
+
+const days = computed(() => {
+  if (!draft.value?.beginDate || !draft.value?.endDate) return [];
+
+  const begin = new Date(`${draft.value.beginDate}T00:00:00`);
+  const end = new Date(`${draft.value.endDate}T00:00:00`);
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  const dayCount = Math.floor((end - begin) / dayMs) + 1;
+
+  return Array.from({ length: dayCount }, (_, index) => ({
+    dayNo: index + 1,
+  }));
+});
+
+const timeToMinutes = (time) => {
+  if (!time) return null;
+
+  const [hour, minute] = time.split(':').map(Number);
+
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
+    return null;
+  }
+
+  return hour * 60 + minute;
+};
+
+const minutesToTime = (minutes) => {
+  const safeMinutes = Math.max(0, Math.min(minutes, 23 * 60 + 59));
+
+  const hour = Math.floor(safeMinutes / 60);
+  const minute = safeMinutes % 60;
+
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+};
+
+const roundToNearestFiveMinutes = (minutes) => {
+  return Math.round(minutes / 5) * 5;
+};
+
+const getCurrentDayDetails = (excludeTempId = null) => {
+  return details.value
+    .filter((detail) => detail.dayNo === activeDayNo.value)
+    .filter((detail) => detail.tempId !== excludeTempId)
+    .slice()
+    .sort((a, b) => {
+      const aMinutes = timeToMinutes(a.beginTime) ?? Number.MAX_SAFE_INTEGER;
+      const bMinutes = timeToMinutes(b.beginTime) ?? Number.MAX_SAFE_INTEGER;
+
+      return aMinutes - bMinutes;
+    });
+};
+
+const currentDayDetails = computed(() => {
+  return getCurrentDayDetails();
+});
+
+onMounted(async () => {
+  draft.value = getPlanDraft();
+
+  if (!draft.value) {
+    router.replace({
+      name: 'planCreate',
+    });
+    return;
+  }
+
+  await loadWishlists();
+});
+
+const loadWishlists = async () => {
+  try {
+    const response = authStore.isLoggedIn
+      ? await getWishlist()
+      : await localApiClient.get('/wishlist');
+
+    const wishlists = response.wishlists ?? [];
+
+    wishItems.value = wishlists.map(normalizeWishlistItem);
+
+    renderWishlistMarkers();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const normalizeWishlistItem = (wishlist) => {
+  const target = wishlist.scene ?? wishlist.place ?? wishlist;
+
+  const sceneId = target.sceneId ?? null;
+  const placeId = target.placeId ?? null;
+
+  return {
+    key: sceneId ? `scene-${sceneId}` : `place-${placeId}`,
+    sceneId,
+    placeId,
+    name: target.name,
+    address: target.address,
+    latitude: Number(target.latitude),
+    longitude: Number(target.longitude),
+    imgUrl: target.imgUrl,
+    raw: wishlist,
+  };
+};
+
+const normalizeTourItem = (attraction) => {
+  return {
+    key: `place-${attraction.placeId}`,
+    sceneId: null,
+    placeId: attraction.placeId,
+    name: attraction.name,
+    description: attraction.description,
+    address: attraction.address,
+    latitude: Number(attraction.latitude),
+    longitude: Number(attraction.longitude),
+    imgUrl: attraction.imgUrl,
+    contentId: attraction.contentId,
+    contentTypeId: attraction.contentTypeId,
+    contentTypeName: attraction.contentTypeName,
+    distanceKm: attraction.distanceKm ?? null,
+    raw: attraction,
+  };
+};
+
+const handleMapReady = ({ _mapSdk, _map }) => {
+  mapSdk.value = _mapSdk;
+  map.value = _map;
+
+  renderWishlistMarkers();
+};
+
+const clearMarkers = () => {
+  markers.value.forEach((marker) => {
+    marker.setMap(null);
+  });
+
+  markers.value = [];
+};
+
+const renderMarkers = (items, options = {}) => {
+  if (!map.value || !mapSdk.value) return;
+
+  const shouldFitBounds = options.fitBounds ?? true;
+
+  const currentCenter = map.value.getCenter();
+  const currentLevel = map.value.getLevel();
+
+  clearMarkers();
+
+  const validItems = items.filter((item) => {
+    return Number.isFinite(item.latitude) && Number.isFinite(item.longitude);
+  });
+
+  if (validItems.length === 0) return;
+
+  const bounds = new mapSdk.value.maps.LatLngBounds();
+
+  validItems.forEach((item) => {
+    const position = new mapSdk.value.maps.LatLng(
+      item.latitude,
+      item.longitude,
+    );
+
+    const marker = new mapSdk.value.maps.Marker({
+      map: map.value,
+      position,
+    });
+
+    markers.value.push(marker);
+    bounds.extend(position);
+  });
+
+  if (!shouldFitBounds) {
+    map.value.setLevel(currentLevel);
+    map.value.setCenter(currentCenter);
+    return;
+  }
+
+  if (validItems.length === 1) {
+    const item = validItems[0];
+
+    map.value.setLevel(4);
+    map.value.setCenter(
+      new mapSdk.value.maps.LatLng(item.latitude, item.longitude),
+    );
+
+    return;
+  }
+
+  map.value.setBounds(bounds);
+};
+
+const renderWishlistMarkers = (options = {}) => {
+  renderMarkers(wishItems.value, options);
+};
+
+const renderTourMarkers = (options = {}) => {
+  renderMarkers(tourItems.value, options);
+};
+
+const renderScheduleMarkers = (options = {}) => {
+  renderMarkers(currentDayDetails.value, options);
+};
+
+const moveMapToItem = (item) => {
+  if (!map.value || !mapSdk.value) return;
+
+  if (
+    !Number.isFinite(item.latitude) ||
+    !Number.isFinite(item.longitude)
+  ) {
+    return;
+  }
+
+  const position = new mapSdk.value.maps.LatLng(
+    item.latitude,
+    item.longitude,
+  );
+
+  map.value.setLevel(4);
+  map.value.setCenter(position);
+};
+
+const changeTab = (tab) => {
+  activeTab.value = tab;
+
+  if (tab === 'wish') {
+    renderWishlistMarkers();
+    return;
+  }
+
+  if (tab === 'tour') {
+    renderTourMarkers();
+  }
+};
+
+const changeActiveDay = (dayNo) => {
+  activeDayNo.value = dayNo;
+  renderScheduleMarkers();
+};
+
+const handleClickScheduleDetail = (detail) => {
+  if (isDragging.value) return;
+
+  renderScheduleMarkers({ fitBounds: false });
+  moveMapToItem(detail);
+};
+
+const handleClickCandidate = (item) => {
+  if (isDragging.value) return;
+
+  if (activeTab.value === 'wish') {
+    renderWishlistMarkers({ fitBounds: false });
+  }
+
+  if (activeTab.value === 'tour') {
+    renderTourMarkers({ fitBounds: false });
+  }
+
+  moveMapToItem(item);
+};
+
+const handleShowNearbyAttractions  = async (item) => {
+  if (isDragging.value) return;
+
+  moveMapToItem(item);
+
+  if (!item.sceneId) {
+    selectedWishItem.value = item;
+    tourItems.value = [];
+    tourMessage.value = '이 항목은 주변 관광지를 조회할 수 없습니다.';
+    activeTab.value = 'tour';
+    clearMarkers();
+    return;
+  }
+
+  selectedWishItem.value = item;
+  activeTab.value = 'tour';
+  isTourLoading.value = true;
+  tourMessage.value = '';
+
+  try {
+    const response = await getNearbyAttractions(item.sceneId, {
+      radiusKm: 3,
+      page: 0,
+      size: 10,
+    });
+
+    const attractions = response.attractions ?? [];
+
+    tourItems.value = attractions.map(normalizeTourItem);
+
+    if (tourItems.value.length === 0) {
+      tourMessage.value = '주변 관광지가 없습니다.';
+    }
+
+    renderTourMarkers();
+  } catch (error) {
+    console.error(error);
+    tourItems.value = [];
+    tourMessage.value = '주변 관광지를 불러오지 못했습니다.';
+    clearMarkers();
+  } finally {
+    isTourLoading.value = false;
+  }
+};
+
+const handleCandidateDragStart = (item, event) => {
+  isDragging.value = true;
+
+  draggedItem.value = {
+    type: 'candidate',
+    item,
+  };
+
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData('text/plain', item.key);
+  }
+};
+
+const handleDetailDragStart = (detail, event) => {
+  isDragging.value = true;
+
+  draggedItem.value = {
+    type: 'detail',
+    detail,
+  };
+
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', detail.tempId);
+  }
+};
+
+const handleDragEnd = () => {
+  setTimeout(() => {
+    isDragging.value = false;
+    draggedItem.value = null;
+  }, 0);
+};
+
+const hasValidTarget = (item) => {
+  const hasScene = item.sceneId !== null && item.sceneId !== undefined;
+  const hasPlace = item.placeId !== null && item.placeId !== undefined;
+
+  return hasScene !== hasPlace;
+};
+
+const handleDropToSchedule = (event) => {
+  if (!draggedItem.value) return;
+
+  if (draggedItem.value.type === 'candidate') {
+    addDetailFromCandidate(event);
+    return;
+  }
+
+  if (draggedItem.value.type === 'detail') {
+    moveDetailInSchedule(event);
+  }
+};
+
+const addDetailFromCandidate = (event) => {
+  const item = draggedItem.value.item;
+
+  if (!hasValidTarget(item)) {
+    draggedItem.value = null;
+    return;
+  }
+
+  const insertIndex = getDropInsertIndex(event);
+
+  details.value.push({
+    tempId: `detail-${Date.now()}-${Math.random()}`,
+    dayNo: activeDayNo.value,
+    sceneId: item.sceneId,
+    placeId: item.placeId,
+    name: item.name,
+    address: item.address,
+    latitude: item.latitude,
+    longitude: item.longitude,
+    beginTime: getSuggestedBeginTime(insertIndex),
+  });
+
+  draggedItem.value = null;
+  renderScheduleMarkers();
+};
+
+const moveDetailInSchedule = (event) => {
+  const detail = draggedItem.value.detail;
+
+  const insertIndex = getDropInsertIndex(event, detail.tempId);
+  const nextBeginTime = getSuggestedBeginTime(insertIndex, detail.tempId);
+
+  const targetDetail = details.value.find((item) => {
+    return item.tempId === detail.tempId;
+  });
+
+  if (!targetDetail) {
+    draggedItem.value = null;
+    return;
+  }
+
+  targetDetail.dayNo = activeDayNo.value;
+  targetDetail.beginTime = nextBeginTime;
+
+  draggedItem.value = null;
+};
+
+const getDropInsertIndex = (event, excludeTempId = null) => {
+  const cards = Array.from(
+    event.currentTarget.querySelectorAll('.schedule-card'),
+  ).filter((card) => {
+    return card.dataset.tempId !== excludeTempId;
+  });
+
+  const dropY = event.clientY;
+
+  const index = cards.findIndex((card) => {
+    const rect = card.getBoundingClientRect();
+    const middleY = rect.top + rect.height / 2;
+
+    return dropY < middleY;
+  });
+
+  if (index === -1) {
+    return cards.length;
+  }
+
+  return index;
+};
+
+const getSuggestedBeginTime = (insertIndex, excludeTempId = null) => {
+  const dayDetails = getCurrentDayDetails(excludeTempId);
+
+  const prevDetail = dayDetails[insertIndex - 1];
+  const nextDetail = dayDetails[insertIndex];
+
+  const prevMinutes = timeToMinutes(prevDetail?.beginTime);
+  const nextMinutes = timeToMinutes(nextDetail?.beginTime);
+
+  if (prevMinutes !== null && nextMinutes !== null && nextMinutes > prevMinutes) {
+    const middleMinutes = roundToNearestFiveMinutes((prevMinutes + nextMinutes) / 2);
+    return minutesToTime(middleMinutes);
+  }
+
+  if (prevMinutes !== null) {
+    return minutesToTime(prevMinutes + 60);
+  }
+
+  if (nextMinutes !== null) {
+    return minutesToTime(nextMinutes - 60);
+  }
+
+  return '09:00';
+};
+
+const removeDetail = (tempId) => {
+  details.value = details.value.filter((detail) => {
+    return detail.tempId !== tempId;
+  });
+};
+
+const handleCancel = () => {
+  router.back();
+};
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
+.plan-detail-create {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 320px;
+  height: 100vh;
+}
 
+.map-section {
+  min-width: 0;
+  height: 100%;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.schedule-section {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.schedule-body {
+  margin-top: 24px;
+}
+
+.empty-message {
+  margin-top: 32px;
+  color: #777;
+}
+
+.candidate-section {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab-buttons button.active {
+  font-weight: 700;
+}
+
+.candidate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.candidate-card {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.candidate-card:hover {
+  background-color: #f5f5f5;
+}
+
+.day-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.day-tabs button.active {
+  font-weight: 700;
+}
+
+.schedule-drop-area {
+  min-height: 280px;
+  padding: 16px;
+  border: 1px dashed #bbb;
+  border-radius: 8px;
+}
+
+.schedule-card {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background-color: #fff;
+}
+
+.time-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
 </style>
