@@ -175,7 +175,7 @@ class MockApiTestCase(unittest.TestCase):
             "title": "자동 테스트 일정",
             "beginDate": "2026-06-20",
             "endDate": "2026-06-21",
-            "details": [{"dayNo": 1, "beginTime": "10:00", "endTime": "11:00", "sceneId": 1}],
+            "details": [{"dayNo": 1, "beginTime": "10:00", "sceneId": 1}],
         }
         status, body = self.client.post("/api/v1/plans", create_body, token="user-token")
         self.assertEqual(status, 201)
