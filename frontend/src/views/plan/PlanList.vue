@@ -41,6 +41,7 @@
   import { onMounted, ref } from 'vue';
   import { useRouter } from 'vue-router';
   import PlanCard from '@/components/plan/PlanCard.vue';
+  import { localApiClient } from '@/api/localClient';
   import { getPlans, deletePlan } from '@/api/planApi';
   import { useAuthStore } from '@/stores/authStore';
 
@@ -66,8 +67,8 @@
         return;
       }
 
-      const localPlans = JSON.parse(localStorage.getItem('localPlans')) || [];
-      plans.value = localPlans;
+      const response = await localApiClient.get('/plans');
+      plans.value = response.plans ?? [];
     } catch (error) {
       const status = error.status;
 
@@ -99,41 +100,23 @@
   };
 
   const goPlanDetail = (plan) => {
-    if (authStore.isLoggedIn) {
-      router.push({
-        name: 'planDetail',
-        params: {
-          planId: plan.planId,
-        },
-      });
-      return;
-    }
-
     router.push({
-      name: 'localPlanDetail',
+      name: 'planDetail',
       params: {
-        localPlanId: plan.localPlanId,
+        planId: plan.planId ?? plan.localPlanId,
       },
     });
+    return;
   };
 
   const goPlanEdit = (plan) => {
-    if (authStore.isLoggedIn) {
-      router.push({
-        name: 'planEdit',
-        params: {
-          planId: plan.planId,
-        },
-      });
-      return;
-    }
-
     router.push({
-      name: 'localPlanEdit',
+      name: 'planEdit',
       params: {
-        localPlanId: plan.localPlanId,
+        planId: plan.planId,
       },
     });
+    return;
   };
 
   const handleDeletePlan = async (plan) => {
@@ -148,10 +131,12 @@
         plans.value = plans.value.filter((item) => item.planId !== plan.planId);
         return;
       }
-      const nextPlans = plans.value.filter((item) => item.localPlanId !== plan.localPlanId);
+      const planId = plan.planId ?? plan.localPlanId;
+      await localApiClient.delete(`/plans/${planId}`);
 
-      localStorage.setItem('localPlans', JSON.stringify(nextPlans));
-      plans.value = nextPlans;
+      plans.value = plans.value.filter((item) => {
+        return String(item.planId ?? item.localPlanId) !== String(planId);
+      });
     } catch (error) {
       const status = error.status;
       if (status === 401) {
@@ -169,7 +154,10 @@
         alert('이미 삭제되었거나 존재하지 않는 여행 계획입니다.');
 
         // 서버에는 없는데 화면에 남아있는 경우 화면에서 제거
-        plans.value = plans.value.filter((item) => item.planId !== plan.planId);
+        const planId = plan.planId ?? plan.localPlanId;
+        plans.value = plans.value.filter((item) => {
+          return String(item.planId ?? item.localPlanId) !== String(planId);
+        });
         return;
       }
 

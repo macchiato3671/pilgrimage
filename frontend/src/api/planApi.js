@@ -9,6 +9,10 @@ export const getPlans = () => {
   return authApiClient.get('/plans');
 };
 
+export const getPlan = (planId) => {
+  return authApiClient.get(`/plans/${planId}`);
+};
+
 export const deletePlan = (planId) => {
   return authApiClient.delete(`/plans/${planId}`);
 };

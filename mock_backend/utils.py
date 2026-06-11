@@ -34,12 +34,40 @@ def place_payload(place: dict[str, Any]) -> dict[str, Any]:
     return pick(place, ("placeId", "name", "description", "address", "latitude", "longitude", "imgUrl", "contentId", "contentTypeId", "contentTypeName"))
 
 
+def plan_place_payload(place: dict[str, Any]) -> dict[str, Any]:
+    payload = pick(place, ("placeId", "name", "description", "address", "latitude", "longitude", "imgUrl"))
+    payload["contentType"] = {
+        "contentTypeId": place["contentTypeId"],
+        "name": place["contentTypeName"],
+    }
+    return payload
+
+
 def drama_list_payload(drama: dict[str, Any]) -> dict[str, Any]:
     return {"id": drama["dramaId"], **pick(drama, ("title", "genres", "posterUrl", "releasedAt"))}
 
 
 def plan_payload(plan: dict[str, Any]) -> dict[str, Any]:
     return pick(plan, ("planId", "memberId", "title", "beginDate", "endDate", "details", "createdAt", "updatedAt"))
+
+
+def plan_detail_item_payload(detail: dict[str, Any]) -> dict[str, Any]:
+    scene_id = detail.get("sceneId")
+    place_id = detail.get("placeId")
+
+    return {
+        "dayNo": deepcopy(detail["dayNo"]),
+        "beginTime": deepcopy(detail["beginTime"]),
+        "scene": scene_payload(get_scene(scene_id)) if scene_id is not None else None,
+        "place": plan_place_payload(get_place(place_id)) if place_id is not None else None,
+    }
+
+
+def plan_detail_payload(plan: dict[str, Any]) -> dict[str, Any]:
+    return {
+        **pick(plan, ("planId", "title", "beginDate", "endDate", "createdAt", "updatedAt")),
+        "details": [plan_detail_item_payload(detail) for detail in plan["details"]],
+    }
 
 
 def current_member(authorization: str | None = Header(default=None, alias="Authorization")) -> Member:
@@ -64,6 +92,13 @@ def get_scene(scene_id: int) -> dict[str, Any]:
     if not scene:
         raise error(status.HTTP_404_NOT_FOUND, "SCENE_NOT_FOUND", "Scene not found.")
     return scene
+
+
+def get_place(place_id: int) -> dict[str, Any]:
+    place = state["places"].get(place_id)
+    if not place:
+        raise error(status.HTTP_404_NOT_FOUND, "PLACE_NOT_FOUND", "Place not found.")
+    return place
 
 
 def wishlist_payload(item: dict[str, Any]) -> dict[str, Any]:
