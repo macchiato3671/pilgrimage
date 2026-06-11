@@ -89,16 +89,6 @@ const draftDateText = computed(() => {
   return `${draft.value.beginDate} ~ ${draft.value.endDate}`;
 });
 
-const updateDetailBeginTime = ({ tempId, beginTime }) => {
-  const target = details.value.find((detail) => {
-    return detail.tempId === tempId;
-  });
-
-  if (!target) return;
-
-  target.beginTime = beginTime;
-};
-
 const days = computed(() => {
   if (!draft.value?.beginDate || !draft.value?.endDate) return [];
 
@@ -111,6 +101,10 @@ const days = computed(() => {
   return Array.from({ length: dayCount }, (_, index) => ({
     dayNo: index + 1,
   }));
+});
+
+const currentDayDetails = computed(() => {
+  return getCurrentDayDetails();
 });
 
 const timeToMinutes = (time) => {
@@ -151,9 +145,15 @@ const getCurrentDayDetails = (excludeTempId = null) => {
     });
 };
 
-const currentDayDetails = computed(() => {
-  return getCurrentDayDetails();
-});
+const updateDetailBeginTime = ({ tempId, beginTime }) => {
+  const target = details.value.find((detail) => {
+    return detail.tempId === tempId;
+  });
+
+  if (!target) return;
+
+  target.beginTime = beginTime;
+};
 
 onMounted(async () => {
   draft.value = getPlanDraft();
@@ -184,21 +184,54 @@ const loadWishlists = async () => {
   }
 };
 
-const normalizeWishlistItem = (wishlist) => {
-  const target = wishlist.scene ?? wishlist.place ?? wishlist;
+const handleShowNearbyAttractions  = async (item) => {
+  if (isDragging.value) return;
 
-  const sceneId = target.sceneId ?? null;
-  const placeId = target.placeId ?? null;
+  moveMapToItem(item);
+
+  selectedWishItem.value = item;
+  activeTab.value = 'tour';
+  isTourLoading.value = true;
+  tourMessage.value = '';
+
+  try {
+    const response = await getNearbyAttractions(item.sceneId, {
+      radiusKm: 3,
+      page: 0,
+      size: 10,
+    });
+
+    const attractions = response.attractions ?? [];
+
+    tourItems.value = attractions.map(normalizeTourItem);
+
+    if (tourItems.value.length === 0) {
+      tourMessage.value = '주변 관광지가 없습니다.';
+    }
+
+    renderTourMarkers();
+  } catch (error) {
+    console.error(error);
+    tourItems.value = [];
+    tourMessage.value = '주변 관광지를 불러오지 못했습니다.';
+    clearMarkers();
+  } finally {
+    isTourLoading.value = false;
+  }
+};
+
+const normalizeWishlistItem = (wishlist) => {
+  const scene = wishlist.scene ?? wishlist;
 
   return {
-    key: sceneId ? `scene-${sceneId}` : `place-${placeId}`,
-    sceneId,
-    placeId,
-    name: target.name,
-    address: target.address,
-    latitude: Number(target.latitude),
-    longitude: Number(target.longitude),
-    imgUrl: target.imgUrl,
+    key: `scene-${scene.sceneId}`,
+    sceneId: scene.sceneId,
+    placeId: null,
+    name: scene.name,
+    address: scene.address,
+    latitude: Number(scene.latitude),
+    longitude: Number(scene.longitude),
+    imgUrl: scene.imgUrl,
     raw: wishlist,
   };
 };
@@ -358,51 +391,6 @@ const handleClickCandidate = (item) => {
   }
 
   moveMapToItem(item);
-};
-
-const handleShowNearbyAttractions  = async (item) => {
-  if (isDragging.value) return;
-
-  moveMapToItem(item);
-
-  if (!item.sceneId) {
-    selectedWishItem.value = item;
-    tourItems.value = [];
-    tourMessage.value = '이 항목은 주변 관광지를 조회할 수 없습니다.';
-    activeTab.value = 'tour';
-    clearMarkers();
-    return;
-  }
-
-  selectedWishItem.value = item;
-  activeTab.value = 'tour';
-  isTourLoading.value = true;
-  tourMessage.value = '';
-
-  try {
-    const response = await getNearbyAttractions(item.sceneId, {
-      radiusKm: 3,
-      page: 0,
-      size: 10,
-    });
-
-    const attractions = response.attractions ?? [];
-
-    tourItems.value = attractions.map(normalizeTourItem);
-
-    if (tourItems.value.length === 0) {
-      tourMessage.value = '주변 관광지가 없습니다.';
-    }
-
-    renderTourMarkers();
-  } catch (error) {
-    console.error(error);
-    tourItems.value = [];
-    tourMessage.value = '주변 관광지를 불러오지 못했습니다.';
-    clearMarkers();
-  } finally {
-    isTourLoading.value = false;
-  }
 };
 
 const handleCandidateDragStart = (item, event) => {
@@ -585,12 +573,11 @@ const buildPlanCreateRequest = () => {
 
         return aMinutes - bMinutes;
       })
-      .map((detail, index) => ({
+      .map((detail) => ({
         dayNo: detail.dayNo,
         sceneId: detail.sceneId,
         placeId: detail.placeId,
         beginTime: detail.beginTime,
-        sortOrder: index + 1,
       })),
   };
 };
