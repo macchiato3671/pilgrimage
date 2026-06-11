@@ -41,7 +41,7 @@
   import { onMounted, ref } from 'vue';
   import { useRouter } from 'vue-router';
   import PlanCard from '@/components/plan/PlanCard.vue';
-  import { getPlans, deletePlan } from '@/api/planApi';
+  import { planService } from '@/services/planService';
   import { useAuthStore } from '@/stores/authStore';
 
   const router = useRouter();
@@ -52,22 +52,19 @@
   const errorMessage = ref('');
 
   onMounted(() => {
-    fetchPlans();
+    loadPlans();
   });
 
-  const fetchPlans = async () => {
+  const loadPlans = async () => {
     isLoading.value = true;
     errorMessage.value = '';
 
     try{
-      if(authStore.isLoggedIn) {
-        const response = await getPlans();
-        plans.value = response.plans ?? [];
-        return;
-      }
+      const response = await planService.fetch({
+        isLoggedIn: authStore.isLoggedIn,
+      });
 
-      const localPlans = JSON.parse(localStorage.getItem('localPlans')) || [];
-      plans.value = localPlans;
+      plans.value = response.plans ?? [];
     } catch (error) {
       const status = error.status;
 
@@ -142,16 +139,16 @@
     if (!isConfirmed) return;
 
     try {
-      if(authStore.isLoggedIn) {
-        await deletePlan(plan.planId);
+      const planId = planService.getId(plan);
 
-        plans.value = plans.value.filter((item) => item.planId !== plan.planId);
-        return;
-      }
-      const nextPlans = plans.value.filter((item) => item.localPlanId !== plan.localPlanId);
+      await planService.remove({
+        plan,
+        isLoggedIn: authStore.isLoggedIn,
+      });
 
-      localStorage.setItem('localPlans', JSON.stringify(nextPlans));
-      plans.value = nextPlans;
+      plans.value = plans.value.filter((item) => {
+        return planService.getId(item) !== planId;
+      });
     } catch (error) {
       const status = error.status;
       if (status === 401) {
@@ -169,7 +166,9 @@
         alert('이미 삭제되었거나 존재하지 않는 여행 계획입니다.');
 
         // 서버에는 없는데 화면에 남아있는 경우 화면에서 제거
-        plans.value = plans.value.filter((item) => item.planId !== plan.planId);
+        plans.value = plans.value.filter((item) => {
+          return planService.getId(item) !== planService.getId(plan);
+        });
         return;
       }
 
