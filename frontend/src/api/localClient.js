@@ -78,15 +78,7 @@ const assertValidPlanDetail = (detail) => {
   assertValid(Number.isInteger(Number(detail.dayNo)), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
   assertValid(Number(detail.dayNo) >= 1, 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
   assertValid(hasValue(detail.beginTime), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
-  assertValid(hasValue(detail.endTime), 400, 'INVALID_PLAN_DETAIL', 'Invalid travel plan detail.')
   assertValid(isValidTime(detail.beginTime), 400, 'INVALID_PLAN_DETAIL_TIME', 'Invalid travel plan detail time range.')
-  assertValid(isValidTime(detail.endTime), 400, 'INVALID_PLAN_DETAIL_TIME', 'Invalid travel plan detail time range.')
-  assertValid(
-    toTimeValue(detail.beginTime) <= toTimeValue(detail.endTime),
-    400,
-    'INVALID_PLAN_DETAIL_TIME',
-    'Invalid travel plan detail time range.',
-  )
   assertValid(hasPlace !== hasScene, 400, 'INVALID_PLAN_DETAIL_TARGET', 'Invalid travel plan detail target.')
 }
 
