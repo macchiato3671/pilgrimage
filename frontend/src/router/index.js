@@ -7,8 +7,10 @@ import MyPageView from '@/views/member/MyPage.vue'
 import TestSceneCard from '@/views/test/TestSceneCard.vue'
 import SceneList from '@/views/scene/SceneList.vue'
 import PlanView from '@/views/plan/PlanView.vue'
-import PlanDetailView from '@/views/plan/PlanDetailView.vue'
+import PlanDetailCreate from '@/views/plan/PlanDetailCreate.vue'
 import PlanList from '@/views/plan/PlanList.vue'
+import PlanDetailView from '@/views/plan/PlanDetailView.vue'
+import PlanEdit from '@/views/plan/PlanEdit.vue'
 
 const routes = [
   {
@@ -54,13 +56,23 @@ const routes = [
   {
     path: '/plans/detail',
     name: 'planDetailCreate',
-    component: PlanDetailView,
+    component: PlanDetailCreate,
   },
   {
     path: '/plans',
     name: 'planList',
     component: PlanList,
-  }
+  },
+  {
+    path: '/plans/:planId',
+    name: 'planDetail',
+    component: PlanDetailView,
+  },
+  {
+    path: '/plans/edit/:planId',
+    name: 'planEdit',
+    component: PlanEdit,
+  },
 ]
 
 const router = createRouter({
