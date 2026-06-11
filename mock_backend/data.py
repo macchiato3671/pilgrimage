@@ -48,8 +48,8 @@ state: dict[str, Any] = {
         1: dict(
             planId=1, memberId=1, title="서울 드라마 여행", beginDate="2026-06-10", endDate="2026-06-12",
             details=[
-                dict(detailId=1, dayNo=1, beginTime="10:00", endTime="11:30", sceneId=1, placeId=None),
-                dict(detailId=2, dayNo=1, beginTime="13:00", endTime="15:00", sceneId=None, placeId=1),
+                dict(detailId=1, dayNo=1, beginTime="10:00", sceneId=1, placeId=None),
+                dict(detailId=2, dayNo=1, beginTime="13:00", sceneId=None, placeId=1),
             ],
             createdAt="2026-06-03T12:00:00", updatedAt="2026-06-03T12:00:00",
         )

@@ -52,13 +52,8 @@ const routes = [
     component: PlanView,
   },
   {
-    path: '/plans/:planId',
-    name: 'planDetail',
-    component: PlanDetailView,
-  },
-  {
-    path: '/plans/local/:localPlanId',
-    name: 'localPlanDetail',
+    path: '/plans/detail',
+    name: 'planDetailCreate',
     component: PlanDetailView,
   },
   {

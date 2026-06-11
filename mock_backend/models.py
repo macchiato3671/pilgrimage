@@ -31,7 +31,6 @@ class WithdrawRequest(BaseModel):
 class PlanDetailRequest(BaseModel):
     dayNo: int
     beginTime: str
-    endTime: str
     sceneId: int | None = None
     placeId: int | None = None
 
