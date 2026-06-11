@@ -28,8 +28,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 import PlanSchedule from '@/components/plan/PlanSchedulePanel.vue'
 import MapComponent from '@/components/common/MapComponent.vue'
-import { getPlan } from '@/api/planApi.js'
-import { localApiClient } from '@/api/localClient.js'
+import { planService } from '@/services/planService';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -189,14 +188,13 @@ const renderSelectedMarker = (detail) => {
 
 const fetchPlan = async () => {
   try {
-    const planId = route.params.planId
+    const planId = route.params.planId;
 
-    if (authStore.isLoggedIn) {
-      plan.value = await getPlan(planId)
-    } else {
-      const response = await localApiClient.get(`/plans/${planId}`)
-      plan.value = response.plan
-    }
+    const response = await planService.fetchDetail({
+      planId: planId,
+      isLoggedIn: authStore.isLoggedIn,
+    });
+    plan.value = response.plan;
 
     activeDayNo.value = 1
 

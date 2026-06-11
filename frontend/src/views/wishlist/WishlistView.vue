@@ -57,6 +57,7 @@
             :longitude="wishlist.scene.longitude"
             :img-url="wishlist.scene.imgUrl"
             :is-wishlisted="true"
+            :is-wishlist-pending="isWishlistPending(wishlist.scene.sceneId)"
 
             @toggle-wishlist="handleRemoveWishlist"
             @view-detail="handleViewDetail"
@@ -72,14 +73,15 @@
   import MapComponent from '@/components/common/MapComponent.vue';
   import SceneCard from '@/components/scene/SceneCard.vue';
   import SceneDetailCard from '@/components/scene/SceneDetailCard.vue';
-  import { getWishlist, deleteWishlist } from '@/api/wishlistApi';
   import { useAuthStore } from '@/stores/authStore';
+  import { wishlistService } from '@/services/wishlistService';
 
   const authStore = useAuthStore();
 
   const wishlists = ref([]);
   const isLoading = ref(false);
   const errorMessage = ref('');
+  const pendingWishlistSceneIds = ref([]);
 
   const selectedScene = ref(null);
 
@@ -102,11 +104,11 @@
     errorMessage.value = '';
 
     try {
-      if(authStore.isLoggedIn) {
-        await fetchServerData();
-      } else {
-        fetchLocalData();
-      }
+      const response = await wishlistService.fetch({
+        isLoggedIn: authStore.isLoggedIn,
+      });
+
+      wishlists.value = response.wishlists ?? [];
 
       renderMarkers();
     } catch(error) {
@@ -117,34 +119,24 @@
     }
   };
 
-  const fetchServerData = async() => {
-    const response = await getWishlist();
-
-    wishlists.value = response.wishlists ?? [];
-  };
-
-  const fetchLocalData = () => {
-    const localWishlists = JSON.parse(localStorage.getItem('wishlists')) || [];
-    wishlists.value = localWishlists;
-  };
-
   const handleRemoveWishlist = async ({ sceneId }) => {
+    if (isWishlistPending(sceneId)) return;
+
     const isConfirmed = confirm('위시리스트에서 삭제하시겠습니까?');
 
     if (!isConfirmed) return;
 
+    addPendingWishlistSceneId(sceneId);
+
     try {
-      if (authStore.isLoggedIn) {
-        await deleteWishlist(sceneId);
-      }
+      await wishlistService.remove({
+        sceneId,
+        isLoggedIn: authStore.isLoggedIn,
+      });
 
       wishlists.value = wishlists.value.filter((wishlist) => {
         return String(wishlist.scene.sceneId) !== String(sceneId);
       });
-
-      if (!authStore.isLoggedIn) {
-        localStorage.setItem('wishlists', JSON.stringify(wishlists.value));
-      }
 
       clearSelectedSceneIfDeleted(sceneId);
 
@@ -162,7 +154,26 @@
     } catch (error) {
       console.error(error);
       alert('위시리스트 삭제에 실패했습니다.');
+    } finally {
+      deletePendingWishlistSceneId(sceneId);
     }
+  };
+
+  const isWishlistPending = (sceneId) => {
+    return pendingWishlistSceneIds.value.includes(String(sceneId));
+  };
+
+  const addPendingWishlistSceneId = (sceneId) => {
+    const id = String(sceneId);
+    if (pendingWishlistSceneIds.value.includes(id)) return;
+    pendingWishlistSceneIds.value.push(id);
+  };
+
+  const deletePendingWishlistSceneId = (sceneId) => {
+    const id = String(sceneId);
+    pendingWishlistSceneIds.value = pendingWishlistSceneIds.value.filter((pendingSceneId) => {
+      return pendingSceneId !== id;
+    });
   };
 
   const clearSelectedSceneIfDeleted = (sceneId) => {

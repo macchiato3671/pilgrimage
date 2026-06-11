@@ -6,8 +6,22 @@
       <p>주소: {{ address }}</p>
     </div>
     <div class="interactions">
-      <button @click="toggleWishlist">{{isWishlisted ? '🌟' : '⭐'}}</button>
-      <button @click="viewDetail">👀</button>
+      <button
+        type="button"
+        :aria-pressed="isWishlisted"
+        :title="isWishlisted ? '위시리스트에서 제거' : '위시리스트에 추가'"
+        :disabled="isWishlistPending"
+        @click="toggleWishlist"
+      >
+        {{isWishlisted ? '🌟' : '⭐'}}
+      </button>
+      <button
+        type="button"
+        title="상세 보기"
+        @click="viewDetail"
+      >
+        👀
+      </button>
     </div>
   </article>
 </template>
@@ -41,6 +55,10 @@ const props = defineProps({
   },
 
   isWishlisted: {
+    type: Boolean,
+    default: false,
+  },
+  isWishlistPending: {
     type: Boolean,
     default: false,
   },

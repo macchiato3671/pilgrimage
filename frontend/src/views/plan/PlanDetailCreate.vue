@@ -51,10 +51,9 @@ import PlanCandidatePanel from '@/components/plan/PlanCandidatePanel.vue';
 
 import { getPlanDraft, clearPlanDraft } from '@/utils/planDraftStorage';
 import { useAuthStore } from '@/stores/authStore';
-import { getWishlist } from '@/api/wishlistApi';
-import { localApiClient } from '@/api/localClient';
+import { wishlistService } from '@/services/wishlistService';
 import { getNearbyAttractions } from '@/api/sceneApi';
-import { makePlan } from '@/api/planApi';
+import { planService } from '@/services/planService';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -180,9 +179,9 @@ onMounted(async () => {
 
 const loadWishlists = async () => {
   try {
-    const response = authStore.isLoggedIn
-      ? await getWishlist()
-      : await localApiClient.get('/wishlist');
+    const response = await wishlistService.fetch({
+      isLoggedIn: authStore.isLoggedIn,
+    });
 
     const wishlists = response.wishlists ?? [];
 
@@ -660,11 +659,10 @@ const handleSavePlan = async () => {
   try {
     const requestBody = buildPlanCreateRequest();
 
-    if (authStore.isLoggedIn) {
-      await makePlan(requestBody);
-    } else {
-      await localApiClient.post('/plans', requestBody);
-    }
+    await planService.add({
+      requestBody,
+      isLoggedIn: authStore.isLoggedIn,
+    });
 
     clearPlanDraft();
 
