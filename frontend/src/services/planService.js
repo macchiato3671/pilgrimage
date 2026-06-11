@@ -17,7 +17,10 @@ const getPlanStorage = ({ isLoggedIn }) => {
   return {
     add: (requestBody) => localApiClient.post('/plans', requestBody),
     fetch: () => localApiClient.get('/plans'),
-    fetchDetail: (planId) => localApiClient.get(`/plans/${planId}`),
+    fetchDetail: async (planId) => {
+      const plan = await localApiClient.get(`/plans/${planId}`)
+      return { plan }
+    },
     remove: (planId) => localApiClient.delete(`/plans/${planId}`),
   }
 }
