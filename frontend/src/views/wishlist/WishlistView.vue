@@ -74,10 +74,7 @@
   import SceneCard from '@/components/scene/SceneCard.vue';
   import SceneDetailCard from '@/components/scene/SceneDetailCard.vue';
   import { useAuthStore } from '@/stores/authStore';
-  import {
-    fetchWishlists,
-    removeSceneFromWishlist,
-  } from '@/services/wishlistService';
+  import { wishlistService } from '@/services/wishlistService';
 
   const authStore = useAuthStore();
 
@@ -107,7 +104,7 @@
     errorMessage.value = '';
 
     try {
-      const response = await fetchWishlists({
+      const response = await wishlistService.fetch({
         isLoggedIn: authStore.isLoggedIn,
       });
 
@@ -132,7 +129,7 @@
     addPendingWishlistSceneId(sceneId);
 
     try {
-      await removeSceneFromWishlist({
+      await wishlistService.remove({
         sceneId,
         isLoggedIn: authStore.isLoggedIn,
       });

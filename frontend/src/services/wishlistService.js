@@ -1,33 +1,41 @@
-import { addWishlist, deleteWishlist, getWishlist } from '@/api/wishlistApi'
+import { authApiClient } from '@/api/apiClient'
 import { localApiClient } from '@/api/localClient'
 
-export const fetchWishlists = async ({ isLoggedIn }) => {
+const resolveSceneId = (scene) => scene?.sceneId
+
+const getWishlistStorage = ({ isLoggedIn }) => {
   if (isLoggedIn) {
-    return getWishlist()
+    return {
+      add: (scene) => authApiClient.post(`/wishlist/${resolveSceneId(scene)}`),
+      fetch: () => authApiClient.get('/wishlist'),
+      remove: (sceneId) => authApiClient.delete(`/wishlist/${sceneId}`),
+    }
   }
 
-  return localApiClient.get('/wishlist')
-}
-
-export const addSceneToWishlist = async ({ scene, isLoggedIn }) => {
-  if (isLoggedIn) {
-    return addWishlist(scene.sceneId)
+  return {
+    add: (scene) => localApiClient.post(`/wishlist/${resolveSceneId(scene)}`, scene),
+    fetch: () => localApiClient.get('/wishlist'),
+    remove: (sceneId) => localApiClient.delete(`/wishlist/${sceneId}`),
   }
-
-  return localApiClient.post(`/wishlist/${scene.sceneId}`, scene)
 }
 
-export const removeSceneFromWishlist = async ({ sceneId, isLoggedIn }) => {
-  if (isLoggedIn) {
-    return deleteWishlist(sceneId)
-  }
+export const wishlistService = {
+  getIds(wishlists = []) {
+    return wishlists
+      .map((wish) => wish.scene?.sceneId)
+      .filter((sceneId) => sceneId !== undefined && sceneId !== null)
+      .map((sceneId) => String(sceneId))
+  },
 
-  return localApiClient.delete(`/wishlist/${sceneId}`)
-}
+  fetch({ isLoggedIn }) {
+    return getWishlistStorage({ isLoggedIn }).fetch()
+  },
 
-export const getWishlistSceneIds = (wishlists = []) => {
-  return wishlists
-    .map((wish) => wish.scene?.sceneId)
-    .filter((sceneId) => sceneId !== undefined && sceneId !== null)
-    .map((sceneId) => String(sceneId))
+  add({ scene, isLoggedIn }) {
+    return getWishlistStorage({ isLoggedIn }).add(scene)
+  },
+
+  remove({ sceneId, isLoggedIn }) {
+    return getWishlistStorage({ isLoggedIn }).remove(sceneId)
+  },
 }
