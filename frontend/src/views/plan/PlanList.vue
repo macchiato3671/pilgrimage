@@ -109,7 +109,7 @@
     router.push({
       name: 'planEdit',
       params: {
-        planId: plan.planId,
+        planId: plan.planId ?? plan.localPlanId,
       },
     });
     return;

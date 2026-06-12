@@ -174,8 +174,6 @@ const renderMarkers = (details) => {
 const renderSelectedMarker = (detail) => {
   if (!map.value) return
 
-  clearMarkers()
-
   const position = new mapSdk.value.maps.LatLng(detail.latitude, detail.longitude)
 
   const marker = new mapSdk.value.maps.Marker({
