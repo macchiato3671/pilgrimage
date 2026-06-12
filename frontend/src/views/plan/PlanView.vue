@@ -51,11 +51,15 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, onMounted, computed } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
+  import { useAuthStore } from '@/stores/authStore';
+  import { planService } from '@/services/planService';
   import { getPlanDraft, setPlanBaseInfo } from '@/utils/planDraftStorage';
 
+  const route = useRoute();
   const router = useRouter();
+  const authStore = useAuthStore();
 
   const activeTarget = ref('');
   const isCalendarOpen = ref(false);
@@ -66,7 +70,28 @@
   const isSubmitting = ref(false);
   const errorMessage = ref('');
 
-  onMounted(() => {
+  const isEditMode = computed(() => 
+    route.name === 'planEdit'
+  );
+
+  onMounted(async () => {
+    if (isEditMode.value) {
+      const response = await planService.fetchDetail({
+        planId: route.params.planId, 
+        isLoggedIn: authStore.isLoggedIn
+      });
+      title.value = response.plan.title;
+      beginDate.value = response.plan.beginDate;
+      endDate.value = response.plan.endDate;
+
+      setPlanBaseInfo({
+        title: response.plan.title,
+        beginDate: response.plan.beginDate,
+        endDate: response.plan.endDate,
+      });
+
+      return;
+    }
     const draft = getPlanDraft();
 
     if (!draft) return;
@@ -133,8 +158,9 @@
       });
 
       router.push({
-        name: 'planDetailCreate'
-      });
+        name: isEditMode.value ? 'planDetailEdit' : 'planDetailCreate',
+        params: isEditMode.value ? { planId: route.params.planId } : {},
+      })
     } finally {
       isSubmitting.value = false;
     }
