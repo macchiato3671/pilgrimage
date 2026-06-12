@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from data import state
 from models import LoginRequest, MemberUpdateRequest, PlanRequest, SignupRequest, WithdrawRequest
 from utils import Member, admin_member, current_member, drama_list_payload, error, find_wishlist, get_plan_for_member
-from utils import get_scene, member_payload, next_id, now_iso, place_payload, plan_payload, plan_values
+from utils import get_scene, member_payload, next_id, now_iso, place_payload, plan_detail_payload, plan_payload, plan_values
 from utils import scene_payload, update_present, wishlist_payload, wishlist_with_scene
 
 
@@ -147,7 +147,7 @@ def list_plans(member: Member = Depends(current_member)) -> dict[str, Any]:
 
 @app.get("/api/v1/plans/{plan_id}")
 def get_plan(plan_id: int, member: Member = Depends(current_member)) -> dict[str, Any]:
-    return plan_payload(get_plan_for_member(plan_id, member))
+    return plan_detail_payload(get_plan_for_member(plan_id, member))
 
 
 @app.put("/api/v1/plans/{plan_id}")
