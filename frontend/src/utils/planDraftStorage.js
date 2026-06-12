@@ -35,10 +35,6 @@ export const getPlanDraft = () => {
   };
 };
 
-export const hasPlanDraft = () => {
-  return getPlanDraft() !== null;
-};
-
 export const savePlanDraft = (draft) => {
   const nextDraft = {
     title: draft.title ?? '',

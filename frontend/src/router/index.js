@@ -10,7 +10,6 @@ import PlanView from '@/views/plan/PlanView.vue'
 import PlanDetailCreate from '@/views/plan/PlanDetailCreate.vue'
 import PlanList from '@/views/plan/PlanList.vue'
 import PlanDetailView from '@/views/plan/PlanDetailView.vue'
-import PlanEdit from '@/views/plan/PlanEdit.vue'
 
 const routes = [
   {
@@ -71,7 +70,12 @@ const routes = [
   {
     path: '/plans/edit/:planId',
     name: 'planEdit',
-    component: PlanEdit,
+    component: PlanView,
+  },
+  {
+    path: '/plans/edit/:planId/detail',
+    name: 'planDetailEdit',
+    component: PlanDetailCreate,
   },
 ]
 
