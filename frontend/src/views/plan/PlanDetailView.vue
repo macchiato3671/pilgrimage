@@ -7,29 +7,37 @@
       />
     </section>
 
-    <PlanSchedule
-      v-if="plan"
-      :draft-title="plan.title"
-      :draft-date-text="planDateText"
-      :days="days"
-      :active-day-no="activeDayNo"
-      :current-day-details="currentDayDetails"
-      readonly
-      @change-day="changeActiveDay"
-      @click-detail="handleClickDetail"
-    />
+    <section class="schedule-column">
+      <div class="detail-actions">
+        <button type="button" @click="goPlanEdit">
+          수정
+        </button>
+      </div>
+      <PlanSchedule
+        v-if="plan"
+        :draft-title="plan.title"
+        :draft-date-text="planDateText"
+        :days="days"
+        :active-day-no="activeDayNo"
+        :current-day-details="currentDayDetails"
+        readonly
+        @change-day="changeActiveDay"
+        @click-detail="handleClickDetail"
+      />
+    </section>
   </main>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
 import PlanSchedule from '@/components/plan/PlanSchedulePanel.vue'
 import MapComponent from '@/components/common/MapComponent.vue'
 import { planService } from '@/services/planService';
 
+const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
@@ -108,14 +116,13 @@ const handleMapReady = ({ _mapSdk, _map }) => {
 }
 
 const handleClickDetail = (detail) => {
-  if (!map.value) return
+  if (!map.value || !mapSdk.value) return
   if (detail.latitude == null || detail.longitude == null) return
 
   const position = new mapSdk.value.maps.LatLng(detail.latitude, detail.longitude)
 
   map.value.setLevel(4)
   map.value.setCenter(position)
-  renderSelectedMarker(detail)
 }
 
 const clearMarkers = () => {
@@ -171,19 +178,6 @@ const renderMarkers = (details) => {
   map.value.setBounds(bounds)
 }
 
-const renderSelectedMarker = (detail) => {
-  if (!map.value) return
-
-  const position = new mapSdk.value.maps.LatLng(detail.latitude, detail.longitude)
-
-  const marker = new mapSdk.value.maps.Marker({
-    position,
-    map: map.value,
-  })
-
-  markers.value.push(marker)
-}
-
 const fetchPlan = async () => {
   try {
     const planId = route.params.planId;
@@ -204,6 +198,16 @@ const fetchPlan = async () => {
   }
 }
 
+const goPlanEdit = () => {
+    router.push({
+      name: 'planEdit',
+      params: {
+        planId: route.params.planId,
+      },
+    });
+    return;
+  };
+
 onMounted(() => {
   fetchPlan();
 });
@@ -223,5 +227,17 @@ onMounted(() => {
 .map {
   width: 100%;
   height: 100%;
+}
+
+.schedule-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
 }
 </style>
