@@ -188,7 +188,8 @@ onMounted(async () => {
       .filter((detail) => {
         return Number(detail.dayNo) <= days.value.length;
       });
-
+      
+    await loadWishlists();
     renderScheduleMarkers();
     return;
   }
@@ -203,6 +204,7 @@ onMounted(async () => {
   }
 
   await loadWishlists();
+  renderWishlistMarkers();
 });
 
 const loadWishlists = async () => {
@@ -214,8 +216,6 @@ const loadWishlists = async () => {
     const wishlists = response.wishlists ?? [];
 
     wishItems.value = wishlists.map(normalizeWishlistItem);
-
-    renderWishlistMarkers();
   } catch (error) {
     console.error(error);
   }
