@@ -43,7 +43,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 import MapComponent from '@/components/common/MapComponent.vue';
 import PlanSchedulePanel from '@/components/plan/PlanSchedulePanel.vue';
@@ -56,6 +56,7 @@ import { getNearbyAttractions } from '@/api/sceneApi';
 import { planService } from '@/services/planService';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 const mapSdk = ref(null);
@@ -77,6 +78,10 @@ const isTourLoading = ref(false);
 const tourMessage = ref('위시리스트를 선택하면 주변 관광지가 표시됩니다.');
 
 const isSaving = ref(false);
+
+const isEditMode = computed(() => 
+  route.name === 'planDetailEdit'
+);
 
 const draftTitle = computed(() => {
   return draft.value?.title ?? '';
@@ -165,6 +170,29 @@ const updateDetailBeginTime = ({ tempId, beginTime }) => {
 };
 
 onMounted(async () => {
+  if (isEditMode.value) {
+    const response = await planService.fetchDetail({
+      planId: route.params.planId,
+      isLoggedIn: authStore.isLoggedIn,
+    });
+    const savedDraft = getPlanDraft();
+
+    draft.value = {
+      title: savedDraft?.title ?? response.plan.title,
+      beginDate: savedDraft?.beginDate ?? response.plan.beginDate,
+      endDate: savedDraft?.endDate ?? response.plan.endDate,
+    };
+
+    details.value = (response.plan.details ?? [])
+      .map(normalizePlanDetail)
+      .filter((detail) => {
+        return Number(detail.dayNo) <= days.value.length;
+      });
+
+    renderScheduleMarkers();
+    return;
+  }
+
   draft.value = getPlanDraft();
 
   if (!draft.value) {
@@ -229,6 +257,21 @@ const handleShowNearbyAttractions  = async (item) => {
   }
 };
 
+const normalizePlanDetail = (detail) => {
+  const target = detail.place ?? detail.scene ?? detail;
+
+  return {
+    ...detail,
+    tempId: detail.planDetailId ?? `${detail.dayNo}-${detail.beginTime}-${target.id ?? target.placeId ?? target.sceneId}`,
+    sceneId: detail.sceneId ?? detail.scene?.sceneId ?? null,
+    placeId: detail.placeId ?? detail.place?.placeId ?? null,
+    name: target.name,
+    address: target.address,
+    latitude: Number(target.latitude),
+    longitude: Number(target.longitude),
+  };
+};
+
 const normalizeWishlistItem = (wishlist) => {
   const scene = wishlist.scene ?? wishlist;
 
@@ -267,6 +310,11 @@ const normalizeTourItem = (attraction) => {
 const handleMapReady = ({ _mapSdk, _map }) => {
   mapSdk.value = _mapSdk;
   map.value = _map;
+
+  if (isEditMode.value) {
+    renderScheduleMarkers();
+    return;
+  }
 
   renderWishlistMarkers();
 };
@@ -659,10 +707,18 @@ const handleSavePlan = async () => {
   try {
     const requestBody = buildPlanCreateRequest();
 
-    await planService.add({
-      requestBody,
-      isLoggedIn: authStore.isLoggedIn,
-    });
+    if (isEditMode.value) {
+      await planService.update({
+        planId: route.params.planId,
+        requestBody,
+        isLoggedIn: authStore.isLoggedIn,
+      });
+    } else {
+      await planService.add({
+        requestBody,
+        isLoggedIn: authStore.isLoggedIn,
+      });
+    }
 
     clearPlanDraft();
 

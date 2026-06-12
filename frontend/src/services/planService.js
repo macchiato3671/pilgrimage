@@ -10,6 +10,7 @@ const getPlanStorage = ({ isLoggedIn }) => {
         const plan = await authApiClient.get(`/plans/${planId}`)
         return { plan }
       },
+      update: (planId, requestBody) => authApiClient.put(`/plans/${planId}`, requestBody),
       remove: (planId) => authApiClient.delete(`/plans/${planId}`),
     }
   }
@@ -21,6 +22,7 @@ const getPlanStorage = ({ isLoggedIn }) => {
       const plan = await localApiClient.get(`/plans/${planId}`)
       return { plan }
     },
+    update: (planId, requestBody) => localApiClient.put(`/plans/${planId}`, requestBody),
     remove: (planId) => localApiClient.delete(`/plans/${planId}`),
   }
 }
@@ -40,6 +42,10 @@ export const planService = {
 
   fetchDetail({ planId, isLoggedIn }) {
     return getPlanStorage({ isLoggedIn }).fetchDetail(planId)
+  },
+
+  update({planId, requestBody, isLoggedIn}) {
+    return getPlanStorage({ isLoggedIn }).update(planId, requestBody)
   },
 
   remove({ plan, isLoggedIn }) {
