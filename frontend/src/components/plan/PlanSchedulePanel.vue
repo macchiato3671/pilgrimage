@@ -1,18 +1,23 @@
 <template>
   <section class="schedule-section">
     <header class="schedule-header">
-      <button type="button" @click="$emit('cancel')">
+      <button 
+        v-if="!readonly"
+        type="button" 
+        @click="$emit('cancel')"
+      >
         취소
       </button>
 
       <h2>여행 일정</h2>
 
       <button
-      type="button"
-      :disabled="isSaving"
-      @click="$emit('save')"
+        v-if="!readonly"
+        type="button"
+        :disabled="isSaving"
+        @click="$emit('save')"
       >
-      {{ isSaving ? '저장 중' : '저장' }}
+        {{ isSaving ? '저장 중' : '저장' }}
       </button>
     </header>
 
@@ -28,23 +33,25 @@
           :class="{ active: activeDayNo === day.dayNo }"
           @click="$emit('change-day', day.dayNo)"
         >
-          {{ day.dayNo }}일차
+          {{ day.dayNo }}일차<span v-if="day.dateText"> · {{ day.dateText }}</span>
         </button>
       </div>
 
       <section
         class="schedule-drop-area"
-        @dragover.prevent
-        @drop.prevent="$emit('drop-to-schedule', $event)"
+        :class="{ readonly }"
+        @dragover="handleDragOver"
+        @drop="handleDrop"
       >
         <p v-if="currentDayDetails.length === 0" class="empty-message">
-          오른쪽 위시리스트에서 목적지를 드래그해서 일정을 추가하세요.
+          {{ readonly ? '등록된 일정이 없습니다.' : '오른쪽 위시리스트에서 목적지를 드래그해서 일정을 추가하세요.' }}
         </p>
 
         <ScheduleDetailCard
           v-for="detail in currentDayDetails"
           :key="detail.tempId"
           :detail="detail"
+          :readonly="readonly"
           @detail-drag-start="$emit('detail-drag-start', detail, $event)"
           @drag-end="$emit('drag-end')"
           @click-detail="$emit('click-detail', detail)"
@@ -59,7 +66,7 @@
 <script setup>
 import ScheduleDetailCard from './ScheduleDetailCard.vue';
 
-defineProps({
+const props = defineProps({
   draftTitle: {
     type: String,
     required: true,
@@ -84,9 +91,13 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  readonly: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-defineEmits([
+const emit = defineEmits([
   'cancel',
   'save',
   'change-day',
@@ -97,6 +108,17 @@ defineEmits([
   'remove-detail',
   'update-begin-time',
 ]);
+
+const handleDragOver = (event) => {
+  if (props.readonly) return;
+  event.preventDefault();
+};
+
+const handleDrop = (event) => {
+  if (props.readonly) return;
+  event.preventDefault();
+  emit('drop-to-schedule', event);
+};
 </script>
 
 <style scoped>

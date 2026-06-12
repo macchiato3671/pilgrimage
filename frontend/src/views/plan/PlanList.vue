@@ -96,41 +96,23 @@
   };
 
   const goPlanDetail = (plan) => {
-    if (authStore.isLoggedIn) {
-      router.push({
-        name: 'planDetail',
-        params: {
-          planId: plan.planId,
-        },
-      });
-      return;
-    }
-
     router.push({
-      name: 'localPlanDetail',
+      name: 'planDetail',
       params: {
-        localPlanId: plan.localPlanId,
+        planId: plan.planId ?? plan.localPlanId,
       },
     });
+    return;
   };
 
   const goPlanEdit = (plan) => {
-    if (authStore.isLoggedIn) {
-      router.push({
-        name: 'planEdit',
-        params: {
-          planId: plan.planId,
-        },
-      });
-      return;
-    }
-
     router.push({
-      name: 'localPlanEdit',
+      name: 'planEdit',
       params: {
-        localPlanId: plan.localPlanId,
+        planId: plan.planId ?? plan.localPlanId,
       },
     });
+    return;
   };
 
   const handleDeletePlan = async (plan) => {
