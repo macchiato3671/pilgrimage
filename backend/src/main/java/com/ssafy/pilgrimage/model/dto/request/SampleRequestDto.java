@@ -1,4 +1,4 @@
-package com.ssafy.pilgrimage.model.dto;
+package com.ssafy.pilgrimage.model.dto.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,6 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SampleDto {
+public class SampleRequestDto {
 
 }
