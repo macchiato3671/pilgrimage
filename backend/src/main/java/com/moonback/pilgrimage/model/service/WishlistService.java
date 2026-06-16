@@ -1,5 +1,5 @@
 package com.moonback.pilgrimage.model.service;
 
-public class SampleService {
+public interface WishlistService {
 
 }
