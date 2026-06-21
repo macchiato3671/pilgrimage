@@ -46,7 +46,7 @@ public class MemberIntegrationTest {
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.accessToken").exists())
                 .andExpect(jsonPath("$.refreshToken").exists())
-                .andExpect(jsonPath("$.expiresIn").value(3600))
+                .andExpect(jsonPath("$.expiresIn").value(300))
                 .andExpect(jsonPath("$.member.memberId").exists())
                 .andExpect(jsonPath("$.member.email").value(email))
                 .andExpect(jsonPath("$.member.nickname").value("일반 사용자"))
