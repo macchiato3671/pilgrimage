@@ -25,12 +25,16 @@ import com.ssafy.pilgrimage.model.dto.response.LoginResponseDto;
 import com.ssafy.pilgrimage.model.mapper.MemberMapper;
 import com.ssafy.pilgrimage.model.type.MemberRole;
 import com.ssafy.pilgrimage.model.type.MemberStatus;
+import com.ssafy.pilgrimage.security.JWTUtil;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceImplTest {
 	
 	@Mock
 	private MemberMapper memberMapper;
+
+	@Mock
+	private JWTUtil jwtUtil;
 	
 	private PasswordEncoder passwordEncoder;
 	
@@ -39,7 +43,7 @@ public class AuthServiceImplTest {
 	@BeforeEach
 	void setUp() {
 		passwordEncoder = new BCryptPasswordEncoder();
-		authService = new AuthServiceImpl(memberMapper, passwordEncoder);
+		authService = new AuthServiceImpl(memberMapper, passwordEncoder, jwtUtil);
 	}
 	
 	@Test
@@ -58,6 +62,9 @@ public class AuthServiceImplTest {
         member.setCreatedAt(LocalDateTime.now());
         
         when(memberMapper.findByEmail("test@example.com")).thenReturn(member);
+        when(jwtUtil.createAccessToken(member)).thenReturn("access-token");
+        when(jwtUtil.createRefreshToken(member)).thenReturn("refresh-token");
+        when(jwtUtil.getAccessTokenExpirationSeconds()).thenReturn(300);
 		
 		LoginRequestDto request = new LoginRequestDto();
 		request.setEmail("test@example.com");
@@ -69,9 +76,9 @@ public class AuthServiceImplTest {
 		// then
 		assertNotNull(response);
 		assertEquals("Bearer", response.getTokenType());
-		assertNotNull(response.getAccessToken());
-		assertNotNull(response.getRefreshToken());
-		assertEquals(3600, response.getExpiresIn());
+		assertEquals("access-token", response.getAccessToken());
+		assertEquals("refresh-token", response.getRefreshToken());
+		assertEquals(300, response.getExpiresIn());
 		
 		assertNotNull(response.getMember());
         assertEquals(1, response.getMember().getMemberId());
@@ -82,6 +89,9 @@ public class AuthServiceImplTest {
         assertNotNull(response.getMember().getCreatedAt());
         
         verify(memberMapper).findByEmail("test@example.com");
+        verify(jwtUtil).createAccessToken(member);
+        verify(jwtUtil).createRefreshToken(member);
+        verify(jwtUtil).getAccessTokenExpirationSeconds();
 	}
 	
 	@Test

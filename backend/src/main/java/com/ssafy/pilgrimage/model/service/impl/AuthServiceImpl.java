@@ -11,6 +11,7 @@ import com.ssafy.pilgrimage.model.dto.response.LoginResponseDto;
 import com.ssafy.pilgrimage.model.mapper.MemberMapper;
 import com.ssafy.pilgrimage.model.service.AuthService;
 import com.ssafy.pilgrimage.model.type.MemberStatus;
+import com.ssafy.pilgrimage.security.JWTUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
 	
 	private final MemberMapper memberMapper;
 	private final PasswordEncoder passwordEncoder;
+	private final JWTUtil jwtUtil;
 	
 	@Override
 	public LoginResponseDto login(LoginRequestDto request) {
@@ -37,9 +39,9 @@ public class AuthServiceImpl implements AuthService {
 			throw new BusinessException(AuthErrorCode.MEMBER_ACCESS_DENIED);
         }
 		
-		String accessToken = "temporary-access-token";
-        String refreshToken = "temporary-refresh-token";
-        Integer expiresIn = 3600;
+		String accessToken = jwtUtil.createAccessToken(member);
+		String refreshToken = jwtUtil.createRefreshToken(member);
+		Integer expiresIn = jwtUtil.getAccessTokenExpirationSeconds();
 		
         return LoginResponseDto.of(accessToken, refreshToken, expiresIn, member);
 	}

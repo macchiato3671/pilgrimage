@@ -23,6 +23,7 @@ import com.ssafy.pilgrimage.model.dto.request.LoginRequestDto;
 import com.ssafy.pilgrimage.model.dto.response.LoginResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.MemberResponseDto;
 import com.ssafy.pilgrimage.model.service.AuthService;
+import com.ssafy.pilgrimage.security.JWTUtil;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -35,6 +36,9 @@ public class AuthControllerTest {
 	
 	@MockitoBean
 	private AuthService authService;
+
+	@MockitoBean
+	private JWTUtil jwtUtil;
 	
 	@Test
     void 로그인_성공() throws Exception {
@@ -62,8 +66,8 @@ public class AuthControllerTest {
 		when(authService.login(any(LoginRequestDto.class))).thenReturn(response);
 		
 		mockMvc.perform(post("/api/v1/auth/login")
-						.contentType("MediaType.APPLICATION_JSON")
-						.content(objectMapper.writeValueAsString(response)))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.accessToken").value("temporary-access-token"))

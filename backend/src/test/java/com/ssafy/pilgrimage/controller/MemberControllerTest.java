@@ -22,6 +22,7 @@ import com.ssafy.pilgrimage.exception.code.MemberErrorCode;
 import com.ssafy.pilgrimage.model.dto.request.SignupRequestDto;
 import com.ssafy.pilgrimage.model.dto.response.MemberResponseDto;
 import com.ssafy.pilgrimage.model.service.MemberService;
+import com.ssafy.pilgrimage.security.JWTUtil;
 
 @WebMvcTest(MemberController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -34,6 +35,9 @@ public class MemberControllerTest {
 	
 	@MockitoBean
 	private MemberService memberService;
+
+	@MockitoBean
+	private JWTUtil jwtUtil;
 	
 	@Test
     void 회원가입_성공() throws Exception {
