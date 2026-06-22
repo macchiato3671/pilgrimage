@@ -93,4 +93,67 @@ public class MemberMapperTest {
         // then
         assertEquals(1, count);
 	}
+	
+	@Test
+	void 회원정보_수정() {
+		// given
+	    MemberDto member = new MemberDto();
+	    member.setEmail("update-" + System.nanoTime() + "@example.com");
+	    member.setPassword("old-password");
+	    member.setNickname("oldNickname");
+	    member.setRoleId(MemberRole.USER.getId());
+	    member.setStatusId(MemberStatus.ACTIVE.getId());
+
+	    memberMapper.insertMember(member);
+
+	    int memberId = member.getMemberId();
+
+	    String newEmail = "updated-" + System.nanoTime() + "@example.com";
+	    String newNickname = "newNickname";
+	    String newPassword = "new-password";
+
+	    // when
+	    int count = memberMapper.updateMember(
+	            memberId,
+	            newEmail,
+	            newNickname,
+	            newPassword
+	    );
+
+	    // then
+	    assertEquals(1, count);
+
+	    MemberDto updatedMember = memberMapper.findById(memberId);
+
+	    assertNotNull(updatedMember);
+	    assertEquals(newEmail, updatedMember.getEmail());
+	    assertEquals(newNickname, updatedMember.getNickname());
+	    assertEquals(newPassword, updatedMember.getPassword());
+	}
+	
+	@Test
+	void 회원_탈퇴() {
+		// given
+	    MemberDto member = new MemberDto();
+	    member.setEmail("withdraw-" + System.nanoTime() + "@example.com");
+	    member.setPassword("encoded-password");
+	    member.setNickname("탈퇴테스트");
+	    member.setRoleId(MemberRole.USER.getId());
+	    member.setStatusId(MemberStatus.ACTIVE.getId());
+
+	    memberMapper.insertMember(member);
+
+	    int memberId = member.getMemberId();
+
+	    // when
+	    int result = memberMapper.withdrawById(memberId);
+
+	    // then
+	    assertEquals(1, result);
+
+	    MemberDto withdrawnMember = memberMapper.findById(memberId);
+
+	    assertNotNull(withdrawnMember);
+	    assertEquals(MemberStatus.WITHDRAWN.getId(), withdrawnMember.getStatusId());
+	}
 }
