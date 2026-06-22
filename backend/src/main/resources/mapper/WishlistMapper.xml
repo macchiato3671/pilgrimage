@@ -4,5 +4,26 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ssafy.pilgrimage.model.mapper.WishlistMapper">
+	<select id="getWishlist">
+		
+	</select>
+	
+	<delete id="deleteWishlist">
+	
+	</delete>
+	
+	<insert id="addWishlist">
+		INSERT INTO WISHLIST(
+			member_id,
+			scene_id
+		)
+		VALUES(#{memberId}, #{sceneId})
+	</insert>
 
+	<select id="countByMemberIdAndSceneId"
+			resultType="int">
+		SELECT count(*)
+		FROM WISHLIST
+		WHERE member_id = #{memberId} and scene_id = #{sceneId}
+	</select>
 </mapper>
