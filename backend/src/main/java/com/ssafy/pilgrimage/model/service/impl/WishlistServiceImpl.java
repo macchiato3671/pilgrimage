@@ -20,7 +20,6 @@ import com.ssafy.pilgrimage.model.dto.WishlistSceneRowDto;
 import com.ssafy.pilgrimage.model.dto.response.DramaResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.PageResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistDramaResponseDto;
-import com.ssafy.pilgrimage.model.dto.response.WishlistResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistScenePageResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 import com.ssafy.pilgrimage.model.mapper.DramaMapper;
@@ -59,12 +58,6 @@ public class WishlistServiceImpl implements WishlistService {
 	    }
 
 	    wishlistMapper.addWishlist(memberId, sceneId);
-	}
-
-	@Override
-	public WishlistResponseDto getWishlist(int memberId) {
-		wishlistMapper.getWishlist(memberId);
-		return null;
 	}
 
 	@Override

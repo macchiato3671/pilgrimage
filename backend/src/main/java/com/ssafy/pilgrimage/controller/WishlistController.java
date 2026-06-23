@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ssafy.pilgrimage.model.dto.response.WishlistDramaResponseDto;
-import com.ssafy.pilgrimage.model.dto.response.WishlistResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistScenePageResponseDto;
-import com.ssafy.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 import com.ssafy.pilgrimage.model.service.WishlistService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,18 +36,6 @@ public class WishlistController {
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
 				.build();
-	}
-	
-	@GetMapping
-	public ResponseEntity<WishlistResponseDto> getWishlist(){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
-		
-		WishlistResponseDto response = wishlistService.getWishlist(memberId);
-		
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.body(response);
 	}
 	
 	@GetMapping("/dramas")
