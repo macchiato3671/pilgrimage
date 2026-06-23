@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +30,11 @@ import lombok.RequiredArgsConstructor;
 public class TistoryPostParser {
 
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+	private static final Pattern ADDRESS_HINT = Pattern.compile(
+			"(서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주|"
+					+ "서울특별시|부산광역시|대구광역시|인천광역시|광주광역시|대전광역시|울산광역시|"
+					+ "세종특별자치시|경기도|강원특별자치도|충청북도|충청남도|전북특별자치도|"
+					+ "전라남도|경상북도|경상남도|제주특별자치도)\\s+.*(로|길|동|읍|면|리|\\d)");
 	private static final String STOP_RECOMMENDATION = "주연배우들의또다른작품촬영지";
 	private static final List<String> BODY_CANDIDATE_SELECTORS = List.of(
 			"article",
@@ -120,7 +124,7 @@ public class TistoryPostParser {
 				int occurrence = occurrenceByName.merge(normalizedName, 1, Integer::sum);
 				byte[] sourceKey = Hashing.sha256(canonicalUrl + "\0" + normalizedName + "\0" + occurrence);
 				scenes.add(new ParsedScene(sourceKey, scenes.size() + 1, occurrence, rawName, normalizedName, rawText,
-						rawText, imageUrlExtractor.extract(block, canonicalUrl)));
+						extractRawAddress(block, rawText), imageUrlExtractor.extract(block, canonicalUrl)));
 			}
 			if (shouldStop) {
 				break;
@@ -157,6 +161,20 @@ public class TistoryPostParser {
 	private boolean isSceneHeading(Element element) {
 		String tag = element.tagName().toLowerCase();
 		return "h3".equals(tag) || "h4".equals(tag);
+	}
+
+	private String extractRawAddress(Element block, String rawText) {
+		for (Element element : block.select("p,div,span,li,td")) {
+			String candidate = cleanText(element.text());
+			if (looksLikeAddress(candidate)) {
+				return candidate;
+			}
+		}
+		return rawText;
+	}
+
+	private boolean looksLikeAddress(String value) {
+		return value != null && value.length() <= 1000 && ADDRESS_HINT.matcher(value).find();
 	}
 
 	private String normalizedBodyHtml(Element body) {
