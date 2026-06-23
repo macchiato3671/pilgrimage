@@ -4,6 +4,20 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.SceneMapper">
+	<select id="findById"
+			resultType="com.moonback.pilgrimage.model.dto.SceneDto">
+		SELECT 
+			s.scene_id as sceneId,
+			s.drama_id as dramaId,
+			s.name as name,
+			s.description,
+			s.address,
+			s.latitude,
+			s.longitude
+		FROM Scene s
+		WHERE scene_id = #{sceneId}
+	</select>
+	
 	<select id="selectSceneImagesBySceneIds"
         resultType="com.moonback.pilgrimage.model.dto.SceneImageRowDto">
 	    SELECT
