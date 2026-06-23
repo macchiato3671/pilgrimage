@@ -1,6 +1,9 @@
 package com.ssafy.pilgrimage.model.service;
 
+import com.ssafy.pilgrimage.model.dto.response.WishlistDramaResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistResponseDto;
+import com.ssafy.pilgrimage.model.dto.response.WishlistScenePageResponseDto;
+import com.ssafy.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 
 public interface WishlistService {
 
@@ -9,5 +12,9 @@ public interface WishlistService {
 	WishlistResponseDto getWishlist(int memberId);
 
 	void deleteWishlist(int memberId, int sceneId);
+
+	WishlistDramaResponseDto getDrama(int memberId);
+
+	WishlistScenePageResponseDto getScene(int memberId, int dramaId, int page, int size);
 
 }
