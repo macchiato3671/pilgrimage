@@ -4,5 +4,30 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.PlaceMapper">
-
+	<select id="getPlace"
+			resultType="com.moonback.pilgrimage.model.dto.PlaceDto">
+		SELECT 
+			p.place_id as placeId,
+			p.content_id as contentId,
+			p.name as name,
+			p.address as address,
+			p.latitude as latitude,
+			p.longitude as longitude,
+			p.description as description,
+			ct.content_type_id as contentTypeId,
+			ct.name as contentTypeName
+		FROM Place p
+		join ContentType ct on p.content_type_id = ct.content_type_id
+		WHERE p.place_id = #{placeId}
+	</select>
+	
+	<select id="getImages"
+			resultType="com.moonback.pilgrimage.model.dto.PlaceImageDto">
+		SELECT 
+			img_id as imgId,
+			url
+		FROM PlaceImg
+		WHERE place_id = #{placeId}
+		ORDER BY img_id ASC
+	</select>
 </mapper>

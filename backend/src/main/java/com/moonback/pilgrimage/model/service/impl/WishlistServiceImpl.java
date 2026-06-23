@@ -20,7 +20,6 @@ import com.moonback.pilgrimage.model.dto.WishlistSceneRowDto;
 import com.moonback.pilgrimage.model.dto.response.DramaResponseDto;
 import com.moonback.pilgrimage.model.dto.response.PageResponseDto;
 import com.moonback.pilgrimage.model.dto.response.WishlistDramaResponseDto;
-import com.moonback.pilgrimage.model.dto.response.WishlistResponseDto;
 import com.moonback.pilgrimage.model.dto.response.WishlistScenePageResponseDto;
 import com.moonback.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 import com.moonback.pilgrimage.model.mapper.DramaMapper;
@@ -59,12 +58,6 @@ public class WishlistServiceImpl implements WishlistService {
 	    }
 
 	    wishlistMapper.addWishlist(memberId, sceneId);
-	}
-
-	@Override
-	public WishlistResponseDto getWishlist(int memberId) {
-		wishlistMapper.getWishlist(memberId);
-		return null;
 	}
 
 	@Override
