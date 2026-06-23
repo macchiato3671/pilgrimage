@@ -4,5 +4,92 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ssafy.pilgrimage.model.mapper.WishlistMapper">
+	<select id="getWishlist">
+		
+	</select>
+	
+	<delete id="deleteWishlist">
+		DELETE FROM Wishlist
+		WHERE member_id = #{memberId} and scene_id = #{sceneId}
+	</delete>
+	
+	<select id="selectWishlistedDramasByMemberId"
+			resultType="com.ssafy.pilgrimage.model.dto.response.DramaResponseDto">
+		SELECT
+			d.drama_id as dramaId,
+			d.title as title,
+			d.released_at as releasedAt,
+			d.description as description,
+			(
+				SELECT di.url
+				FROM DramaImg di
+				WHERE d.drama_id = di.drama_id
+				ORDER BY di.img_id ASC
+				LIMIT 1
+			) AS url
+		FROM WISHLIST w
+		join Scene s on w.scene_id = s.scene_id 
+		join Drama d on s.drama_id = d.drama_id
+		WHERE w.member_id = #{memberId}
+		GROUP BY d.drama_id
+		ORDER BY MAX(w.created_at) DESC
+	</select>
+	
+	<select id="selectGenresByDramaIds"
+			resultType="com.ssafy.pilgrimage.model.dto.DramaGenreRowDto">
+		SELECT
+			dg.drama_id as dramaId,
+			g.genre_id as genreId,
+			g.name as name
+		FROM DramaGenre dg
+		join Genre g on dg.genre_id = g.genre_id
+		WHERE dg.drama_id IN 
+		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
+	        #{dramaId}
+	    </foreach>
+		ORDER BY dg.drama_id ASC, g.name ASC
+	</select>
+	
+	<select id="countWishlistedScenesByDrama"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM Wishlist w
+		join Scene s on w.scene_id = s.scene_id
+		WHERE w.member_id = #{memberId} 
+			AND s.drama_id = #{dramaId}
+	</select>
+	
+	<select id="selectWishlistedScenesRowsByDrama"
+			resultType="com.ssafy.pilgrimage.model.dto.WishlistSceneRowDto">
+		SELECT 
+			w.wishlist_id as wishlistId,
+			w.scene_id as sceneId,
+			s.name as name,
+			s.description as description,
+			s.address as address,
+			s.latitude as latitude,
+			s.longitude as longitude,
+			w.created_at as createdAt
+		FROM Wishlist w
+		join Scene s on w.scene_id = s.scene_id
+		WHERE w.member_id = #{memberId} and s.drama_id = #{dramaId}
+		ORDER BY w.created_at DESC
+		LIMIT #{size}
+		OFFSET #{offset}
+	</select>
+	
+	<insert id="addWishlist">
+		INSERT INTO WISHLIST(
+			member_id,
+			scene_id
+		)
+		VALUES(#{memberId}, #{sceneId})
+	</insert>
 
+	<select id="countByMemberIdAndSceneId"
+			resultType="int">
+		SELECT count(*)
+		FROM WISHLIST
+		WHERE member_id = #{memberId} and scene_id = #{sceneId}
+	</select>
 </mapper>
