@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.moonback.pilgrimage.model.dto.response.WishlistDramaResponseDto;
 import com.moonback.pilgrimage.model.dto.response.WishlistResponseDto;
 import com.moonback.pilgrimage.model.dto.response.WishlistScenePageResponseDto;
-import com.moonback.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 import com.moonback.pilgrimage.model.service.WishlistService;
 
 import lombok.RequiredArgsConstructor;
@@ -67,8 +66,8 @@ public class WishlistController {
 	@GetMapping("/dramas/{dramaId}/scenes")
 	public ResponseEntity<WishlistScenePageResponseDto> getScene(
 														@PathVariable int dramaId,
-														@RequestParam int page,
-														@RequestParam int size){
+														@RequestParam(defaultValue = "0") int page,
+														@RequestParam(defaultValue = "10") int size){
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		int memberId = (int)authentication.getPrincipal();
 		
