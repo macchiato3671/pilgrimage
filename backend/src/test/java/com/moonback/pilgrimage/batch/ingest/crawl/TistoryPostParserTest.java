@@ -43,6 +43,25 @@ class TistoryPostParserTest {
 				.containsExactly("https://images.example.com/bus-thumb.jpg", "https://images.example.com/bus-large.jpg");
 	}
 
+	@Test
+	void prefersAddressLikeElementForRawAddressInLongSceneBlock() {
+		String longNote = "촬영지 설명 ".repeat(150);
+		String html = """
+				<html><body><article>
+				<h2>긴 블록 드라마 촬영지</h2>
+				<h3>카페 거리</h3>
+				<p>%s</p>
+				<p>서울 마포구 월드컵북로 396 누리꿈스퀘어 도보 3분</p>
+				<img data-src="https://images.example.com/cafe.jpg">
+				</article></body></html>
+				""".formatted(longNote);
+
+		var parsed = parser.parse(post("https://ys-dl.tistory.com/102", "긴 블록 드라마 촬영지"), html);
+
+		assertThat(parsed.scenes().getFirst().rawText()).hasSizeGreaterThan(1000);
+		assertThat(parsed.scenes().getFirst().rawAddress()).isEqualTo("서울 마포구 월드컵북로 396 누리꿈스퀘어 도보 3분");
+	}
+
 	private CrawlPostRow post(String url, String title) {
 		return new CrawlPostRow(Hashing.sha256(url), url, title, null, null, null, null, null,
 				IngestStatus.DISCOVERED, null, null);
