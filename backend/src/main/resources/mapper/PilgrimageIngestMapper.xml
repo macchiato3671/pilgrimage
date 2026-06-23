@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.moonback.pilgrimage.batch.ingest.persistence.PilgrimageIngestMapper">
+
+  <select id="countPostByKey" resultType="int">
+    SELECT COUNT(*)
+    FROM CrawlPost
+    WHERE post_key = #{postKey}
+  </select>
+
+  <insert id="upsertDiscoveredPost">
+    INSERT INTO CrawlPost (
+      post_key, post_url, post_title, status, created_at, updated_at, last_crawled_at
+    ) VALUES (
+      #{post.postKey}, #{post.postUrl}, #{post.postTitle}, #{status},
+      CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON DUPLICATE KEY UPDATE
+      post_title = COALESCE(VALUES(post_title), post_title),
+      last_crawled_at = CURRENT_TIMESTAMP,
+      updated_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <select id="findPostsForParsing" resultType="com.moonback.pilgrimage.batch.ingest.persistence.CrawlPostMapperRow">
+    SELECT post_key, post_url, post_title, published_at, drama_query, normalized_query, tmdb_id,
+           content_hash, status, error_code, error_message
+    FROM CrawlPost
+    WHERE status = #{discoveredStatus}
+       OR (#{retryFailed} = TRUE AND status = #{failedStatus})
+    ORDER BY created_at, post_url
+  </select>
+
+  <select id="findPostsByStatuses" resultType="com.moonback.pilgrimage.batch.ingest.persistence.CrawlPostMapperRow">
+    SELECT post_key, post_url, post_title, published_at, drama_query, normalized_query, tmdb_id,
+           content_hash, status, error_code, error_message
+    FROM CrawlPost
+    WHERE status IN
+    <foreach collection="statuses" item="status" open="(" separator="," close=")">
+      #{status}
+    </foreach>
+    ORDER BY updated_at, post_url
+  </select>
+
+  <update id="updatePostParsed">
+    UPDATE CrawlPost
+    SET drama_query = #{post.dramaQuery},
+        normalized_query = #{post.normalizedQuery},
+        content_hash = #{post.contentHash},
+        status = #{status},
+        error_code = NULL,
+        error_message = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE post_key = #{post.postKey}
+  </update>
+
+  <update id="shiftSceneOrders">
+    UPDATE CrawlScene
+    SET source_order = source_order + 100000,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE post_key = #{postKey}
+      AND source_order &lt; 100000
+  </update>
+
+  <insert id="upsertParsedScene">
+    INSERT INTO CrawlScene (
+      source_key, post_key, source_order, same_name_occurrence, raw_name, raw_text,
+      raw_address, image_urls, status, error_code, error_message, created_at, updated_at
+    ) VALUES (
+      #{scene.sourceKey}, #{postKey}, #{scene.sourceOrder}, #{scene.sameNameOccurrence},
+      #{scene.rawName}, #{scene.rawText}, #{scene.rawAddress}, #{imageUrlsJson}, #{status},
+      NULL, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON DUPLICATE KEY UPDATE
+      source_order = VALUES(source_order),
+      same_name_occurrence = VALUES(same_name_occurrence),
+      raw_name = VALUES(raw_name),
+      raw_text = VALUES(raw_text),
+      raw_address = VALUES(raw_address),
+      image_urls = VALUES(image_urls),
+      status = VALUES(status),
+      error_code = NULL,
+      error_message = NULL,
+      updated_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <update id="markRemovedScenes">
+    UPDATE CrawlScene
+    SET status = #{status},
+        error_code = #{errorCode},
+        error_message = #{errorMessage},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE post_key = #{postKey}
+      AND source_order &gt;= 100000
+  </update>
+
+  <update id="markPostStatus">
+    UPDATE CrawlPost
+    SET status = #{status},
+        error_code = #{errorCode},
+        error_message = #{errorMessage},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE post_key = #{postKey}
+  </update>
+
+  <select id="findOverrideTmdbId" resultType="int">
+    SELECT tmdb_id
+    FROM DramaMatchOverride
+    WHERE normalized_title = #{normalizedTitle}
+  </select>
+
+  <insert id="upsertDrama">
+    INSERT INTO Drama (
+      drama_id, title, original_title, original_language, origin_country, released_at, description, updated_at
+    ) VALUES (
+      #{drama.dramaId}, #{drama.title}, #{drama.originalTitle}, #{drama.originalLanguage},
+      #{drama.originCountry}, #{drama.releasedAt}, #{drama.description}, CURRENT_TIMESTAMP
+    )
+    ON DUPLICATE KEY UPDATE
+      title = VALUES(title),
+      original_title = VALUES(original_title),
+      original_language = VALUES(original_language),
+      origin_country = VALUES(origin_country),
+      released_at = VALUES(released_at),
+      description = VALUES(description),
+      updated_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <insert id="upsertGenre">
+    INSERT INTO Genre (genre_id, name)
+    VALUES (#{genre.genreId}, #{genre.name})
+    ON DUPLICATE KEY UPDATE name = VALUES(name)
+  </insert>
+
+  <delete id="deleteDramaGenre">
+    DELETE FROM DramaGenre
+    WHERE drama_id = #{dramaId}
+  </delete>
+
+  <insert id="upsertDramaGenre">
+    INSERT INTO DramaGenre (drama_id, genre_id)
+    VALUES (#{dramaId}, #{genreId})
+    ON DUPLICATE KEY UPDATE genre_id = VALUES(genre_id)
+  </insert>
+
+  <update id="updatePostTmdbMatched">
+    UPDATE CrawlPost
+    SET tmdb_id = #{tmdbId},
+        status = #{status},
+        error_code = NULL,
+        error_message = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE post_key = #{postKey}
+  </update>
+
+  <select id="findScenesForSync" resultType="com.moonback.pilgrimage.batch.ingest.persistence.CrawlSceneMapperRow">
+    SELECT cs.source_key, cs.post_key, cp.post_url, cp.tmdb_id, cs.source_order, cs.same_name_occurrence,
+           cs.raw_name, cs.raw_text, cs.raw_address, cs.image_urls, cs.scene_id,
+           cs.status, cs.error_code, cs.error_message
+    FROM CrawlScene cs
+    JOIN CrawlPost cp ON cp.post_key = cs.post_key
+    WHERE cp.status = #{postStatus}
+      AND cp.tmdb_id IS NOT NULL
+      AND cs.status IN
+      <foreach collection="statuses" item="status" open="(" separator="," close=")">
+        #{status}
+      </foreach>
+    ORDER BY cp.post_url, cs.source_order
+  </select>
+
+  <select id="findSceneIdByIngestKey" resultType="int">
+    SELECT scene_id
+    FROM Scene
+    WHERE import_key = #{ingestKey}
+  </select>
+
+  <insert id="insertScene" useGeneratedKeys="true" keyProperty="sceneId">
+    INSERT INTO Scene (
+      drama_id, name, description, address, latitude, longitude, import_key, created_at, updated_at
+    ) VALUES (
+      #{dramaId}, #{name}, #{description}, #{address}, #{latitude}, #{longitude},
+      #{ingestKey}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+  </insert>
+
+  <update id="updateScene">
+    UPDATE Scene
+    SET drama_id = #{scene.dramaId},
+        name = #{scene.name},
+        description = #{description},
+        address = #{address},
+        latitude = #{scene.latitude},
+        longitude = #{scene.longitude},
+        import_key = COALESCE(import_key, #{scene.ingestKey}),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE scene_id = #{sceneId}
+  </update>
+
+  <update id="updateCrawlSceneSaved">
+    UPDATE CrawlScene
+    SET scene_id = #{sceneId},
+        status = #{status},
+        error_code = NULL,
+        error_message = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE source_key = #{sourceKey}
+  </update>
+
+  <update id="markSceneStatus">
+    UPDATE CrawlScene
+    SET status = #{status},
+        error_code = #{errorCode},
+        error_message = #{errorMessage},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE source_key = #{sourceKey}
+  </update>
+
+  <select id="findFreshGeocodeCache" resultType="com.moonback.pilgrimage.batch.ingest.persistence.GeocodeCacheMapperRow">
+    SELECT query_text, status, canonical_address, region_1depth AS region1_depth, region_2depth AS region2_depth,
+           latitude, longitude, response_json
+    FROM GeocodeCache
+    WHERE query_hash = #{queryHash}
+      AND (
+        (status = 'SUCCESS' AND updated_at &gt;= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 180 DAY))
+        OR (status = 'NO_RESULT' AND updated_at &gt;= DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 30 DAY))
+      )
+  </select>
+
+  <insert id="saveSuccessfulGeocodeCache">
+    INSERT INTO GeocodeCache (
+      query_hash, query_text, status, canonical_address, region_1depth, region_2depth,
+      latitude, longitude, response_json, updated_at
+    ) VALUES (
+      #{queryHash}, #{queryText}, 'SUCCESS', #{result.canonicalAddress}, #{result.region1Depth},
+      #{result.region2Depth}, #{result.latitude}, #{result.longitude}, #{result.responseJson}, CURRENT_TIMESTAMP
+    )
+    ON DUPLICATE KEY UPDATE
+      query_text = VALUES(query_text),
+      status = VALUES(status),
+      canonical_address = VALUES(canonical_address),
+      region_1depth = VALUES(region_1depth),
+      region_2depth = VALUES(region_2depth),
+      latitude = VALUES(latitude),
+      longitude = VALUES(longitude),
+      response_json = VALUES(response_json),
+      updated_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <insert id="saveNoResultGeocodeCache">
+    INSERT INTO GeocodeCache (
+      query_hash, query_text, status, updated_at
+    ) VALUES (
+      #{queryHash}, #{queryText}, 'NO_RESULT', CURRENT_TIMESTAMP
+    )
+    ON DUPLICATE KEY UPDATE
+      query_text = VALUES(query_text),
+      status = VALUES(status),
+      canonical_address = NULL,
+      region_1depth = NULL,
+      region_2depth = NULL,
+      latitude = NULL,
+      longitude = NULL,
+      response_json = NULL,
+      updated_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <insert id="upsertImageTask">
+    INSERT INTO ImageImportTask (
+      task_key, owner_type, owner_id, image_type, source_url, source_identity, sort_order,
+      status, attempt_count, created_at, updated_at
+    ) VALUES (
+      #{task.taskKey}, #{task.ownerType}, #{task.ownerId}, #{task.imageType}, #{task.sourceUrl},
+      #{task.sourceIdentity}, #{task.sortOrder}, #{status}, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON DUPLICATE KEY UPDATE
+      owner_type = VALUES(owner_type),
+      owner_id = VALUES(owner_id),
+      image_type = VALUES(image_type),
+      source_url = VALUES(source_url),
+      source_identity = VALUES(source_identity),
+      sort_order = VALUES(sort_order),
+      status = IF(status IN ('COMPLETED', 'IMAGE_UPLOADED'), status, VALUES(status)),
+      updated_at = CURRENT_TIMESTAMP
+  </insert>
+
+  <select id="findImageTasksByStatuses" resultType="com.moonback.pilgrimage.batch.ingest.persistence.ImageIngestTaskMapperRow">
+    SELECT task_key, owner_type, owner_id, image_type, source_url, source_identity, sort_order,
+           object_key, content_hash, width, height, status, attempt_count, error_code, error_message
+    FROM ImageImportTask
+    WHERE status IN
+    <foreach collection="statuses" item="status" open="(" separator="," close=")">
+      #{status}
+    </foreach>
+    ORDER BY created_at, owner_type, owner_id, sort_order
+  </select>
+
+  <select id="findDramaIdBySceneId" resultType="int">
+    SELECT drama_id
+    FROM Scene
+    WHERE scene_id = #{sceneId}
+  </select>
+
+  <update id="updateImageTaskCompleted">
+    UPDATE ImageImportTask
+    SET object_key = #{result.objectKey},
+        content_hash = #{result.contentHash},
+        width = #{result.width},
+        height = #{result.height},
+        status = #{status},
+        reused_existing_object = #{result.reusedExistingObject},
+        error_code = NULL,
+        error_message = NULL,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE task_key = #{result.taskKey}
+  </update>
+
+  <insert id="upsertDramaImg">
+    INSERT INTO DramaImg (
+      drama_id, url, image_type, object_key, source_url, sort_order, content_hash, width, height
+    ) VALUES (
+      #{task.ownerId}, #{result.url}, #{task.imageType}, #{result.objectKey}, #{task.sourceUrl},
+      #{task.sortOrder}, #{result.contentHash}, #{result.width}, #{result.height}
+    )
+    ON DUPLICATE KEY UPDATE
+      url = VALUES(url),
+      object_key = VALUES(object_key),
+      source_url = VALUES(source_url),
+      sort_order = LEAST(sort_order, VALUES(sort_order)),
+      width = VALUES(width),
+      height = VALUES(height)
+  </insert>
+
+  <insert id="upsertSceneImg">
+    INSERT INTO SceneImg (
+      scene_id, url, object_key, source_url, sort_order, content_hash, width, height
+    ) VALUES (
+      #{task.ownerId}, #{result.url}, #{result.objectKey}, #{task.sourceUrl}, #{task.sortOrder},
+      #{result.contentHash}, #{result.width}, #{result.height}
+    )
+    ON DUPLICATE KEY UPDATE
+      url = VALUES(url),
+      object_key = VALUES(object_key),
+      source_url = VALUES(source_url),
+      sort_order = LEAST(sort_order, VALUES(sort_order)),
+      width = VALUES(width),
+      height = VALUES(height)
+  </insert>
+
+  <update id="markImageFailure">
+    UPDATE ImageImportTask
+    SET status = #{status},
+        attempt_count = attempt_count + 1,
+        error_code = #{errorCode},
+        error_message = #{errorMessage},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE task_key = #{taskKey}
+  </update>
+
+  <select id="countCrawlPostAll" resultType="int">
+    SELECT COUNT(*) FROM CrawlPost
+  </select>
+
+  <select id="countCrawlPostByStatus" resultType="int">
+    SELECT COUNT(*) FROM CrawlPost WHERE status = #{status}
+  </select>
+
+  <select id="countCrawlPostStatusNot" resultType="int">
+    SELECT COUNT(*) FROM CrawlPost WHERE status &lt;&gt; #{status}
+  </select>
+
+  <select id="countDrama" resultType="int">
+    SELECT COUNT(*) FROM Drama
+  </select>
+
+  <select id="countGenre" resultType="int">
+    SELECT COUNT(*) FROM Genre
+  </select>
+
+  <select id="countDramaGenre" resultType="int">
+    SELECT COUNT(*) FROM DramaGenre
+  </select>
+
+  <select id="countCrawlSceneByStatus" resultType="int">
+    SELECT COUNT(*) FROM CrawlScene WHERE status = #{status}
+  </select>
+
+  <select id="countCrawlSceneByStatuses" resultType="int">
+    SELECT COUNT(*)
+    FROM CrawlScene
+    WHERE status IN
+    <foreach collection="statuses" item="status" open="(" separator="," close=")">
+      #{status}
+    </foreach>
+  </select>
+
+  <select id="countImageTaskAll" resultType="int">
+    SELECT COUNT(*) FROM ImageImportTask
+  </select>
+
+  <select id="countImageTaskByStatus" resultType="int">
+    SELECT COUNT(*) FROM ImageImportTask WHERE status = #{status}
+  </select>
+
+  <select id="countReusedS3Objects" resultType="int">
+    SELECT COUNT(*)
+    FROM ImageImportTask
+    WHERE status = #{status}
+      AND reused_existing_object = TRUE
+  </select>
+</mapper>
