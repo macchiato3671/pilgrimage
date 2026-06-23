@@ -63,4 +63,27 @@
 			#{statusId}
 		)
 	</insert>
+	
+	<update id="updateMember">
+		UPDATE MEMBER
+		<set>
+			<if test="email != null">
+				email = #{email},
+			</if>
+			<if test="nickname != null">
+				nickname = #{nickname},
+			</if>
+			<if test="password != null">
+				password = #{password}
+			</if>
+		</set>
+		WHERE member_id = #{memberId}
+	</update>
+	
+	<update id="withdrawById"
+			parameterType="int">
+		UPDATE MEMBER
+		SET status_id = 2
+		WHERE member_id = #{memberId}
+	</update>
 </mapper>

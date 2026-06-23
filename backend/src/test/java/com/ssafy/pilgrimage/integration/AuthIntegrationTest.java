@@ -30,27 +30,29 @@ public class AuthIntegrationTest {
     private ObjectMapper objectMapper;
     
     @Test
-    void 회원가입_성공() throws Exception {
-        // given
-        String email = "integration-" + System.currentTimeMillis() + "@example.com";
-        String password = "1234";
-
-        SignupRequestDto signupRequest = new SignupRequestDto();
-        signupRequest.setEmail(email);
-        signupRequest.setPassword(password);
-        signupRequest.setNickname("통합테스트");
-
-        // when & then - 회원가입
-        mockMvc.perform(post("/api/v1/members")
+	void 로그인_성공() throws Exception {
+		// given
+        String email = "member@example.com";
+        String password = "Password123!";
+		
+        LoginRequestDto loginRequest = new LoginRequestDto();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+        
+        // when & then - 로그인
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signupRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.memberId").exists())
-                .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.nickname").value("통합테스트"))
-                .andExpect(jsonPath("$.role").value("USER"))
-                .andExpect(jsonPath("$.status").value("ACTIVE"))
-                .andExpect(jsonPath("$.createdAt").exists())
-                .andExpect(jsonPath("$.password").doesNotExist());
-    }
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.accessToken").exists())
+                .andExpect(jsonPath("$.refreshToken").exists())
+                .andExpect(jsonPath("$.expiresIn").value(300))
+                .andExpect(jsonPath("$.member.memberId").exists())
+                .andExpect(jsonPath("$.member.email").value(email))
+                .andExpect(jsonPath("$.member.nickname").value("일반 사용자"))
+                .andExpect(jsonPath("$.member.role").value("USER"))
+                .andExpect(jsonPath("$.member.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.member.password").doesNotExist());
+	}
 }
