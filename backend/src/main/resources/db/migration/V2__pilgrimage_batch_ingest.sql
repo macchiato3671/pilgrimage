@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS `DramaImg` (
   `width` INT NULL,
   `height` INT NULL,
   PRIMARY KEY (`img_id`),
-  UNIQUE KEY `uk_drama_img_url` (`drama_id`, `url`),
   UNIQUE KEY `uk_drama_img_content` (`drama_id`, `image_type`, `content_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -133,6 +132,26 @@ BEGIN
   END IF;
 END $$
 
+DROP PROCEDURE IF EXISTS pilgrimage_drop_index_if_exists $$
+CREATE PROCEDURE pilgrimage_drop_index_if_exists(
+  IN table_name_arg VARCHAR(64),
+  IN index_name_arg VARCHAR(64)
+)
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = table_name_arg
+      AND INDEX_NAME = index_name_arg
+  ) THEN
+    SET @ddl = CONCAT('ALTER TABLE `', table_name_arg, '` DROP INDEX `', index_name_arg, '`');
+    PREPARE stmt FROM @ddl;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+  END IF;
+END $$
+
 DROP PROCEDURE IF EXISTS pilgrimage_add_fk_if_missing $$
 CREATE PROCEDURE pilgrimage_add_fk_if_missing(
   IN table_name_arg VARCHAR(64),
@@ -162,7 +181,6 @@ CALL pilgrimage_add_column_if_missing('Drama', 'origin_country', '`origin_countr
 CALL pilgrimage_add_column_if_missing('Drama', 'updated_at', '`updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
 CALL pilgrimage_modify_column_if_exists('Drama', 'released_at', '`released_at` DATE NULL');
 
-CALL pilgrimage_modify_column_if_exists('DramaImg', 'url', '`url` VARCHAR(1000) NOT NULL');
 CALL pilgrimage_add_column_if_missing('DramaImg', 'image_type', '`image_type` VARCHAR(20) NULL');
 CALL pilgrimage_add_column_if_missing('DramaImg', 'object_key', '`object_key` VARCHAR(1000) NULL');
 CALL pilgrimage_add_column_if_missing('DramaImg', 'source_url', '`source_url` VARCHAR(1000) NULL');
@@ -171,6 +189,9 @@ CALL pilgrimage_add_column_if_missing('DramaImg', 'content_hash', '`content_hash
 CALL pilgrimage_add_column_if_missing('DramaImg', 'width', '`width` INT NULL');
 CALL pilgrimage_add_column_if_missing('DramaImg', 'height', '`height` INT NULL');
 CALL pilgrimage_add_index_if_missing('DramaImg', 'uk_drama_img_content', 'UNIQUE KEY `uk_drama_img_content` (`drama_id`, `image_type`, `content_hash`)');
+CALL pilgrimage_drop_index_if_exists('DramaImg', 'uk_drama_img_url');
+CALL pilgrimage_drop_index_if_exists('DramaImg', 'drama_id');
+CALL pilgrimage_modify_column_if_exists('DramaImg', 'url', '`url` VARCHAR(1000) NOT NULL');
 
 CALL pilgrimage_add_index_if_missing('Genre', 'uk_genre_name', 'UNIQUE KEY `uk_genre_name` (`name`)');
 
