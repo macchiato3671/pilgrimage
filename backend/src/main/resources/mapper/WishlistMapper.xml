@@ -16,7 +16,7 @@
 	<select id="selectWishlistedDramasByMemberId"
 			resultType="com.ssafy.pilgrimage.model.dto.response.DramaResponseDto">
 		SELECT
-			d,drama_id as dramaId,
+			d.drama_id as dramaId,
 			d.title as title,
 			d.released_at as releasedAt,
 			d.description as description,
@@ -50,7 +50,8 @@
 		ORDER BY dg.drama_id ASC, g.name ASC
 	</select>
 	
-	<select id="countWishlistedScenesByDrama">
+	<select id="countWishlistedScenesByDrama"
+			resultType="int">
 		SELECT COUNT(*)
 		FROM Wishlist w
 		join Scene s on w.scene_id = s.scene_id
@@ -58,7 +59,8 @@
 			AND s.drama_id = #{dramaId}
 	</select>
 	
-	<select id="selectWishlistedScenesRowsByDrama">
+	<select id="selectWishlistedScenesRowsByDrama"
+			resultType="com.ssafy.pilgrimage.model.dto.WishlistSceneRowDto">
 		SELECT 
 			w.wishlist_id as wishlistId,
 			w.scene_id as sceneId,
@@ -70,7 +72,7 @@
 			w.created_at as createdAt
 		FROM Wishlist w
 		join Scene s on w.scene_id = s.scene_id
-		WHERE w.member_id = #{member_id} and s.drama_id = #{dramaId}
+		WHERE w.member_id = #{memberId} and s.drama_id = #{dramaId}
 		ORDER BY w.created_at DESC
 		LIMIT #{size}
 		OFFSET #{offset}

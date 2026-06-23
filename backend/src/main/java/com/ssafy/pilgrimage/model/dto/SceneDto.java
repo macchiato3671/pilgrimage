@@ -17,5 +17,4 @@ public class SceneDto {
 	private String address;
 	private double latitude;
 	private double longitude;
-	private String img_url;
 }
