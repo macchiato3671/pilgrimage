@@ -5,11 +5,136 @@
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.DramaMapper">
 	
+	<select id="getYears"
+			resultType="int">
+		SELECT DISTINCT YEAR(released_at)
+		FROM Drama
+		ORDER BY YEAR(released_at) ASC
+	</select>
+	
+	<select id="countDramasByYear"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM DRAMA
+		WHERE YEAR(released_at) = #{year}
+	</select>
+	
+	<select id="selectDramasByYear"
+			resultType="com.moonback.pilgrimage.model.dto.DramaDto">
+		SELECT 
+			drama_id AS dramaId,
+	        title AS title,
+	        released_at AS releasedAt,
+	        description AS description
+		FROM DRAMA
+		WHERE YEAR(released_at) = #{year}
+		ORDER BY released_at DESC, drama_id DESC
+	    LIMIT #{size}
+	    OFFSET #{offset}
+	</select>
+	
+	<select id="selectGenresByDramaIds"
+			resultType="com.moonback.pilgrimage.model.dto.DramaGenreRowDto">
+		SELECT
+			dg.drama_id as dramaId,
+			g.genre_id as genreId,
+			g.name as name
+		FROM DramaGenre dg
+		join Genre g on dg.genre_id = g.genre_id
+		WHERE dg.drama_id IN 
+		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
+	        #{dramaId}
+	    </foreach>
+		ORDER BY dg.drama_id ASC, g.name ASC
+	</select>
+	
+	<select id="getGenres"
+			resultType="com.moonback.pilgrimage.model.dto.GenreDto">
+		SELECT genre_id as genreId, name
+		FROM Genre
+		ORDER BY name ASC
+	</select>
+	
+	<select id="findGenreById"
+			resultType="com.moonback.pilgrimage.model.dto.GenreDto">
+		SELECT genre_id as genreId, name
+		FROM Genre
+		WHERE genre_id = #{genreId}
+	</select>
+	
+	<select id="countDramasByGenre"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM DramaGenre
+		WHERE genre_id = #{genreId}
+	</select>
+	
+	<select id="selectDramasByGenre"
+			resultType="com.moonback.pilgrimage.model.dto.DramaDto">
+		SELECT 
+			d.drama_id AS dramaId,
+	        title AS title,
+	        released_at AS releasedAt,
+	        description AS description
+		FROM Drama d
+		JOIN DramaGenre dg on d.drama_id = dg.drama_id
+		WHERE dg.genre_id = #{genreId}
+		ORDER BY dg.genre_id DESC, d.drama_id DESC
+	    LIMIT #{size}
+	    OFFSET #{offset}
+	</select>
+	
+	<select id="countDramasByKeyword"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM Drama
+		WHERE title LIKE CONCAT('%', #{keyword}, '%')
+	</select>
+	
+	<select id="selectDramasByKeyword"
+			resultType="com.moonback.pilgrimage.model.dto.DramaDto">
+		SELECT 
+			drama_id AS dramaId,
+	        title AS title,
+	        released_at AS releasedAt,
+	        description AS description
+		FROM DRAMA
+		WHERE title LIKE CONCAT('%', #{keyword}, '%')
+		ORDER BY released_at DESC, drama_id DESC
+	    LIMIT #{size}
+	    OFFSET #{offset}
+	</select>
+	
 	<select id="existsByDramaId" resultType="boolean">
 		SELECT EXISTS (
 			SELECT 1
 			FROM Drama
 			WHERE drama_id = #{dramaId}
 		)
+	</select>
+	
+	<select id="findByDramaId"
+			resultType="com.moonback.pilgrimage.model.dto.DramaDto">
+		SELECT 
+			drama_id AS dramaId,
+	        title AS title,
+	        released_at AS releasedAt,
+	        description AS description
+		FROM Drama
+		WHERE drama_id = #{dramaId}
+	</select>
+	
+	<select id="selectDramaImagesByDramaIds"
+			resultType="com.moonback.pilgrimage.model.dto.DramaImageRowDto">
+		SELECT
+			drama_id AS dramaId,
+			img_id AS imgId,
+			url AS url
+		FROM DramaImg
+		WHERE drama_id IN
+		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
+			#{dramaId}
+		</foreach>
+		ORDER BY drama_id ASC, img_id ASC
 	</select>
 </mapper>
