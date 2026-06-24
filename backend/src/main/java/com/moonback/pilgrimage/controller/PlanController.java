@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -109,6 +110,23 @@ public class PlanController {
 		return ResponseEntity.status(HttpStatus.OK).body(responseDto);
 	}
 
+	@DeleteMapping("/{planId}")
+	public ResponseEntity<Void> deletePlan(
+			@PathVariable String planId
+			) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		int memberId = Integer.parseInt((String)authentication.getPrincipal());
+		validator.validateActiveMember(memberId);
+
+		int planIdArg = parsePlanIdArg(planId);
+
+		service.deletePlan(
+				memberId,
+				planIdArg
+				);
+
+		return ResponseEntity.status(HttpStatus.OK).build();
+	}
 
 	private void validatePageArg(final int arg) {
 		if (arg < 1)

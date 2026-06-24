@@ -75,4 +75,12 @@
 			AND member_id = #{memberId}
 	</update>
 
+	<delete
+			id="deletePlan"
+			>
+		DELETE FROM TravelPlan
+		WHERE plan_id = #{planId}
+			AND member_id = #{memberId}
+	</delete>
+
 </mapper>

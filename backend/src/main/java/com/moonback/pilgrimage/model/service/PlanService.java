@@ -20,6 +20,10 @@ public interface PlanService {
 			final int planId,
 			final TravelPlanRowDto travelPlanRow
 	);
+	void deletePlan(
+			final int memberId,
+			final int planId
+	);
 	void addPlan(
 			final TravelPlanRowDto travelPlanRow
 	);
