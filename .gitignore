@@ -1,7 +1,10 @@
-# Local IDE/workspace files
-.vscode/
-.idea/
+# Workspace and IDE metadata
+/.metadata/
+/.idea/
+/.vscode/
 .metadata/
+.idea/
+.vscode/
 **/.metadata/
 **/.settings/
 **/.classpath
@@ -20,6 +23,18 @@
 .env.*
 !.env.example
 !.env.*.example
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Backend generated files
+/backend/bin/
+/backend/.m2repo/
 
 # Local/generated database dumps
 backend/src/main/resources/scripts/SSAFY_TRIP_*.sql
