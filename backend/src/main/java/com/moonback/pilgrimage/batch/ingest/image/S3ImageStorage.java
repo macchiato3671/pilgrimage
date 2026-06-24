@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Base64;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 import com.moonback.pilgrimage.batch.ingest.config.PilgrimageProperties;
@@ -16,14 +18,23 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class S3ImageStorage {
 
 	private final PilgrimageProperties properties;
+	private final ObjectProvider<S3Client> s3ClientProvider;
 	private S3Client s3Client;
+
+	@Autowired
+	public S3ImageStorage(PilgrimageProperties properties, ObjectProvider<S3Client> s3ClientProvider) {
+		this.properties = properties;
+		this.s3ClientProvider = s3ClientProvider;
+	}
+
+	public S3ImageStorage(PilgrimageProperties properties) {
+		this.properties = properties;
+		this.s3ClientProvider = null;
+	}
 
 	public boolean uploadIfMissing(String objectKey, Path webpFile, byte[] contentHash) throws IOException {
 		if (exists(objectKey)) {
@@ -61,6 +72,9 @@ public class S3ImageStorage {
 	}
 
 	private synchronized S3Client client() {
+		if (s3ClientProvider != null) {
+			return s3ClientProvider.getObject();
+		}
 		if (s3Client == null) {
 			String region = properties.getStorage().getRegion();
 			if (region == null || region.isBlank()) {
