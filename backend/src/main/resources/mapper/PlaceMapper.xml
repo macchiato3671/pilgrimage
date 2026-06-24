@@ -4,5 +4,46 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.PlaceMapper">
+	<sql id="nearPlaceWhere">
+		<where>
+			p.content_type_id = #{contentTypeId}
+			AND ABS(p.latitude - #{latitude}) &lt;= (#{radiusKm} / 111)
+			AND ABS(p.longitude - #{longitude}) &lt;= (#{radiusKm} / 111)
+		</where>
+	</sql>
 
+	<select id="countNearPlaces"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM Place p
+		<include refid="nearPlaceWhere"/>
+	</select>
+
+	<select id="selectNearPlaces"
+			resultType="com.moonback.pilgrimage.model.dto.NearPlaceDto">
+		SELECT
+			p.place_id as placeId,
+			p.content_id as contentId,
+			p.name as name,
+			p.description as description,
+			p.address as address,
+			p.latitude as latitude,
+			p.longitude as longitude,
+			(
+				SELECT pi.url
+				FROM PlaceImg pi
+				WHERE pi.place_id = p.place_id
+				ORDER BY pi.img_id ASC
+				LIMIT 1
+			) as imgUrl,
+			ct.content_type_id as contentTypeId,
+			ct.name as contentTypeName,
+			ROUND((ABS(p.latitude - #{latitude}) + ABS(p.longitude - #{longitude})) * 111, 3) as distanceKm
+		FROM Place p
+		join ContentType ct on p.content_type_id = ct.content_type_id
+		<include refid="nearPlaceWhere"/>
+		ORDER BY distanceKm ASC, p.place_id ASC
+		LIMIT #{size}
+		OFFSET #{offset}
+	</select>
 </mapper>
