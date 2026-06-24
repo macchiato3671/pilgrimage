@@ -5,13 +5,33 @@
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.PlanMapper">
 	<select
-		id="findPlans"
-		resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto">
+			id="selectPlans"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
+			>
 		SELECT *
 		FROM TravelPlan
 		WHERE member_id = #{memberId}
 		ORDER BY updated_at DESC
 		LIMIT #{offset}, #{pageSize};
 	</select>
+
+	<insert
+			id="insertPlan"
+			>
+		INSERT INTO TravelPlan(
+			member_id,
+			title,
+			begin_date,
+			end_date,
+			memo
+		)
+		VALUES(
+			#{memberId},
+			#{title},
+			#{beginDate},
+			#{endDate},
+			#{memo}
+		)
+	</insert>
 
 </mapper>

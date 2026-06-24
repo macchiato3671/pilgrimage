@@ -5,12 +5,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.moonback.pilgrimage.exception.BusinessException;
 import com.moonback.pilgrimage.exception.code.PlanErrorCode;
+import com.moonback.pilgrimage.model.dto.TravelPlanRowDto;
 import com.moonback.pilgrimage.model.dto.response.PlansResponseDto;
 import com.moonback.pilgrimage.model.service.PlanService;
 import com.moonback.pilgrimage.validator.MemberValidator;
@@ -35,26 +38,53 @@ public class PlanController {
 			) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		int memberId = Integer.parseInt((String)authentication.getPrincipal());
-
 		validator.validateActiveMember(memberId);
+
 		validatePageArg(page);
 		validatePageSizeArg(pageSize);
 
-		PlansResponseDto dto = service.getPlans(
+		PlansResponseDto responseDto = service.getPlans(
 				memberId,
 				page,
 				pageSize
 				);
 
-		return ResponseEntity.status(HttpStatus.OK).body(dto);
+		return ResponseEntity.status(HttpStatus.OK).body(responseDto);
 	}
 
-	private void validatePageArg(final int pageArg) {
-		if (pageArg < 1)
+	@PostMapping("")
+	public ResponseEntity<Void> postPlan(
+			@RequestBody TravelPlanRowDto travelPlanRowDto
+			) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		int memberId = Integer.parseInt((String)authentication.getPrincipal());
+		validator.validateActiveMember(memberId);
+
+		validateTravelPlanRowDtoArg(travelPlanRowDto);
+		travelPlanRowDto.setMemberId(memberId);
+
+		service.addPlan(travelPlanRowDto);
+
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+
+	private void validatePageArg(final int arg) {
+		if (arg < 1)
 			throw new BusinessException(PlanErrorCode.INVALID_PAGE_ARG);
 	}
-	private void validatePageSizeArg(final int pageSizeArg) {
-		if (pageSizeArg < 1 || pageSizeArg > MAX_PAGE_SIZE)
+	private void validatePageSizeArg(final int arg) {
+		if (arg < 1 || arg > MAX_PAGE_SIZE)
 			throw new BusinessException(PlanErrorCode.INVALID_PAGE_SIZE_ARG);
+	}
+	private void validateTravelPlanRowDtoArg(final TravelPlanRowDto arg) {
+		if (arg == null || arg.getTitle() == null || arg.getBeginDate() == null || arg.getEndDate() == null)
+			throw new BusinessException(PlanErrorCode.REQUIRED_FIELD_MISSING);
+
+		if (arg.getTitle().isBlank())
+			throw new BusinessException(PlanErrorCode.INVALID_TRAVEL_PLAN_TITLE);
+
+		if (arg.getBeginDate().isAfter(arg.getEndDate()))
+			throw new BusinessException(PlanErrorCode.INVALID_TRAVEL_PLAN_DATE);
 	}
 }
