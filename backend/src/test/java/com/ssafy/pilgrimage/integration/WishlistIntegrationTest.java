@@ -128,14 +128,15 @@ public class WishlistIntegrationTest {
 				.andExpect(jsonPath("$.dramas[0].title").exists())
 				.andExpect(jsonPath("$.dramas[0].releasedAt").exists())
 				.andExpect(jsonPath("$.dramas[0].description").exists())
+				.andExpect(jsonPath("$.dramas[0].images").isArray())
 				.andExpect(jsonPath("$.dramas[0].genres").isArray());
 	}
 
 	@Test
 	void 위시리스트_드라마별_씬_조회() throws Exception {
 		// given
-		int sceneId = 1;
-		int dramaId = 1;
+		int sceneId = 895;
+		int dramaId = 2265;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(

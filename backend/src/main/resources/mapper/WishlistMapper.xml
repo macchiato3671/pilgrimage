@@ -19,14 +19,7 @@
 			d.drama_id as dramaId,
 			d.title as title,
 			d.released_at as releasedAt,
-			d.description as description,
-			(
-				SELECT di.url
-				FROM DramaImg di
-				WHERE d.drama_id = di.drama_id
-				ORDER BY di.img_id ASC
-				LIMIT 1
-			) AS url
+			d.description as description
 		FROM WISHLIST w
 		join Scene s on w.scene_id = s.scene_id 
 		join Drama d on s.drama_id = d.drama_id

@@ -12,4 +12,18 @@
 			WHERE drama_id = #{dramaId}
 		)
 	</select>
+	
+	<select id="selectDramaImagesByDramaIds"
+			resultType="com.ssafy.pilgrimage.model.dto.DramaImageRowDto">
+		SELECT
+			drama_id AS dramaId,
+			img_id AS imgId,
+			url AS url
+		FROM DramaImg
+		WHERE drama_id IN
+		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
+			#{dramaId}
+		</foreach>
+		ORDER BY drama_id ASC, img_id ASC
+	</select>
 </mapper>
