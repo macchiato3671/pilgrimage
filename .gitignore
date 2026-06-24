@@ -2,13 +2,27 @@
 /.metadata/
 /.idea/
 /.vscode/
+.metadata/
+.idea/
+.vscode/
+**/.metadata/
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
+**/.apt_generated/
+**/.springBeans
+**/.sts4-cache/
+*.iws
+*.iml
+*.ipr
 
 # Local environment files
+.venv/
 .env
 .env.*
 !.env.example
 !.env.*.example
-.venv/
 
 # OS files
 .DS_Store
@@ -21,3 +35,6 @@ Desktop.ini
 # Backend generated files
 /backend/bin/
 /backend/.m2repo/
+
+# Local/generated database dumps
+backend/src/main/resources/scripts/SSAFY_TRIP_*.sql

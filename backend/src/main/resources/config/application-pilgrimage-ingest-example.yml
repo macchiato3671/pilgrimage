@@ -1,0 +1,39 @@
+crawler:
+  category-url: "https://ys-dl.tistory.com/category/촬영지/드라마%20촬영지"
+  request-delay-ms: 1000
+  connect-timeout: 10s
+  read-timeout: 30s
+  user-agent: "PilgrimagePersonalBatch/1.0"
+  max-pages: 0
+
+tmdb:
+  base-url: "https://api.themoviedb.org/3"
+  image-base-url: "https://image.tmdb.org/t/p/original"
+  read-token: "${TMDB_READ_TOKEN}"
+  language: "ko-KR"
+  request-per-second: 5
+  image-languages: ""
+
+kakao:
+  base-url: "https://dapi.kakao.com"
+  rest-api-key: "${KAKAO_REST_API_KEY}"
+  request-per-second: 5
+
+storage:
+  region: "${AWS_REGION}"
+  bucket: "${S3_BUCKET}"
+  public-base-url: "${S3_PUBLIC_BASE_URL:}"
+  prefix: "pilgrimage"
+
+image:
+  cwebp-path: "${CWEBP_PATH:cwebp}"
+  gif2webp-path: "${GIF2WEBP_PATH:gif2webp}"
+  imagemagick-path: "${IMAGEMAGICK_PATH:magick}"
+  temp-dir: "${IMAGE_TEMP_DIR:/tmp/pilgrimage-ingest}"
+  max-download-bytes: 26214400
+  max-pixels: 50000000
+  scene-max-long-edge: 1920
+  poster-max-long-edge: 1200
+  backdrop-max-long-edge: 1920
+  static-quality: 82
+  poster-quality: 85
