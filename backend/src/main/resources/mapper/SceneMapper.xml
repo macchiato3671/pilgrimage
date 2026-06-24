@@ -41,4 +41,28 @@
 	    </foreach>
 	    ORDER BY scene_id ASC, img_id ASC
 	</select>
+	
+	<select id="countSceneByDramaId"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM Scene
+		WHERE drama_id = #{dramaId}
+	</select>
+	
+	<select id="getSceneByDramaId"
+			resultType="com.moonback.pilgrimage.model.dto.SceneDto">
+		SELECT 
+			scene_id AS sceneId,
+	        drama_id AS dramaId,
+	        name AS name,
+	        description AS description,
+	        address AS address,
+	        latitude AS latitude,
+	        longitude AS longitude
+		FROM SCENE
+		WHERE drama_id = #{dramaId}
+		ORDER BY scene_id ASC
+		LIMIT #{size}
+		OFFSET #{offset}
+	</select>
 </mapper>

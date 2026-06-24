@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -41,8 +40,7 @@ public class MemberController {
 	
 	@GetMapping("/me")
 	public ResponseEntity<MemberResponseDto> getMyInfo(){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		MemberResponseDto response = memberService.getMyInfo(memberId);
 		
@@ -53,8 +51,7 @@ public class MemberController {
 	
 	@PatchMapping("/me")
 	public ResponseEntity<MemberResponseDto> patchMyInfo(@RequestBody PatchRequestDto request){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		MemberResponseDto response = memberService.patchMyInfo(request, memberId);
 		
@@ -65,13 +62,17 @@ public class MemberController {
 	
 	@DeleteMapping("/me")
 	public ResponseEntity<Void> withdraw(@RequestBody WithdrawRequestDto request){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		memberService.withdraw(request, memberId);
 		
 		return ResponseEntity
 				.status(HttpStatus.NO_CONTENT)
 				.build();
+	}
+	
+	private int getAuthenticatedMemberId() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return Integer.parseInt(authentication.getName());
 	}
 }

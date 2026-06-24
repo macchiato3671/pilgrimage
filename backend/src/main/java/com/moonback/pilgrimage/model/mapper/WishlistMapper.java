@@ -21,8 +21,6 @@ public interface WishlistMapper {
 	int deleteWishlist(int memberId, int sceneId);
 
 	List<DramaResponseDto> selectWishlistedDramasByMemberId(int memberId);
-	
-	List<DramaGenreRowDto> selectGenresByDramaIds(@Param("dramaIds") List<Integer> dramaIds);
 
 	List<WishlistSceneRowDto> selectWishlistedScenesByMemberId(int memberId);
 

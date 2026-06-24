@@ -4,23 +4,35 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.moonback.pilgrimage.model.dto.NearPlaceDto;
+import com.moonback.pilgrimage.model.dto.PlaceDto;
+import com.moonback.pilgrimage.model.dto.PlaceImageDto;
+import com.moonback.pilgrimage.model.dto.PlaceImageRowDto;
+import com.moonback.pilgrimage.model.dto.response.PlaceResponseDto;
 
 public interface PlaceMapper {
 
-	int countNearPlaces(
-			@Param("latitude") double latitude,
-			@Param("longitude") double longitude,
-			@Param("contentTypeId") int contentTypeId,
+	List<PlaceImageDto> getImages(int placeId);
+
+	List<PlaceImageRowDto> selectPlaceImagesByPlaceIds(@Param("placeIds") List<Integer> placeIds);
+
+	PlaceDto getPlace(int placeId);
+
+	int countSearchPlace(
+			@Param("keyword") String keyword,
+			@Param("contentTypeId") Integer contentTypeId,
+			@Param("latitude") Double latitude,
+			@Param("longitude") Double longitude,
 			@Param("radiusKm") double radiusKm
 	);
 
-	List<NearPlaceDto> selectNearPlaces(
-			@Param("latitude") double latitude,
-			@Param("longitude") double longitude,
-			@Param("contentTypeId") int contentTypeId,
+	List<PlaceResponseDto> searchPlace(
+			@Param("keyword") String keyword,
+			@Param("contentTypeId") Integer contentTypeId,
+			@Param("latitude") Double latitude,
+			@Param("longitude") Double longitude,
 			@Param("radiusKm") double radiusKm,
 			@Param("size") int size,
 			@Param("offset") int offset
 	);
+
 }

@@ -4,45 +4,90 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.PlaceMapper">
-	<sql id="nearPlaceWhere">
-		<where>
-			p.content_type_id = #{contentTypeId}
-			AND ABS(p.latitude - #{latitude}) &lt;= (#{radiusKm} / 111)
-			AND ABS(p.longitude - #{longitude}) &lt;= (#{radiusKm} / 111)
-		</where>
-	</sql>
-
-	<select id="countNearPlaces"
-			resultType="int">
-		SELECT COUNT(*)
-		FROM Place p
-		<include refid="nearPlaceWhere"/>
-	</select>
-
-	<select id="selectNearPlaces"
-			resultType="com.moonback.pilgrimage.model.dto.NearPlaceDto">
+	<select id="getPlace"
+			resultType="com.moonback.pilgrimage.model.dto.PlaceDto">
 		SELECT
 			p.place_id as placeId,
 			p.content_id as contentId,
 			p.name as name,
-			p.description as description,
 			p.address as address,
 			p.latitude as latitude,
 			p.longitude as longitude,
-			(
-				SELECT pi.url
-				FROM PlaceImg pi
-				WHERE pi.place_id = p.place_id
-				ORDER BY pi.img_id ASC
-				LIMIT 1
-			) as imgUrl,
+			p.description as description,
 			ct.content_type_id as contentTypeId,
-			ct.name as contentTypeName,
-			ROUND((ABS(p.latitude - #{latitude}) + ABS(p.longitude - #{longitude})) * 111, 3) as distanceKm
+			ct.name as contentTypeName
 		FROM Place p
 		join ContentType ct on p.content_type_id = ct.content_type_id
-		<include refid="nearPlaceWhere"/>
-		ORDER BY distanceKm ASC, p.place_id ASC
+		WHERE p.place_id = #{placeId}
+	</select>
+
+	<select id="getImages"
+			resultType="com.moonback.pilgrimage.model.dto.PlaceImageDto">
+		SELECT
+			img_id as imgId,
+			url
+		FROM PlaceImg
+		WHERE place_id = #{placeId}
+		ORDER BY img_id ASC
+	</select>
+
+	<select id="selectPlaceImagesByPlaceIds"
+			resultType="com.moonback.pilgrimage.model.dto.PlaceImageRowDto">
+		SELECT
+			place_id as placeId,
+			img_id as imgId,
+			url
+		FROM PlaceImg
+		WHERE place_id IN
+		<foreach collection="placeIds" item="placeId" open="(" separator="," close=")">
+			#{placeId}
+		</foreach>
+		ORDER BY place_id ASC, img_id ASC
+	</select>
+
+	<sql id="searchPlaceWhere">
+		<where>
+			<if test="keyword != null and keyword != ''">
+				AND (
+					p.name LIKE CONCAT('%', #{keyword}, '%')
+					OR p.address LIKE CONCAT('%', #{keyword}, '%')
+					OR p.description LIKE CONCAT('%', #{keyword}, '%')
+				)
+			</if>
+			<if test="contentTypeId != null">
+				AND p.content_type_id = #{contentTypeId}
+			</if>
+			<if test="latitude != null and longitude != null">
+				AND ABS(p.latitude - #{latitude}) &lt;= (#{radiusKm} / 111)
+				AND ABS(p.longitude - #{longitude}) &lt;= (#{radiusKm} / 111)
+			</if>
+		</where>
+	</sql>
+
+	<select id="countSearchPlace"
+			resultType="int">
+		SELECT COUNT(*)
+		FROM Place p
+		join ContentType ct on p.content_type_id = ct.content_type_id
+		<include refid="searchPlaceWhere"/>
+	</select>
+
+	<select id="searchPlace"
+			resultType="com.moonback.pilgrimage.model.dto.response.PlaceResponseDto">
+		SELECT
+			p.place_id as placeId,
+			p.content_id as contentId,
+			p.name as name,
+			p.address as address,
+			p.latitude as latitude,
+			p.longitude as longitude,
+			p.description as description,
+			ct.content_type_id as contentTypeId,
+			ct.name as contentTypeName
+		FROM Place p
+		join ContentType ct on p.content_type_id = ct.content_type_id
+		<include refid="searchPlaceWhere"/>
+		ORDER BY p.place_id ASC
 		LIMIT #{size}
 		OFFSET #{offset}
 	</select>
