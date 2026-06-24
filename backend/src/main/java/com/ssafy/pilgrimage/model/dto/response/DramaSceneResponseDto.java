@@ -1,10 +1,6 @@
 package com.ssafy.pilgrimage.model.dto.response;
 
-import java.time.LocalDate;
 import java.util.List;
-
-import com.ssafy.pilgrimage.model.dto.DramaImageDto;
-import com.ssafy.pilgrimage.model.dto.GenreDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,11 +13,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DramaResponseDto {
+public class DramaSceneResponseDto {
 	private int dramaId;
 	private String title;
-	private LocalDate releasedAt;
-	private String description;
-	private List<DramaImageDto> images;
-	private List<GenreDto> genres;
+	private List<SceneResponseDto> scenes;
+	private PageResponseDto page;
 }
