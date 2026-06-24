@@ -27,5 +27,9 @@ public interface PlanMapper {
 	void updatePlan(
 			final TravelPlanRowDto dto
 			);
+	void deletePlan(
+			final int memberId,
+			final int planId
+			);
 
 }

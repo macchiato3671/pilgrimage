@@ -163,7 +163,7 @@ class PlanIntegrationTest {
 	}
 
 	@Test
-	@Disabled("API-015 삭제 엔드포인트 구현 후 활성화")
+	//@Disabled("API-015 삭제 엔드포인트 구현 후 활성화")
 	void API_015_여행_계획_삭제_성공() throws Exception {
 		MemberDto member = activeMember();
 		memberMapper.insertMember(member);

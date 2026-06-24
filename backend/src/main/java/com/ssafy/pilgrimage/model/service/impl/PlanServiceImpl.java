@@ -130,6 +130,25 @@ public class PlanServiceImpl implements PlanService {
 	}
 
 	@Override
+	public void deletePlan(
+			final int memberId,
+			final int planId
+			) {
+		TravelPlanRowDto savedPlan = mapper.selectPlanByPlanId(planId);
+
+		if (savedPlan == null)
+			throw new BusinessException(PlanErrorCode.TRAVEL_PLAN_NOT_FOUND);
+
+		if (!savedPlan.getMemberId().equals(memberId))
+			throw new BusinessException(PlanErrorCode.TRAVEL_PLAN_ACCESS_DENIED);
+
+		mapper.deletePlan(
+				memberId,
+				planId
+				);
+	}
+
+	@Override
 	public void addPlan(final TravelPlanRowDto travelPlanRow) {
 		mapper.insertPlan(travelPlanRow);
 	}
