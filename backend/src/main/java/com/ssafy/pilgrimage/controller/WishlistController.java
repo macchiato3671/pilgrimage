@@ -1,7 +1,6 @@
 package com.ssafy.pilgrimage.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,8 +27,7 @@ public class WishlistController {
 	
 	@PostMapping("/{sceneId}")
 	public ResponseEntity<Void> addWishlist(@PathVariable int sceneId){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		wishlistService.addWishlist(memberId, sceneId);
 		
@@ -40,8 +38,7 @@ public class WishlistController {
 	
 	@GetMapping("/dramas")
 	public ResponseEntity<WishlistDramaResponseDto> getDrama(){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		WishlistDramaResponseDto response = wishlistService.getDrama(memberId);
 		
@@ -55,8 +52,7 @@ public class WishlistController {
 														@PathVariable int dramaId,
 														@RequestParam int page,
 														@RequestParam int size){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		WishlistScenePageResponseDto response = wishlistService.getScene(memberId, dramaId, page, size);
 		
@@ -67,13 +63,17 @@ public class WishlistController {
 	
 	@DeleteMapping("/{sceneId}")
 	public ResponseEntity<Void> deleteWishlist(@PathVariable int sceneId){
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		int memberId = (int)authentication.getPrincipal();
+		int memberId = getAuthenticatedMemberId();
 		
 		wishlistService.deleteWishlist(memberId, sceneId);
 		
 		return ResponseEntity
 				.status(HttpStatus.OK)
 				.build();
+	}
+	
+	private int getAuthenticatedMemberId() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return Integer.parseInt(authentication.getName());
 	}
 }

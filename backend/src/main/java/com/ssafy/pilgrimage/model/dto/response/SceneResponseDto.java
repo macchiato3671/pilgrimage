@@ -2,6 +2,8 @@ package com.ssafy.pilgrimage.model.dto.response;
 
 import java.util.List;
 
+import com.ssafy.pilgrimage.model.dto.SceneImageDto;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,8 +15,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class KeywordDramaResponseDto {
-	private String keyword;
-	private List<DramaResponseDto> dramas;
-	private PageResponseDto page;
+public class SceneResponseDto {
+	private int sceneId;
+	private String name;
+	private String description;
+	private String address;
+	private double latitude;
+	private double longitude;
+	private List<SceneImageDto> images;
 }

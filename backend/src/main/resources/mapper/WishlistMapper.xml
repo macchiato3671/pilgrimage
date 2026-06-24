@@ -28,21 +28,6 @@
 		ORDER BY MAX(w.created_at) DESC
 	</select>
 	
-	<select id="selectGenresByDramaIds"
-			resultType="com.ssafy.pilgrimage.model.dto.DramaGenreRowDto">
-		SELECT
-			dg.drama_id as dramaId,
-			g.genre_id as genreId,
-			g.name as name
-		FROM DramaGenre dg
-		join Genre g on dg.genre_id = g.genre_id
-		WHERE dg.drama_id IN 
-		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
-	        #{dramaId}
-	    </foreach>
-		ORDER BY dg.drama_id ASC, g.name ASC
-	</select>
-	
 	<select id="countWishlistedScenesByDrama"
 			resultType="int">
 		SELECT COUNT(*)

@@ -13,8 +13,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class KeywordDramaResponseDto {
-	private String keyword;
-	private List<DramaResponseDto> dramas;
+public class DramaSceneResponseDto {
+	private int dramaId;
+	private String title;
+	private List<SceneResponseDto> scenes;
 	private PageResponseDto page;
 }

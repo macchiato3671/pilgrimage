@@ -93,7 +93,7 @@ public class WishlistServiceImpl implements WishlistService {
 				.toList();
 		
 		List<DramaGenreRowDto> genreRows = 
-				wishlistMapper.selectGenresByDramaIds(dramaIds);
+				dramaMapper.selectGenresByDramaIds(dramaIds);
 		
 		List<DramaImageRowDto> imageRows =
 				dramaMapper.selectDramaImagesByDramaIds(dramaIds);
