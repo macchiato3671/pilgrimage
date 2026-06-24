@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.moonback.pilgrimage.exception.BusinessException;
 import com.moonback.pilgrimage.exception.code.PlanErrorCode;
 import com.moonback.pilgrimage.model.dto.TravelPlanRowDto;
+import com.moonback.pilgrimage.model.dto.response.PlanResponseDto;
 import com.moonback.pilgrimage.model.dto.response.PlansResponseDto;
 import com.moonback.pilgrimage.model.service.PlanService;
 import com.moonback.pilgrimage.validator.MemberValidator;
@@ -47,6 +49,22 @@ public class PlanController {
 				memberId,
 				page,
 				pageSize
+				);
+
+		return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+	}
+
+	@GetMapping("/{planId}")
+	public ResponseEntity<PlanResponseDto> getPlan(
+			@PathVariable Integer planId
+			) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		int memberId = Integer.parseInt((String)authentication.getPrincipal());
+		validator.validateActiveMember(memberId);
+
+		PlanResponseDto responseDto = service.getPlan(
+				memberId,
+				planId
 				);
 
 		return ResponseEntity.status(HttpStatus.OK).body(responseDto);

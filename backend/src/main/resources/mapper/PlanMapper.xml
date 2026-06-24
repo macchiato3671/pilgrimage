@@ -15,6 +15,26 @@
 		LIMIT #{offset}, #{pageSize};
 	</select>
 
+	<select
+			id="selectPlan"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
+			>
+		SELECT *
+		FROM TravelPlan
+		WHERE member_id = #{memberId}
+			AND plan_id = #{planId};
+	</select>
+
+	<select
+			id="selectPlanDetails"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanDetailRowDto"
+			>
+		SELECT *
+		FROM PlanDetail
+		WHERE plan_id = #{planId}
+		ORDER BY day_no ASC, begin_time ASC;
+	</select>
+
 	<insert
 			id="insertPlan"
 			>
