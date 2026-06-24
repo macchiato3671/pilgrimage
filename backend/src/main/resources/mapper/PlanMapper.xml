@@ -4,5 +4,14 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.PlanMapper">
+	<select
+		id="findPlans"
+		resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto">
+		SELECT *
+		FROM TravelPlan
+		WHERE member_id = #{memberId}
+		ORDER BY updated_at DESC
+		LIMIT #{offset}, #{pageSize};
+	</select>
 
 </mapper>
