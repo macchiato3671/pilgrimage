@@ -1,7 +1,6 @@
 package com.moonback.pilgrimage.model.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ContentTypeDto {
-	private int contentTypeId;
-	private String name;
+public class PlaceImageRowDto {
+	private int placeId;
+	private int imgId;
+	private String url;
 }

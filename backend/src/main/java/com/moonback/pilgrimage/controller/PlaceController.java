@@ -5,9 +5,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.moonback.pilgrimage.exception.BusinessException;
+import com.moonback.pilgrimage.exception.code.PlaceErrorCode;
 import com.moonback.pilgrimage.model.dto.response.PlaceResponseDto;
+import com.moonback.pilgrimage.model.dto.response.PlaceSearchResponseDto;
 import com.moonback.pilgrimage.model.service.PlaceService;
 
 import lombok.RequiredArgsConstructor;
@@ -16,14 +20,44 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/places")
 @RequiredArgsConstructor
 public class PlaceController {
-	
+
 	private final PlaceService placeService;
-	
+
 	@GetMapping("/{placeId}")
 	public ResponseEntity<PlaceResponseDto> getPlace(@PathVariable int placeId){
-		
+
 		PlaceResponseDto response = placeService.getPlace(placeId);
-		
+
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.body(response);
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<PlaceSearchResponseDto> searchPlace(
+									@RequestParam(required = false) String keyword,
+									@RequestParam(required = false) Integer contentTypeId,
+									@RequestParam(required = false) Double latitude,
+									@RequestParam(required = false) Double longitude,
+									@RequestParam(defaultValue = "3.0") double radiusKm,
+									@RequestParam(defaultValue = "0") int page,
+									@RequestParam(defaultValue = "10") int size){
+
+		boolean hasLocationCondition = latitude != null && longitude != null;
+
+		if(keyword == null && contentTypeId == null && !hasLocationCondition) {
+			throw new BusinessException(PlaceErrorCode.REQUIRED_SEARCH_CONDITION);
+		}
+
+		PlaceSearchResponseDto response = placeService.searchPlace(
+				keyword,
+	            contentTypeId,
+	            latitude,
+	            longitude,
+	            radiusKm,
+	            page,
+	            size);
+
 		return ResponseEntity
 				.status(HttpStatus.OK)
 				.body(response);
