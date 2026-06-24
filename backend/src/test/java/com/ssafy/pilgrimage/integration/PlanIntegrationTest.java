@@ -122,7 +122,7 @@ class PlanIntegrationTest {
 	}
 
 	@Test
-	@Disabled("API-011 상세 조회 엔드포인트 구현 후 활성화")
+	//@Disabled("API-011 상세 조회 엔드포인트 구현 후 활성화")
 	void API_011_여행_일정_상세_조회_성공() throws Exception {
 		MemberDto member = activeMember();
 		memberMapper.insertMember(member);
