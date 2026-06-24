@@ -20,4 +20,5 @@ public class TravelPlanRowDto {
 	private LocalDateTime updatedAt;
 	private LocalDate beginDate;
 	private LocalDate endDate;
+	private String memo;
 }

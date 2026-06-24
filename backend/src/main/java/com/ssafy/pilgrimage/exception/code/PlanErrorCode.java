@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PlanErrorCode implements ErrorCode {
+	// API-010: 여행 일정 리스트 조회
 	INVALID_PAGE_ARG(
 			HttpStatus.BAD_REQUEST,
 			"Page argument must be bigger than or equal to 1."
@@ -15,8 +16,22 @@ public enum PlanErrorCode implements ErrorCode {
 	INVALID_PAGE_SIZE_ARG(
 			HttpStatus.BAD_REQUEST,
 			"Page size argument  must in the range of [1, 50]."
+			),
+
+	// API-009: 여행 일정 만들기
+	INVALID_TRAVEL_PLAN_TITLE(
+			HttpStatus.BAD_REQUEST,
+			"Invalid travel plan detail target"
+			),
+	INVALID_TRAVEL_PLAN_DATE(
+			HttpStatus.BAD_REQUEST,
+			"Invalid travel plan date range"
+			),
+	REQUIRED_FIELD_MISSING(
+			HttpStatus.BAD_REQUEST,
+			"Required field is missing"
 			);
 
 	private final HttpStatus status;
-    private final String message;
+	private final String message;
 }

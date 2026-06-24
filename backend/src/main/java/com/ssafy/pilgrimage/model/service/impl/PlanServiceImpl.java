@@ -24,7 +24,7 @@ public class PlanServiceImpl implements PlanService {
 			final int pageSize
 			) {
 
-		List<TravelPlanRowDto> planRows = mapper.findPlans(
+		List<TravelPlanRowDto> planRows = mapper.selectPlans(
 				memberId,
 				(page - 1) * pageSize,
 				pageSize
@@ -39,6 +39,7 @@ public class PlanServiceImpl implements PlanService {
 							.updatedAt(planRow.getUpdatedAt().toString())
 							.beginDate(planRow.getBeginDate().toString())
 							.endDate(planRow.getEndDate().toString())
+							.memo(planRow.getMemo())
 							.build();
 				})
 				.toList();
@@ -46,5 +47,10 @@ public class PlanServiceImpl implements PlanService {
 		return PlansResponseDto.builder()
 				.travelPlans(plans)
 				.build();
+	}
+
+	@Override
+	public void addPlan(final TravelPlanRowDto travelPlanRow) {
+		mapper.insertPlan(travelPlanRow);
 	}
 }

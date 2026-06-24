@@ -16,4 +16,5 @@ public class TravelPlanDto {
 	private String updatedAt;
 	private String beginDate;
 	private String endDate;
+	private String memo;
 }
