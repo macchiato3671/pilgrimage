@@ -8,20 +8,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SceneResponseDto {
-	
 	private int sceneId;
-	private int dramaId;
 	private String name;
 	private String description;
 	private String address;
-    private double latitude;
-    private double longitude;
-    
-	List<SceneImageDto> images;
+	private double latitude;
+	private double longitude;
+	private List<SceneImageDto> images;
 }

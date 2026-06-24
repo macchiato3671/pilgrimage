@@ -12,6 +12,8 @@ import com.ssafy.pilgrimage.exception.code.DramaErrorCode;
 import com.ssafy.pilgrimage.exception.code.SceneErrorCode;
 import com.ssafy.pilgrimage.exception.code.WishlistErrorCode;
 import com.ssafy.pilgrimage.model.dto.DramaGenreRowDto;
+import com.ssafy.pilgrimage.model.dto.DramaImageDto;
+import com.ssafy.pilgrimage.model.dto.DramaImageRowDto;
 import com.ssafy.pilgrimage.model.dto.GenreDto;
 import com.ssafy.pilgrimage.model.dto.SceneDto;
 import com.ssafy.pilgrimage.model.dto.SceneImageDto;
@@ -20,7 +22,6 @@ import com.ssafy.pilgrimage.model.dto.WishlistSceneRowDto;
 import com.ssafy.pilgrimage.model.dto.response.DramaResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.PageResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistDramaResponseDto;
-import com.ssafy.pilgrimage.model.dto.response.WishlistResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistScenePageResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 import com.ssafy.pilgrimage.model.mapper.DramaMapper;
@@ -62,12 +63,6 @@ public class WishlistServiceImpl implements WishlistService {
 	}
 
 	@Override
-	public WishlistResponseDto getWishlist(int memberId) {
-		wishlistMapper.getWishlist(memberId);
-		return null;
-	}
-
-	@Override
 	@Transactional
 	public void deleteWishlist(int memberId, int sceneId) {
 		memberValidator.validateActiveMember(memberId);
@@ -98,7 +93,10 @@ public class WishlistServiceImpl implements WishlistService {
 				.toList();
 		
 		List<DramaGenreRowDto> genreRows = 
-				wishlistMapper.selectGenresByDramaIds(dramaIds);
+				dramaMapper.selectGenresByDramaIds(dramaIds);
+		
+		List<DramaImageRowDto> imageRows =
+				dramaMapper.selectDramaImagesByDramaIds(dramaIds);
 		
 		Map<Integer, List<GenreDto>> genreMap = genreRows.stream()
 				.collect(Collectors.groupingBy(
@@ -112,9 +110,27 @@ public class WishlistServiceImpl implements WishlistService {
 						)
 				));
 		
+		Map<Integer, List<DramaImageDto>> imageMap = imageRows.stream()
+				.collect(Collectors.groupingBy(
+						DramaImageRowDto::getDramaId,
+						Collectors.mapping(
+								image -> DramaImageDto.builder()
+										.imgId(image.getImgId())
+										.url(image.getUrl())
+										.build(),
+								Collectors.toList()
+						)
+				));
+		
 		dramas.forEach(drama ->
 				drama.setGenres(
 						genreMap.getOrDefault(drama.getDramaId(), List.of())
+				)
+		);
+		
+		dramas.forEach(drama ->
+				drama.setImages(
+						imageMap.getOrDefault(drama.getDramaId(), List.of())
 				)
 		);
 		

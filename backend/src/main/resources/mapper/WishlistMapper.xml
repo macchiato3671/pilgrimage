@@ -19,35 +19,13 @@
 			d.drama_id as dramaId,
 			d.title as title,
 			d.released_at as releasedAt,
-			d.description as description,
-			(
-				SELECT di.url
-				FROM DramaImg di
-				WHERE d.drama_id = di.drama_id
-				ORDER BY di.img_id ASC
-				LIMIT 1
-			) AS url
+			d.description as description
 		FROM WISHLIST w
 		join Scene s on w.scene_id = s.scene_id 
 		join Drama d on s.drama_id = d.drama_id
 		WHERE w.member_id = #{memberId}
 		GROUP BY d.drama_id
 		ORDER BY MAX(w.created_at) DESC
-	</select>
-	
-	<select id="selectGenresByDramaIds"
-			resultType="com.ssafy.pilgrimage.model.dto.DramaGenreRowDto">
-		SELECT
-			dg.drama_id as dramaId,
-			g.genre_id as genreId,
-			g.name as name
-		FROM DramaGenre dg
-		join Genre g on dg.genre_id = g.genre_id
-		WHERE dg.drama_id IN 
-		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
-	        #{dramaId}
-	    </foreach>
-		ORDER BY dg.drama_id ASC, g.name ASC
 	</select>
 	
 	<select id="countWishlistedScenesByDrama"
