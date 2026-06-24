@@ -15,10 +15,16 @@ public interface PlanMapper {
 			final int memberId,
 			final int planId
 			);
+	TravelPlanRowDto selectPlanByPlanId(
+			final int planId
+			);
 	List<TravelPlanDetailRowDto> selectPlanDetails(
 			final int planId
 			);
 	void insertPlan(
+			final TravelPlanRowDto dto
+			);
+	void updatePlan(
 			final TravelPlanRowDto dto
 			);
 

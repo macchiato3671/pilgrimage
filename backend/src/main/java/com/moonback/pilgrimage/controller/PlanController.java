@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,7 @@ import com.moonback.pilgrimage.exception.code.PlanErrorCode;
 import com.moonback.pilgrimage.model.dto.TravelPlanRowDto;
 import com.moonback.pilgrimage.model.dto.response.PlanResponseDto;
 import com.moonback.pilgrimage.model.dto.response.PlansResponseDto;
+import com.moonback.pilgrimage.model.dto.response.TravelPlanRowResponseDto;
 import com.moonback.pilgrimage.model.service.PlanService;
 import com.moonback.pilgrimage.validator.MemberValidator;
 
@@ -86,6 +88,27 @@ public class PlanController {
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
 
+	@PutMapping("/{planId}")
+	public ResponseEntity<TravelPlanRowResponseDto> putPlan(
+			@PathVariable String planId,
+			@RequestBody TravelPlanRowDto travelPlanRowDto
+			) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		int memberId = Integer.parseInt((String)authentication.getPrincipal());
+		validator.validateActiveMember(memberId);
+
+		int planIdArg = parsePlanIdArg(planId);
+		validateTravelPlanRowDtoArg(travelPlanRowDto);
+
+		TravelPlanRowResponseDto responseDto = service.updatePlan(
+				memberId,
+				planIdArg,
+				travelPlanRowDto
+				);
+
+		return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+	}
+
 
 	private void validatePageArg(final int arg) {
 		if (arg < 1)
@@ -104,5 +127,21 @@ public class PlanController {
 
 		if (arg.getBeginDate().isAfter(arg.getEndDate()))
 			throw new BusinessException(PlanErrorCode.INVALID_TRAVEL_PLAN_DATE);
+	}
+	private int parsePlanIdArg(final String arg) {
+		if (arg == null || arg.isBlank())
+			throw new BusinessException(PlanErrorCode.INVALID_PLAN_ID);
+
+		try {
+			int planId = Integer.parseInt(arg);
+			validatePlanIdArg(planId);
+			return planId;
+		} catch (NumberFormatException e) {
+			throw new BusinessException(PlanErrorCode.INVALID_PLAN_ID);
+		}
+	}
+	private void validatePlanIdArg(final int arg) {
+		if (arg < 1)
+			throw new BusinessException(PlanErrorCode.INVALID_PLAN_ID);
 	}
 }

@@ -141,7 +141,7 @@ class PlanIntegrationTest {
 	}
 
 	@Test
-	@Disabled("API-014 수정 엔드포인트 구현 후 활성화")
+	//@Disabled("API-014 수정 엔드포인트 구현 후 활성화")
 	void API_014_여행_계획_수정_성공() throws Exception {
 		MemberDto member = activeMember();
 		memberMapper.insertMember(member);
