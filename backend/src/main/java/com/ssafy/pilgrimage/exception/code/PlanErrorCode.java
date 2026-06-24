@@ -32,6 +32,16 @@ public enum PlanErrorCode implements ErrorCode {
 			"Required field is missing"
 			),
 
+	// API-014: travel plan update
+	INVALID_PLAN_ID(
+			HttpStatus.BAD_REQUEST,
+			"Invalid travel plan ID."
+			),
+	TRAVEL_PLAN_ACCESS_DENIED(
+			HttpStatus.FORBIDDEN,
+			"Access to the travel plan is denied."
+			),
+
 	// API-011: travel plan detail lookup
 	TRAVEL_PLAN_NOT_FOUND(
 			HttpStatus.NOT_FOUND,

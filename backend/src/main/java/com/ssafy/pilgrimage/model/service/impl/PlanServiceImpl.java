@@ -13,6 +13,7 @@ import com.ssafy.pilgrimage.model.dto.TravelPlanDto;
 import com.ssafy.pilgrimage.model.dto.TravelPlanRowDto;
 import com.ssafy.pilgrimage.model.dto.response.PlanResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.PlansResponseDto;
+import com.ssafy.pilgrimage.model.dto.response.TravelPlanRowResponseDto;
 import com.ssafy.pilgrimage.model.mapper.PlanMapper;
 import com.ssafy.pilgrimage.model.service.PlanService;
 
@@ -92,6 +93,39 @@ public class PlanServiceImpl implements PlanService {
 				.endDate(planRow.getEndDate().toString())
 				.memo(planRow.getMemo())
 				.details(details)
+				.build();
+	}
+
+	@Override
+	public TravelPlanRowResponseDto updatePlan(
+			final int memberId,
+			final int planId,
+			final TravelPlanRowDto travelPlanRow
+			) {
+		TravelPlanRowDto savedPlan = mapper.selectPlanByPlanId(planId);
+
+		if (savedPlan == null)
+			throw new BusinessException(PlanErrorCode.TRAVEL_PLAN_NOT_FOUND);
+
+		if (!savedPlan.getMemberId().equals(memberId))
+			throw new BusinessException(PlanErrorCode.TRAVEL_PLAN_ACCESS_DENIED);
+
+		travelPlanRow.setPlanId(planId);
+		travelPlanRow.setMemberId(memberId);
+
+		mapper.updatePlan(travelPlanRow);
+
+		TravelPlanRowDto updatedPlan = mapper.selectPlanByPlanId(planId);
+
+		return TravelPlanRowResponseDto.builder()
+				.planId(updatedPlan.getPlanId())
+				.memberId(updatedPlan.getMemberId())
+				.title(updatedPlan.getTitle())
+				.createdAt(updatedPlan.getCreatedAt().toString())
+				.updatedAt(updatedPlan.getUpdatedAt().toString())
+				.beginDate(updatedPlan.getBeginDate().toString())
+				.endDate(updatedPlan.getEndDate().toString())
+				.memo(updatedPlan.getMemo())
 				.build();
 	}
 

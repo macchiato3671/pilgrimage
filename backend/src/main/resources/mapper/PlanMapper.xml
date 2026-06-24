@@ -26,6 +26,15 @@
 	</select>
 
 	<select
+			id="selectPlanByPlanId"
+			resultType="com.ssafy.pilgrimage.model.dto.TravelPlanRowDto"
+			>
+		SELECT *
+		FROM TravelPlan
+		WHERE plan_id = #{planId};
+	</select>
+
+	<select
 			id="selectPlanDetails"
 			resultType="com.ssafy.pilgrimage.model.dto.TravelPlanDetailRowDto"
 			>
@@ -53,5 +62,17 @@
 			#{memo}
 		)
 	</insert>
+
+	<update
+			id="updatePlan"
+			>
+		UPDATE TravelPlan
+		SET title = #{title},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			memo = #{memo}
+		WHERE plan_id = #{planId}
+			AND member_id = #{memberId}
+	</update>
 
 </mapper>
