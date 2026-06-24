@@ -1,3 +1,25 @@
-/.metadata/
-.venv
+# Local IDE/workspace files
+.vscode/
+.idea/
+.metadata/
+**/.metadata/
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
+**/.apt_generated/
+**/.springBeans
+**/.sts4-cache/
+*.iws
+*.iml
+*.ipr
+
+# Local environment files
+.venv/
 .env
+.env.*
+!.env.example
+!.env.*.example
+
+# Local/generated database dumps
+backend/src/main/resources/scripts/SSAFY_TRIP_*.sql
