@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.moonback.pilgrimage.model.dto.response.DramaSceneResponseDto;
 import com.moonback.pilgrimage.model.dto.response.GenreDramaResponseDto;
 import com.moonback.pilgrimage.model.dto.response.GenreResponseDto;
 import com.moonback.pilgrimage.model.dto.response.KeywordDramaResponseDto;
@@ -25,10 +26,10 @@ public class DramaController {
 	private final DramaService dramaService;
 	
 	@GetMapping("/{dramaId}")
-	public ResponseEntity<> getDramaScenes(@PathVariable int dramaId,
+	public ResponseEntity<DramaSceneResponseDto> getDramaScenes(@PathVariable int dramaId,
 											@RequestParam(defaultValue = "0") int page,
 											@RequestParam(defaultValue = "10") int size){
-		response = dramaService.getScene(dramaId, page, size);
+		DramaSceneResponseDto response = dramaService.getScene(dramaId, page, size);
 		
 		return ResponseEntity
 				.status(HttpStatus.OK)

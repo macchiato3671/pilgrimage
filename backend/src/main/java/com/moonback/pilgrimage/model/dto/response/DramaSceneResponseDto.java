@@ -13,9 +13,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GenreDramaResponseDto {
-	private int genreId;
-	private String name;
-	private List<DramaResponseDto> dramas;
+public class DramaSceneResponseDto {
+	private int dramaId;
+	private String title;
+	private List<SceneResponseDto> scenes;
 	private PageResponseDto page;
 }
