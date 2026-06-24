@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ssafy.pilgrimage.model.dto.response.NearPlaceResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.SceneResponseDto;
 import com.ssafy.pilgrimage.model.service.SceneService;
 
@@ -31,16 +32,17 @@ public class SceneController {
 	}
 	
 	@GetMapping("/{sceneId}/nearby-attractions")
-	public ResponseEntity<> getNearPlace(@PathVariable int sceneId,
+	public ResponseEntity<NearPlaceResponseDto> getNearPlace(@PathVariable int sceneId,
 										@RequestParam(defaultValue = "12") int contentTypeId,
 										@RequestParam(defaultValue = "3.0") double radiusKm,
 										@RequestParam(defaultValue = "0") int page,
 										@RequestParam(defaultValue = "10") int size){
-		response = sceneService.getNearPlace(int sceneId, 
-											int contentTypeId, 
-											double radius, 
-											int page, 
-											int size);
+		NearPlaceResponseDto response = sceneService.getNearPlace(
+				sceneId,
+				contentTypeId,
+				radiusKm,
+				page,
+				size);
 		
 		return ResponseEntity
 				.status(HttpStatus.OK)
