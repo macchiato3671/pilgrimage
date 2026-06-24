@@ -55,6 +55,7 @@ public class PilgrimageProperties {
 		private String bucket = "";
 		private String publicBaseUrl = "";
 		private String prefix = "pilgrimage";
+		private Duration presignedUrlExpiration = Duration.ofMinutes(10);
 	}
 
 	@Getter
