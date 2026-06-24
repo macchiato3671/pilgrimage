@@ -4,5 +4,12 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ssafy.pilgrimage.model.mapper.DramaMapper">
-
+	
+	<select id="existsByDramaId" resultType="boolean">
+		SELECT EXISTS (
+			SELECT 1
+			FROM Drama
+			WHERE drama_id = #{dramaId}
+		)
+	</select>
 </mapper>
