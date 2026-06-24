@@ -162,4 +162,4 @@ Object keys are based on the final converted WebP SHA-256:
 {prefix}/dramas/{dramaId}/scenes/{sceneId}/{sha256}.webp
 ```
 
-`object_key` is canonical. `url` is either `{S3_PUBLIC_BASE_URL}/{object_key}` or `s3://{bucket}/{object_key}`. Presigned URLs are not stored.
+`object_key` is canonical. `url` is either `{S3_PUBLIC_BASE_URL}/{object_key}` or `s3://{bucket}/{object_key}`. Presigned URLs are not stored; inject `S3PresignedUrlService` where a response needs a temporary GET URL.
