@@ -6,7 +6,7 @@ import LocationCard from '../components/cards/LocationCard.vue'
 import AppIcon from '../components/common/AppIcon.vue'
 import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
-import LocationDetailModal from '../components/common/LocationDetailModal.vue'
+import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import SearchBox from '../components/common/SearchBox.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
 import { PLACE_CATEGORIES, SEOUL_CENTER } from '../config/app'
@@ -25,17 +25,29 @@ const sourceScene = ref(null)
 const selected = ref(null)
 const detailOpen = ref(false)
 const sceneId = computed(() => route.query.sceneId || null)
-const mapItems = computed(() => (sourceScene.value ? [sourceScene.value, ...places.items] : places.items))
+const mapItems = computed(() => (sourceScene.value ? [sourceScene.value, ...places.mapItems] : places.mapItems))
+const resultTitle = computed(() => (query.value.trim() ? '키워드 검색' : category.value.label))
+const selectedMapId = computed(() => (selected.value ? `${selected.value.kind}:${selected.value.sceneId ?? selected.value.placeId}` : ''))
 
-const keyword = () => [query.value.trim(), category.value.keyword].filter(Boolean).join(' ')
-const load = async (page = 0) => {
+const load = async (page = 0, { forceMap = false } = {}) => {
+  const typedKeyword = query.value.trim()
+  const isKeywordSearch = Boolean(typedKeyword)
   try {
-    await places.search({ keyword: keyword(), category: category.value.id, center: center.value, sceneId: sceneId.value, page })
+    await places.search({
+      keyword: isKeywordSearch ? typedKeyword : category.value.keyword,
+      category: category.value.id,
+      center: center.value,
+      sceneId: sceneId.value,
+      page,
+      useCenter: forceMap || !isKeywordSearch,
+      useCategory: !isKeywordSearch,
+    })
   } catch (error) { ui.toast(error.message, 'error') }
 }
-const selectCategory = (next) => { category.value = next; load() }
+const selectCategory = (next) => { category.value = next; query.value = ''; load() }
 const open = async (item) => {
   selected.value = item
+  if (item.latitude != null && item.longitude != null) center.value = { latitude: item.latitude, longitude: item.longitude }
   detailOpen.value = true
   try { selected.value = item.kind === 'scene' ? await dramaApi.scene(item.sceneId) : await places.detail(item.placeId) } catch { /* 카드 데이터 유지 */ }
 }
@@ -44,20 +56,28 @@ const toggle = async (scene) => {
   catch (error) { ui.toast(error.message, 'error') }
 }
 
-onMounted(async () => {
+const loadSourceScene = async () => {
+  sourceScene.value = null
   if (sceneId.value) {
     try {
       sourceScene.value = await dramaApi.scene(sceneId.value)
       if (sourceScene.value.latitude != null) center.value = { latitude: sourceScene.value.latitude, longitude: sourceScene.value.longitude }
     } catch (error) { ui.toast(`기준 촬영지를 불러오지 못했습니다: ${error.message}`, 'error') }
   }
+}
+
+onMounted(async () => {
+  await loadSourceScene()
   load()
 })
-watch(() => route.query.sceneId, () => load())
+watch(() => route.query.sceneId, async () => {
+  await loadSourceScene()
+  load()
+})
 </script>
 
 <template>
-  <div class="split-page">
+  <div class="split-page" :class="{ 'detail-open': detailOpen }">
     <section class="content-panel location-list-panel">
       <header class="page-heading compact-heading">
         <span class="eyebrow">PLACES NEAR THE SCENE</span>
@@ -68,7 +88,7 @@ watch(() => route.query.sceneId, () => load())
       <div class="category-tabs">
         <button v-for="item in PLACE_CATEGORIES" :key="`${item.label}-${item.id}`" :class="{ active: category.label === item.label }" @click="selectCategory(item)">{{ item.label }}</button>
       </div>
-      <div class="section-heading"><div><span class="eyebrow">RESULT</span><h2>{{ category.label }}</h2></div><button v-if="!sourceScene" class="text-button" @click="load()"><AppIcon name="pin" :size="15" />현재 지도에서 검색</button></div>
+      <div class="section-heading"><div><span class="eyebrow">RESULT</span><h2>{{ resultTitle }}</h2></div><button v-if="!sourceScene" class="text-button" @click="load(0, { forceMap: true })"><AppIcon name="pin" :size="15" />현재 지도에서 검색</button></div>
       <LoadingState v-if="places.loading && !places.items.length" />
       <EmptyState v-else-if="!places.items.length" title="검색된 장소가 없습니다." description="검색어 또는 카테고리를 바꿔 보세요." />
       <div v-else class="card-list location-list">
@@ -77,8 +97,8 @@ watch(() => route.query.sceneId, () => load())
       </div>
     </section>
     <section class="map-panel">
-      <KakaoMap :items="mapItems" :favorites="wishlist.items" :center="center" :selected-id="selected?.sceneId || selected?.placeId" @select="open" @center-change="center = $event" />
+      <KakaoMap :items="mapItems" :favorites="wishlist.items" :center="center" :selected-id="selectedMapId" @select="open" @center-change="center = $event" />
     </section>
-    <LocationDetailModal :open="detailOpen" :item="selected" :wished="selected?.kind === 'scene' && wishlist.has(selected.sceneId)" @close="detailOpen = false" @toggle-wishlist="toggle" />
+    <LocationDetailPanel :open="detailOpen" :item="selected" :wished="selected?.kind === 'scene' && wishlist.has(selected.sceneId)" @close="detailOpen = false" @toggle-wishlist="toggle" />
   </div>
 </template>

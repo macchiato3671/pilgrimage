@@ -22,13 +22,14 @@
 	<select id="selectDramasByYear"
 			resultType="com.ssafy.pilgrimage.model.dto.DramaDto">
 		SELECT 
-			drama_id AS dramaId,
-	        title AS title,
-	        released_at AS releasedAt,
-	        description AS description
-		FROM DRAMA
-		WHERE YEAR(released_at) = #{year}
-		ORDER BY released_at DESC, drama_id DESC
+			d.drama_id AS dramaId,
+	        d.title AS title,
+	        d.released_at AS releasedAt,
+	        d.description AS description,
+	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM Drama d
+		WHERE YEAR(d.released_at) = #{year}
+		ORDER BY d.released_at DESC, d.drama_id DESC
 	    LIMIT #{size}
 	    OFFSET #{offset}
 	</select>
@@ -73,9 +74,10 @@
 			resultType="com.ssafy.pilgrimage.model.dto.DramaDto">
 		SELECT 
 			d.drama_id AS dramaId,
-	        title AS title,
-	        released_at AS releasedAt,
-	        description AS description
+	        d.title AS title,
+	        d.released_at AS releasedAt,
+	        d.description AS description,
+	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
 		FROM Drama d
 		JOIN DramaGenre dg on d.drama_id = dg.drama_id
 		WHERE dg.genre_id = #{genreId}
@@ -94,13 +96,14 @@
 	<select id="selectDramasByKeyword"
 			resultType="com.ssafy.pilgrimage.model.dto.DramaDto">
 		SELECT 
-			drama_id AS dramaId,
-	        title AS title,
-	        released_at AS releasedAt,
-	        description AS description
-		FROM DRAMA
-		WHERE title LIKE CONCAT('%', #{keyword}, '%')
-		ORDER BY released_at DESC, drama_id DESC
+			d.drama_id AS dramaId,
+	        d.title AS title,
+	        d.released_at AS releasedAt,
+	        d.description AS description,
+	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM Drama d
+		WHERE d.title LIKE CONCAT('%', #{keyword}, '%')
+		ORDER BY d.released_at DESC, d.drama_id DESC
 	    LIMIT #{size}
 	    OFFSET #{offset}
 	</select>
@@ -116,12 +119,13 @@
 	<select id="findByDramaId"
 			resultType="com.ssafy.pilgrimage.model.dto.DramaDto">
 		SELECT 
-			drama_id AS dramaId,
-	        title AS title,
-	        released_at AS releasedAt,
-	        description AS description
-		FROM Drama
-		WHERE drama_id = #{dramaId}
+			d.drama_id AS dramaId,
+	        d.title AS title,
+	        d.released_at AS releasedAt,
+	        d.description AS description,
+	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM Drama d
+		WHERE d.drama_id = #{dramaId}
 	</select>
 	
 	<select id="selectDramaImagesByDramaIds"

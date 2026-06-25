@@ -69,8 +69,12 @@ export const usePlansStore = defineStore('plans', {
     },
     async getById(planId, force = false) {
       const auth = useAuthStore()
-      let plan = !force && this.items.find((item) => String(item.planId) === String(planId))
-      if (auth.isAuthenticated && (force || !plan?.details?.length)) plan = await planApi.detail(planId)
+      let plan = this.items.find((item) => String(item.planId) === String(planId))
+      if (!auth.isAuthenticated) {
+        plan ||= readGuest().plans.find((item) => String(item.planId) === String(planId))
+      } else if (force || !plan?.details?.length) {
+        plan = await planApi.detail(planId)
+      }
       if (!plan) return null
       plan = this.decorate(await this.hydrateDetails(plan))
       this.replace(plan)

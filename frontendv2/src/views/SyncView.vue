@@ -11,7 +11,7 @@ const router = useRouter()
 const done = ref(false)
 const wishlistCount = computed(() => sync.snapshot.wishlist.length)
 const planCount = computed(() => sync.snapshot.plans.length)
-const next = () => router.replace(String(route.query.next || '/plans'))
+const next = () => router.replace(sync.resolveNextPath(String(route.query.next || '/plans')))
 
 const run = async () => {
   try { await sync.run(); done.value = true } catch { /* 로그에 표시 */ }

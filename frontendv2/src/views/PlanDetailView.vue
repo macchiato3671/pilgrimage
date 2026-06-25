@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
-import LocationDetailModal from '../components/common/LocationDetailModal.vue'
+import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
 import PlanFormModal from '../components/plan/PlanFormModal.vue'
 import { formatDate, daysBetween } from '../models/date'
@@ -32,6 +32,7 @@ const dayDetails = computed(() =>
     .sort((a, b) => String(a.beginTime).localeCompare(String(b.beginTime))),
 )
 const markers = computed(() => dayDetails.value.map((detail) => detail.item).filter(Boolean))
+const selectedMapId = computed(() => (selected.value ? `${selected.value.kind}:${selected.value.sceneId ?? selected.value.placeId}` : ''))
 
 const load = async () => {
   loading.value = true
@@ -64,7 +65,7 @@ onMounted(load)
 <template>
   <LoadingState v-if="loading" />
   <EmptyState v-else-if="!plan" title="여행 계획을 찾을 수 없습니다." description="삭제되었거나 접근 권한이 없는 계획입니다."><RouterLink class="button secondary" to="/plans">목록으로</RouterLink></EmptyState>
-  <div v-else class="split-page plan-detail-page">
+  <div v-else class="split-page plan-detail-page" :class="{ 'detail-open': detailOpen }">
     <section class="content-panel plan-detail-panel">
       <header class="subpage-header plan-title-header">
         <button class="icon-button" aria-label="뒤로" @click="router.push('/plans')"><AppIcon name="back" /></button>
@@ -83,8 +84,8 @@ onMounted(load)
       </div>
       <div v-if="plan.memo" class="memo-card"><span class="eyebrow">MEMO</span><p>{{ plan.memo }}</p></div>
     </section>
-    <section class="map-panel"><KakaoMap :items="markers" :favorites="wishlist.items" :selected-id="selected?.sceneId || selected?.placeId" :marker-color="plan.color" @select="openItem" /></section>
-    <LocationDetailModal :open="detailOpen" :item="selected" :wished="selected?.kind === 'scene' && wishlist.has(selected.sceneId)" @close="detailOpen = false" @toggle-wishlist="toggle" />
+    <section class="map-panel"><KakaoMap :items="markers" :favorites="wishlist.items" :selected-id="selectedMapId" :marker-color="plan.color" connect-items @select="openItem" /></section>
+    <LocationDetailPanel :open="detailOpen" :item="selected" :wished="selected?.kind === 'scene' && wishlist.has(selected.sceneId)" @close="detailOpen = false" @toggle-wishlist="toggle" />
     <PlanFormModal :open="formOpen" :plan="plan" @close="formOpen = false" @submit="updateInfo" />
   </div>
 </template>
