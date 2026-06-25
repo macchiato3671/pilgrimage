@@ -18,6 +18,7 @@ import com.moonback.pilgrimage.model.dto.response.NearPlaceResponseDto;
 import com.moonback.pilgrimage.model.dto.response.SceneResponseDto;
 import com.moonback.pilgrimage.model.mapper.PlaceMapper;
 import com.moonback.pilgrimage.model.mapper.SceneMapper;
+import com.moonback.pilgrimage.model.service.S3PresignedUrlService;
 import com.moonback.pilgrimage.model.service.SceneService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class SceneServiceImpl implements SceneService {
 
 	private final SceneMapper sceneMapper;
 	private final PlaceMapper placeMapper;
+	private final S3PresignedUrlService s3PresignedUrlService;
 	
 	@Override
 	@Transactional(readOnly = true)
@@ -41,7 +43,9 @@ public class SceneServiceImpl implements SceneService {
 	        throw new BusinessException(SceneErrorCode.SCENE_NOT_FOUND);
 	    }
 
-        List<SceneImageDto> images = sceneMapper.findSceneImagesBySceneId(sceneId);
+        List<SceneImageDto> images = sceneMapper.findSceneImagesBySceneId(sceneId).stream()
+				.map(this::toFetchableSceneImage)
+				.toList();
 
         return SceneResponseDto.builder()
                 .sceneId(sceneId)
@@ -127,6 +131,13 @@ public class SceneServiceImpl implements SceneService {
 		attractions.forEach(attraction -> {
 			attraction.setImages(imageMap.getOrDefault(attraction.getPlaceId(), List.of()));
 		});
+	}
+
+	private SceneImageDto toFetchableSceneImage(SceneImageDto image) {
+		return SceneImageDto.builder()
+				.imgId(image.getImgId())
+				.url(s3PresignedUrlService.toPresignedGetUrl(image.getUrl()))
+				.build();
 	}
 
 	private void validateNearPlaceRequest(int contentTypeId, double radiusKm, int page, int size) {
