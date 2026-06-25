@@ -226,8 +226,20 @@ public class PlanServiceImpl implements PlanService {
 	}
 
 	@Override
-	public void addPlan(final TravelPlanRowDto travelPlanRow) {
+	public PlanResponseDto addPlan(final TravelPlanRowDto travelPlanRow) {
 		mapper.insertPlan(travelPlanRow);
+		TravelPlanRowDto savedPlan = mapper.selectPlanByPlanId(travelPlanRow.getPlanId());
+
+		return PlanResponseDto.builder()
+				.planId(savedPlan.getPlanId())
+				.title(savedPlan.getTitle())
+				.createdAt(savedPlan.getCreatedAt().toString())
+				.updatedAt(savedPlan.getUpdatedAt().toString())
+				.beginDate(savedPlan.getBeginDate().toString())
+				.endDate(savedPlan.getEndDate().toString())
+				.memo(savedPlan.getMemo())
+				.details(List.of())
+				.build();
 	}
 
 	private void validatePlanDetailUpdateArg(

@@ -64,6 +64,8 @@
 
 	<insert
 			id="insertPlan"
+			useGeneratedKeys="true"
+			keyProperty="planId"
 			>
 		INSERT INTO TravelPlan(
 			member_id,
