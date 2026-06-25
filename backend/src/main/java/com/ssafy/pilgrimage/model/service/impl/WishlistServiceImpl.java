@@ -27,6 +27,7 @@ import com.ssafy.pilgrimage.model.dto.response.WishlistSceneResponseDto;
 import com.ssafy.pilgrimage.model.mapper.DramaMapper;
 import com.ssafy.pilgrimage.model.mapper.SceneMapper;
 import com.ssafy.pilgrimage.model.mapper.WishlistMapper;
+import com.ssafy.pilgrimage.model.service.S3PresignedUrlService;
 import com.ssafy.pilgrimage.model.service.WishlistService;
 import com.ssafy.pilgrimage.validator.MemberValidator;
 
@@ -42,6 +43,7 @@ public class WishlistServiceImpl implements WishlistService {
 	private final WishlistMapper wishlistMapper;
 	private final DramaMapper dramaMapper;
 	private final MemberValidator memberValidator;
+	private final S3PresignedUrlService s3PresignedUrlService;
 	
 	@Override
 	@Transactional
@@ -114,10 +116,7 @@ public class WishlistServiceImpl implements WishlistService {
 				.collect(Collectors.groupingBy(
 						DramaImageRowDto::getDramaId,
 						Collectors.mapping(
-								image -> DramaImageDto.builder()
-										.imgId(image.getImgId())
-										.url(image.getUrl())
-										.build(),
+								this::toFetchableDramaImage,
 								Collectors.toList()
 						)
 				));
@@ -180,10 +179,7 @@ public class WishlistServiceImpl implements WishlistService {
                 .collect(Collectors.groupingBy(
                         SceneImageRowDto::getSceneId,
                         Collectors.mapping(
-                                image -> SceneImageDto.builder()
-                                        .imgId(image.getImgId())
-                                        .url(image.getUrl())
-                                        .build(),
+                                this::toFetchableSceneImage,
                                 Collectors.toList()
                         )
                 ));
@@ -237,5 +233,19 @@ public class WishlistServiceImpl implements WishlistService {
                 .hasPrevious(page > 0)
                 .build();
     }
+
+	private DramaImageDto toFetchableDramaImage(DramaImageRowDto image) {
+		return DramaImageDto.builder()
+				.imgId(image.getImgId())
+				.url(s3PresignedUrlService.toPresignedGetUrl(image.getUrl()))
+				.build();
+	}
+
+	private SceneImageDto toFetchableSceneImage(SceneImageRowDto image) {
+		return SceneImageDto.builder()
+				.imgId(image.getImgId())
+				.url(s3PresignedUrlService.toPresignedGetUrl(image.getUrl()))
+				.build();
+	}
 
 }
