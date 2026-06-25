@@ -22,6 +22,7 @@ public class DramaResponseDto {
 	private String title;
 	private LocalDate releasedAt;
 	private String description;
+	private int sceneCount;
 	private List<DramaImageDto> images;
 	private List<GenreDto> genres;
 }

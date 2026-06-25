@@ -19,7 +19,8 @@
 			d.drama_id as dramaId,
 			d.title as title,
 			d.released_at as releasedAt,
-			d.description as description
+			d.description as description,
+			(SELECT COUNT(*) FROM Scene all_s WHERE all_s.drama_id = d.drama_id) as sceneCount
 		FROM WISHLIST w
 		join Scene s on w.scene_id = s.scene_id 
 		join Drama d on s.drama_id = d.drama_id

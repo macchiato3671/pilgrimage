@@ -98,7 +98,8 @@ public class MemberServiceImpl implements MemberService {
 			throw new BusinessException(MemberErrorCode.EMPTY_UPDATE_FILEDS);
 		}
 		
-		if (memberMapper.countByEmail(request.getEmail()) > 0) {
+		if (request.getEmail() != null && !request.getEmail().equals(member.getEmail()) &&
+			memberMapper.countByEmail(request.getEmail()) > 0) {
             throw new BusinessException(MemberErrorCode.EMAIL_ALREADY_EXISTS);
         }
 		

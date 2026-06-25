@@ -33,7 +33,7 @@ public interface PlanService {
 			final int planId,
 			final List<TravelPlanDetailRequestDto> planDetails
 	);
-	void addPlan(
+	PlanResponseDto addPlan(
 			final TravelPlanRowDto travelPlanRow
 	);
 

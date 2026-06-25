@@ -81,7 +81,7 @@ public class PlanController {
 	}
 
 	@PostMapping("")
-	public ResponseEntity<Void> postPlan(
+	public ResponseEntity<PlanResponseDto> postPlan(
 			@RequestBody TravelPlanRowDto travelPlanRowDto
 			) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -91,9 +91,9 @@ public class PlanController {
 		validateTravelPlanRowDtoArg(travelPlanRowDto);
 		travelPlanRowDto.setMemberId(memberId);
 
-		service.addPlan(travelPlanRowDto);
+		PlanResponseDto responseDto = service.addPlan(travelPlanRowDto);
 
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+		return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
 	}
 
 	@PutMapping("/{planId}")
