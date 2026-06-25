@@ -138,6 +138,7 @@ public class PlanServiceImpl implements PlanService {
 	}
 
 	@Override
+	@Transactional
 	public void deletePlan(
 			final int memberId,
 			final int planId
@@ -150,6 +151,7 @@ public class PlanServiceImpl implements PlanService {
 		if (!savedPlan.getMemberId().equals(memberId))
 			throw new BusinessException(PlanErrorCode.TRAVEL_PLAN_ACCESS_DENIED);
 
+		mapper.deletePlanDetails(planId);
 		mapper.deletePlan(
 				memberId,
 				planId
