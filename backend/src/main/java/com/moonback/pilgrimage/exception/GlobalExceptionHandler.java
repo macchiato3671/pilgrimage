@@ -1,6 +1,8 @@
 package com.moonback.pilgrimage.exception;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -19,6 +21,13 @@ public class GlobalExceptionHandler {
 				.status(errorCode.getStatus())
 				.body(ErrorResponseDto.from(errorCode));
 	}
+
+    @ExceptionHandler({ MethodArgumentNotValidException.class, HttpMessageNotReadableException.class })
+    public ResponseEntity<ErrorResponseDto> handleInvalidRequest(Exception e) {
+        return ResponseEntity
+                .status(CommonErrorCode.INVALID_REQUEST.getStatus())
+                .body(ErrorResponseDto.from(CommonErrorCode.INVALID_REQUEST));
+    }
 	
 	@ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleException(Exception e) {
