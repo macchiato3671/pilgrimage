@@ -46,6 +46,32 @@ public enum PlanErrorCode implements ErrorCode {
 	TRAVEL_PLAN_NOT_FOUND(
 			HttpStatus.NOT_FOUND,
 			"Travel plan not found"
+			),
+
+	// API-033: travel plan detail list update
+	INVALID_PLAN_DETAIL(
+			HttpStatus.BAD_REQUEST,
+			"Invalid travel plan detail."
+			),
+	INVALID_PLAN_DETAIL_TARGET(
+			HttpStatus.BAD_REQUEST,
+			"Invalid travel plan detail target."
+			),
+	INVALID_PLAN_DETAIL_TIME(
+			HttpStatus.BAD_REQUEST,
+			"Invalid travel plan detail time range."
+			),
+	PLACE_NOT_FOUND(
+			HttpStatus.NOT_FOUND,
+			"Place not found."
+			),
+	SCENE_NOT_FOUND(
+			HttpStatus.NOT_FOUND,
+			"Scene not found."
+			),
+	PLAN_DETAIL_OUT_OF_RANGE(
+			HttpStatus.UNPROCESSABLE_ENTITY,
+			"Travel plan detail is out of the travel date range."
 			);
 
 	private final HttpStatus status;

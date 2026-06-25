@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -176,6 +177,102 @@ class PlanIntegrationTest {
 				.andExpect(status().isOk());
 	}
 
+	@Test
+	void API_033_여행_세부_일정_목록_수정_성공() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int contentTypeId = insertContentType();
+		int placeId = insertPlace(contentTypeId);
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+		int updateDetailId = insertPlanDetail(planId, null, sceneId, 1, "10:30:00");
+		int deleteDetailId = insertPlanDetail(planId, placeId, null, 2, "14:00:00");
+
+		Map<String, Object> request = Map.of(
+				"details", List.of(
+						Map.of(
+								"detailId", updateDetailId,
+								"dayNo", 2,
+								"beginTime", "11:00:00",
+								"sceneId", sceneId
+								),
+						Map.of(
+								"dayNo", 1,
+								"beginTime", "09:00:00",
+								"placeId", placeId
+								)
+						)
+				);
+
+		mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.details").isArray())
+				.andExpect(jsonPath("$.details.length()").value(2))
+				.andExpect(jsonPath("$.details[0].detailId").exists())
+				.andExpect(jsonPath("$.details[0].dayNo").value(1))
+				.andExpect(jsonPath("$.details[0].beginTime").value("09:00:00"))
+				.andExpect(jsonPath("$.details[0].placeId").value(placeId))
+				.andExpect(jsonPath("$.details[1].detailId").value(updateDetailId))
+				.andExpect(jsonPath("$.details[1].dayNo").value(2))
+				.andExpect(jsonPath("$.details[1].beginTime").value("11:00:00"))
+				.andExpect(jsonPath("$.details[1].sceneId").value(sceneId));
+
+		Integer totalCount = jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM PlanDetail "
+						+ "WHERE plan_id = ?",
+				Integer.class,
+				planId
+				);
+		Integer updatedCount = jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM PlanDetail "
+						+ "WHERE detail_id = ? "
+						+ "AND plan_id = ? "
+						+ "AND scene_id = ? "
+						+ "AND place_id IS NULL "
+						+ "AND day_no = ? "
+						+ "AND begin_time = ?",
+				Integer.class,
+				updateDetailId,
+				planId,
+				sceneId,
+				2,
+				"11:00:00"
+				);
+		Integer insertedCount = jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM PlanDetail "
+						+ "WHERE plan_id = ? "
+						+ "AND place_id = ? "
+						+ "AND scene_id IS NULL "
+						+ "AND day_no = ? "
+						+ "AND begin_time = ?",
+				Integer.class,
+				planId,
+				placeId,
+				1,
+				"09:00:00"
+				);
+		Integer deletedCount = jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM PlanDetail "
+						+ "WHERE detail_id = ?",
+				Integer.class,
+				deleteDetailId
+				);
+
+		org.assertj.core.api.Assertions.assertThat(totalCount).isEqualTo(2);
+		org.assertj.core.api.Assertions.assertThat(updatedCount).isEqualTo(1);
+		org.assertj.core.api.Assertions.assertThat(insertedCount).isEqualTo(1);
+		org.assertj.core.api.Assertions.assertThat(deletedCount).isZero();
+	}
+
 	private MemberDto activeMember() {
 		MemberDto member = new MemberDto();
 		member.setEmail("plan-integration-" + System.nanoTime() + "@example.com");
@@ -231,5 +328,136 @@ class PlanIntegrationTest {
 		}, keyHolder);
 
 		return keyHolder.getKey().intValue();
+	}
+
+	private int insertContentType() {
+		int contentTypeId = nextPositiveId();
+		jdbcTemplate.update(
+				"INSERT INTO ContentType("
+						+ "content_type_id, "
+						+ "name"
+						+ ") VALUES (?, ?)",
+				contentTypeId,
+				"테스트 타입 " + contentTypeId
+				);
+		return contentTypeId;
+	}
+
+	private int insertPlace(int contentTypeId) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+
+		jdbcTemplate.update(connection -> {
+			PreparedStatement ps = connection.prepareStatement(
+					"INSERT INTO Place("
+							+ "content_id, "
+							+ "content_type_id, "
+							+ "name, "
+							+ "address, "
+							+ "latitude, "
+							+ "longitude, "
+							+ "description, "
+							+ "src_created_at, "
+							+ "src_updated_at"
+							+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS
+					);
+			ps.setString(1, "plan-integration-place-" + System.nanoTime());
+			ps.setInt(2, contentTypeId);
+			ps.setString(3, "테스트 장소");
+			ps.setString(4, "부산광역시 테스트구");
+			ps.setDouble(5, 35.1796);
+			ps.setDouble(6, 129.0756);
+			ps.setString(7, "테스트 장소 설명");
+			ps.setString(8, "2026-06-01 00:00:00");
+			ps.setString(9, "2026-06-01 00:00:00");
+			return ps;
+		}, keyHolder);
+
+		return keyHolder.getKey().intValue();
+	}
+
+	private int insertDrama() {
+		int dramaId = nextPositiveId();
+		jdbcTemplate.update(
+				"INSERT INTO Drama("
+						+ "drama_id, "
+						+ "title, "
+						+ "released_at, "
+						+ "description"
+						+ ") VALUES (?, ?, ?, ?)",
+				dramaId,
+				"테스트 드라마",
+				"2026-06-01",
+				"테스트 드라마 설명"
+				);
+		return dramaId;
+	}
+
+	private int insertScene(int dramaId) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+
+		jdbcTemplate.update(connection -> {
+			PreparedStatement ps = connection.prepareStatement(
+					"INSERT INTO Scene("
+							+ "drama_id, "
+							+ "name, "
+							+ "description, "
+							+ "address, "
+							+ "latitude, "
+							+ "longitude"
+							+ ") VALUES (?, ?, ?, ?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS
+					);
+			ps.setInt(1, dramaId);
+			ps.setString(2, "테스트 씬");
+			ps.setString(3, "테스트 씬 설명");
+			ps.setString(4, "부산광역시 테스트동");
+			ps.setDouble(5, 35.1796);
+			ps.setDouble(6, 129.0756);
+			return ps;
+		}, keyHolder);
+
+		return keyHolder.getKey().intValue();
+	}
+
+	private int insertPlanDetail(
+			int planId,
+			Integer placeId,
+			Integer sceneId,
+			int dayNo,
+			String beginTime
+			) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+
+		jdbcTemplate.update(connection -> {
+			PreparedStatement ps = connection.prepareStatement(
+					"INSERT INTO PlanDetail("
+							+ "plan_id, "
+							+ "place_id, "
+							+ "scene_id, "
+							+ "day_no, "
+							+ "begin_time"
+							+ ") VALUES (?, ?, ?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS
+					);
+			ps.setInt(1, planId);
+			if (placeId == null)
+				ps.setNull(2, Types.INTEGER);
+			else
+				ps.setInt(2, placeId);
+			if (sceneId == null)
+				ps.setNull(3, Types.INTEGER);
+			else
+				ps.setInt(3, sceneId);
+			ps.setInt(4, dayNo);
+			ps.setString(5, beginTime);
+			return ps;
+		}, keyHolder);
+
+		return keyHolder.getKey().intValue();
+	}
+
+	private int nextPositiveId() {
+		return (int)Math.floorMod(System.nanoTime(), 1_000_000_000L) + 1;
 	}
 }

@@ -1,5 +1,8 @@
 package com.ssafy.pilgrimage.controller;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ssafy.pilgrimage.exception.BusinessException;
 import com.ssafy.pilgrimage.exception.code.PlanErrorCode;
 import com.ssafy.pilgrimage.model.dto.TravelPlanRowDto;
+import com.ssafy.pilgrimage.model.dto.request.PlanDetailsRequestDto;
+import com.ssafy.pilgrimage.model.dto.request.TravelPlanDetailRequestDto;
+import com.ssafy.pilgrimage.model.dto.response.PlanDetailsResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.PlanResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.PlansResponseDto;
 import com.ssafy.pilgrimage.model.dto.response.TravelPlanRowResponseDto;
@@ -32,6 +38,7 @@ public class PlanController {
 	private static final int MAX_PAGE_SIZE = 50;
 	private static final String DEFAULT_PAGE = "1";
 	private static final String DEFAULT_PAGE_SIZE = "10";
+	private static final String PLAN_DETAIL_TIME_REGEX = "([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d";
 
 	private final PlanService service;
 	private final MemberValidator validator;
@@ -128,6 +135,27 @@ public class PlanController {
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 
+	@PutMapping("/{planId}/details")
+	public ResponseEntity<PlanDetailsResponseDto> putPlanDetails(
+			@PathVariable String planId,
+			@RequestBody PlanDetailsRequestDto planDetailsRequestDto
+			) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		int memberId = Integer.parseInt((String)authentication.getPrincipal());
+		validator.validateActiveMember(memberId);
+
+		int planIdArg = parsePlanIdArg(planId);
+		validatePlanDetailsRequestDtoArg(planDetailsRequestDto);
+
+		PlanDetailsResponseDto responseDto = service.updatePlanDetails(
+				memberId,
+				planIdArg,
+				planDetailsRequestDto.getDetails()
+				);
+
+		return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+	}
+
 	private void validatePageArg(final int arg) {
 		if (arg < 1)
 			throw new BusinessException(PlanErrorCode.INVALID_PAGE_ARG);
@@ -145,6 +173,34 @@ public class PlanController {
 
 		if (arg.getBeginDate().isAfter(arg.getEndDate()))
 			throw new BusinessException(PlanErrorCode.INVALID_TRAVEL_PLAN_DATE);
+	}
+	private void validatePlanDetailsRequestDtoArg(final PlanDetailsRequestDto arg) {
+		if (arg == null || arg.getDetails() == null || arg.getDetails().isEmpty())
+			throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL);
+
+		Set<Integer> detailIds = new HashSet<>();
+
+		for (TravelPlanDetailRequestDto detail : arg.getDetails()) {
+			if (detail == null || detail.getDayNo() == null || detail.getBeginTime() == null)
+				throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL);
+
+			if (detail.getDetailId() != null && (detail.getDetailId() < 1 || !detailIds.add(detail.getDetailId())))
+				throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL);
+
+			if (detail.getDayNo() < 1)
+				throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL);
+
+			if (detail.getBeginTime().isBlank() || !detail.getBeginTime().matches(PLAN_DETAIL_TIME_REGEX))
+				throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL_TIME);
+
+			if ((detail.getSceneId() == null && detail.getPlaceId() == null)
+					|| (detail.getSceneId() != null && detail.getPlaceId() != null))
+				throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL_TARGET);
+
+			if ((detail.getSceneId() != null && detail.getSceneId() < 1)
+					|| (detail.getPlaceId() != null && detail.getPlaceId() < 1))
+				throw new BusinessException(PlanErrorCode.INVALID_PLAN_DETAIL_TARGET);
+		}
 	}
 	private int parsePlanIdArg(final String arg) {
 		if (arg == null || arg.isBlank())

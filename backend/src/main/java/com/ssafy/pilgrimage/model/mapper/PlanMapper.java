@@ -21,15 +21,34 @@ public interface PlanMapper {
 	List<TravelPlanDetailRowDto> selectPlanDetails(
 			final int planId
 			);
+	int countPlaceByPlaceId(
+			final int placeId
+			);
+	int countSceneBySceneId(
+			final int sceneId
+			);
 	void insertPlan(
 			final TravelPlanRowDto dto
+			);
+	void insertPlanDetail(
+			final TravelPlanDetailRowDto dto
 			);
 	void updatePlan(
 			final TravelPlanRowDto dto
 			);
+	void updatePlanDetail(
+			final TravelPlanDetailRowDto dto
+			);
 	void deletePlan(
 			final int memberId,
 			final int planId
+			);
+	void deletePlanDetails(
+			final int planId
+			);
+	void deletePlanDetailsExcept(
+			final int planId,
+			final List<Integer> detailIds
 			);
 
 }
