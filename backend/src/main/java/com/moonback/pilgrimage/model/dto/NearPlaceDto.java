@@ -1,27 +1,26 @@
-package com.moonback.pilgrimage.model.dto.response;
+package com.moonback.pilgrimage.model.dto;
 
 import java.util.List;
 
-import com.moonback.pilgrimage.model.dto.SceneImageDto;
-
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class SceneResponseDto {
-	private int sceneId;
-	private int dramaId;
+public class NearPlaceDto {
+	private int placeId;
+	private int contentId;
 	private String name;
 	private String description;
 	private String address;
 	private double latitude;
 	private double longitude;
-	private List<SceneImageDto> images;
+	private List<PlaceImageDto> images;
+	private int contentTypeId;
+	private String contentTypeName;
+	private double distanceKm;
 }
