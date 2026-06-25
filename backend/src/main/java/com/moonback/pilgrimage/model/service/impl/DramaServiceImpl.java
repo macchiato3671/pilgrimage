@@ -30,6 +30,7 @@ import com.moonback.pilgrimage.model.dto.response.YearResponseDto;
 import com.moonback.pilgrimage.model.mapper.DramaMapper;
 import com.moonback.pilgrimage.model.mapper.SceneMapper;
 import com.moonback.pilgrimage.model.service.DramaService;
+import com.moonback.pilgrimage.model.service.S3PresignedUrlService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,6 +42,7 @@ public class DramaServiceImpl implements DramaService {
 	private static final int MAX_PAGE_SIZE = 50;
 	private final DramaMapper dramaMapper;
 	private final SceneMapper sceneMapper;
+	private final S3PresignedUrlService s3PresignedUrlService;
 	
 	@Override
 	public DramaSceneResponseDto getScene(int dramaId, int page, int size) {
@@ -82,10 +84,7 @@ public class DramaServiceImpl implements DramaService {
                 .collect(Collectors.groupingBy(
                         SceneImageRowDto::getSceneId,
                         Collectors.mapping(
-                                image -> SceneImageDto.builder()
-                                        .imgId(image.getImgId())
-                                        .url(image.getUrl())
-                                        .build(),
+                                this::toFetchableSceneImage,
                                 Collectors.toList()
                         )
                 ));
@@ -169,10 +168,7 @@ public class DramaServiceImpl implements DramaService {
 				.collect(Collectors.groupingBy(
 						DramaImageRowDto::getDramaId,
 						Collectors.mapping(
-								image -> DramaImageDto.builder()
-										.imgId(image.getImgId())
-										.url(image.getUrl())
-										.build(),
+								this::toFetchableDramaImage,
 								Collectors.toList()
 						)
 				));
@@ -257,10 +253,7 @@ public class DramaServiceImpl implements DramaService {
 				.collect(Collectors.groupingBy(
 						DramaImageRowDto::getDramaId,
 						Collectors.mapping(
-								image -> DramaImageDto.builder()
-										.imgId(image.getImgId())
-										.url(image.getUrl())
-										.build(),
+								this::toFetchableDramaImage,
 								Collectors.toList()
 						)
 				));
@@ -334,10 +327,7 @@ public class DramaServiceImpl implements DramaService {
 				.collect(Collectors.groupingBy(
 						DramaImageRowDto::getDramaId,
 						Collectors.mapping(
-								image -> DramaImageDto.builder()
-										.imgId(image.getImgId())
-										.url(image.getUrl())
-										.build(),
+								this::toFetchableDramaImage,
 								Collectors.toList()
 						)
 				));
@@ -390,4 +380,18 @@ public class DramaServiceImpl implements DramaService {
                 .hasPrevious(page > 0)
                 .build();
     }
+
+	private DramaImageDto toFetchableDramaImage(DramaImageRowDto image) {
+		return DramaImageDto.builder()
+				.imgId(image.getImgId())
+				.url(s3PresignedUrlService.toPresignedGetUrl(image.getUrl()))
+				.build();
+	}
+
+	private SceneImageDto toFetchableSceneImage(SceneImageRowDto image) {
+		return SceneImageDto.builder()
+				.imgId(image.getImgId())
+				.url(s3PresignedUrlService.toPresignedGetUrl(image.getUrl()))
+				.build();
+	}
 }
