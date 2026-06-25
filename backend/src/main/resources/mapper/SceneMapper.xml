@@ -18,12 +18,22 @@
 		WHERE scene_id = #{sceneId}
 	</select>
 	
+	<select id="findSceneImagesBySceneId"
+			resultType="com.ssafy.pilgrimage.model.dto.SceneImageDto">
+		SELECT
+			img_id AS imgId,
+			url
+		FROM SceneImg
+		WHERE scene_id = #{sceneId}
+		ORDER BY img_id ASC
+	</select>
+	
 	<select id="selectSceneImagesBySceneIds"
         resultType="com.ssafy.pilgrimage.model.dto.SceneImageRowDto">
 	    SELECT
 	        scene_id AS sceneId,
 	        img_id AS imgId,
-	        url AS url
+	        url
 	    FROM SceneImg
 	    WHERE scene_id IN
 	    <foreach collection="sceneIds" item="sceneId" open="(" separator="," close=")">
