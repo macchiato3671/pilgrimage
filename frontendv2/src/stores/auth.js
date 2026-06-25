@@ -45,6 +45,27 @@ export const useAuthStore = defineStore('auth', {
       this.persist({ ...this.session, member })
       return member
     },
+    async updateMe(form) {
+      if (!this.isAuthenticated) return null
+      this.busy = true
+      try {
+        const member = await authApi.updateMe(form)
+        this.persist({ ...this.session, member })
+        return member
+      } finally {
+        this.busy = false
+      }
+    },
+    async removeMe(request) {
+      if (!this.isAuthenticated) return
+      this.busy = true
+      try {
+        await authApi.removeMe(request)
+        this.logout()
+      } finally {
+        this.busy = false
+      }
+    },
     logout() {
       this.session = null
       writeStorage(STORAGE_KEYS.auth, null)

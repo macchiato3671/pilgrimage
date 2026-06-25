@@ -1,16 +1,20 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { loadKakaoMaps } from '../../api/kakao'
-import { SEOUL_CENTER } from '../../config/app'
+import { MAP_MARKER_COLORS, SEOUL_CENTER } from '../../config/app'
 import AppIcon from '../common/AppIcon.vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
   favorites: { type: Array, default: () => [] },
+  fitItems: { type: Array, default: () => [] },
+  routeItems: { type: Array, default: () => [] },
+  overlayItems: { type: Array, default: () => [] },
   selectedId: [String, Number],
   center: { type: Object, default: () => SEOUL_CENTER },
   level: { type: Number, default: 7 },
   markerColor: { type: String, default: '' },
+  routeColor: { type: String, default: '' },
   connectItems: Boolean,
   mapPadding: { type: Object, default: () => ({ top: 52, right: 52, bottom: 52, left: 52 }) },
 })
@@ -31,19 +35,38 @@ const closeEnough = (a, b) => {
   if (!a || !b) return false
   return Math.abs(a.latitude - b.latitude) < 0.00001 && Math.abs(a.longitude - b.longitude) < 0.00001
 }
+const mergeDisplayItems = (...groups) => {
+  const mapById = new Map()
+  groups.flat().filter(hasCoordinate).forEach((item) => mapById.set(idOf(item), { ...mapById.get(idOf(item)), ...item }))
+  return [...mapById.values()].filter(hasCoordinate)
+}
+const displayItems = computed(() =>
+  mergeDisplayItems(
+    props.favorites.map((item) => ({ ...item, favorite: true, primary: false })),
+    props.items.map((item) => ({ ...item, primary: true })),
+    props.overlayItems.map((item) => ({ ...item, planOverlay: true, primary: true })),
+  ),
+)
 const selectedKey = computed(() => {
   if (String(props.selectedId || '').includes(':')) return String(props.selectedId)
-  const item = props.items.find((candidate) => String(candidate.sceneId ?? candidate.placeId) === String(props.selectedId))
+  const item = displayItems.value.find((candidate) => String(candidate.sceneId ?? candidate.placeId) === String(props.selectedId))
   return item ? idOf(item) : ''
 })
-const mergedItems = computed(() => {
-  const mapById = new Map()
-  props.favorites.forEach((item) => mapById.set(idOf(item), { ...item, favorite: true, primary: false }))
-  props.items.forEach((item) => mapById.set(idOf(item), { ...mapById.get(idOf(item)), ...item, primary: true }))
-  return [...mapById.values()].filter(hasCoordinate)
+const selectedItem = computed(() => displayItems.value.find((item) => idOf(item) === selectedKey.value))
+const fitCandidates = computed(() => {
+  const source = props.fitItems.length
+    ? props.fitItems
+    : props.items.length
+      ? props.items
+      : props.favorites.length
+        ? props.favorites
+        : props.overlayItems
+  return mergeDisplayItems(source)
 })
-const selectedItem = computed(() => mergedItems.value.find((item) => idOf(item) === selectedKey.value))
-const routeItems = computed(() => props.items.filter(hasCoordinate))
+const routeCandidates = computed(() => {
+  const source = props.routeItems.length ? props.routeItems : props.connectItems ? props.items : []
+  return source.filter(hasCoordinate)
+})
 const padding = computed(() => ({
   top: props.mapPadding?.top ?? 52,
   right: props.mapPadding?.right ?? 52,
@@ -58,11 +81,12 @@ const markerSvg = (color, selected) => {
 }
 
 const markerColor = (item, selected) => {
-  if (selected) return '#1f2937'
+  if (selected) return MAP_MARKER_COLORS.selected
+  if (item.planOverlay && item.planColor) return item.planColor
   if (item.primary && props.markerColor) return props.markerColor
-  if (item.favorite) return '#f35f45'
+  if (item.favorite) return MAP_MARKER_COLORS.favorite
   if (props.markerColor) return props.markerColor
-  return item.kind === 'scene' ? '#f35f45' : '#3e88d6'
+  return item.kind === 'scene' ? MAP_MARKER_COLORS.scene : MAP_MARKER_COLORS.place
 }
 
 const clearMarkers = () => {
@@ -76,12 +100,12 @@ const clearPolyline = () => {
 
 const drawPolyline = () => {
   clearPolyline()
-  if (!props.connectItems || routeItems.value.length < 2) return
+  if ((!props.connectItems && !props.routeItems.length) || routeCandidates.value.length < 2) return
   polylineObject = new window.kakao.maps.Polyline({
     map,
-    path: routeItems.value.map(latLngOf),
+    path: routeCandidates.value.map(latLngOf),
     strokeWeight: 4,
-    strokeColor: props.markerColor || '#3e88d6',
+    strokeColor: props.routeColor || props.markerColor || MAP_MARKER_COLORS.route,
     strokeOpacity: 0.78,
     strokeStyle: 'solid',
   })
@@ -102,7 +126,7 @@ const draw = ({ fit = true } = {}) => {
   clearMarkers()
   drawPolyline()
   const bounds = new window.kakao.maps.LatLngBounds()
-  mergedItems.value.forEach((item) => {
+  displayItems.value.forEach((item) => {
     const position = latLngOf(item)
     const selected = idOf(item) === selectedKey.value
     const imageSize = selected ? new window.kakao.maps.Size(42, 52) : new window.kakao.maps.Size(34, 44)
@@ -112,11 +136,15 @@ const draw = ({ fit = true } = {}) => {
     const marker = new window.kakao.maps.Marker({ map, position, image, title: item.name })
     window.kakao.maps.event.addListener(marker, 'click', () => emit('select', item))
     markerObjects.push(marker)
-    bounds.extend(position)
   })
-  if (!fit || !mergedItems.value.length) return
-  if (mergedItems.value.length === 1) {
-    focusItem(mergedItems.value[0], { level: 4 })
+  if (selectedItem.value) {
+    focusItem(selectedItem.value)
+    return
+  }
+  fitCandidates.value.forEach((item) => bounds.extend(latLngOf(item)))
+  if (!fit || !fitCandidates.value.length) return
+  if (fitCandidates.value.length === 1) {
+    focusItem(fitCandidates.value[0], { level: 4 })
   } else map.setBounds(bounds, padding.value.top, padding.value.right, padding.value.bottom, padding.value.left)
 }
 
@@ -150,8 +178,8 @@ const init = async () => {
   }
 }
 
-watch(() => [props.items, props.favorites, props.connectItems, props.markerColor, props.mapPadding], () => draw(), { deep: true })
-watch(() => props.selectedId, () => { draw({ fit: false }); focusItem(selectedItem.value) })
+watch(() => [props.items, props.favorites, props.fitItems, props.routeItems, props.overlayItems, props.connectItems, props.markerColor, props.routeColor, props.mapPadding], () => draw({ fit: !selectedItem.value }), { deep: true })
+watch(() => props.selectedId, () => draw({ fit: false }))
 watch(
   () => props.center,
   (center) => {

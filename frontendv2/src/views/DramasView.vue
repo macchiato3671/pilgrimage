@@ -6,6 +6,7 @@ import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
 import SearchBox from '../components/common/SearchBox.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
+import { usePlanMapOverlay } from '../composables/usePlanMapOverlay'
 import { useExploreStore } from '../stores/explore'
 import { useUiStore } from '../stores/ui'
 import { useWishlistStore } from '../stores/wishlist'
@@ -14,6 +15,7 @@ const explore = useExploreStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
 const router = useRouter()
+const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
 const query = ref(explore.keyword)
 const error = ref('')
 const heading = computed(() => {
@@ -40,7 +42,7 @@ onMounted(() => {
       <header class="page-heading">
         <span class="eyebrow">K-DRAMA PILGRIMAGE</span>
         <h1>작품 속 장면을<br />여행지로 만나보세요.</h1>
-        <p>좋아한 작품을 고르면 서울의 촬영지와 주변 여행 장소를 한 번에 연결해 드립니다.</p>
+        <p>좋아한 작품을 고르면 촬영지와 주변 여행 장소를 한 번에 연결해 드립니다.</p>
       </header>
       <SearchBox v-model="query" placeholder="드라마·영화 제목 검색" :busy="explore.loading" @search="run(() => explore.search($event))" />
       <div class="filter-row">
@@ -65,7 +67,13 @@ onMounted(() => {
       </div>
     </section>
     <section class="map-panel">
-      <KakaoMap :favorites="wishlist.items" />
+      <KakaoMap
+        :favorites="wishlist.items"
+        :overlay-items="planOverlayItems"
+        :route-items="planOverlayItems"
+        :route-color="planOverlayColor"
+        connect-items
+      />
       <div class="map-callout"><strong>위시리스트 촬영지는 항상 지도에 표시됩니다.</strong><span>마커를 눌러 저장한 장소를 다시 확인하세요.</span></div>
     </section>
   </div>

@@ -6,6 +6,8 @@ import AppIcon from '../common/AppIcon.vue'
 const props = defineProps({ day: { type: Object, required: true }, details: { type: Array, default: () => [] } })
 const emit = defineEmits(['external-drop', 'move', 'remove', 'time'])
 const over = ref(false)
+const editingId = ref('')
+const draftTime = ref('')
 const ordered = computed(() => [...props.details].sort((a, b) => String(a.beginTime).localeCompare(String(b.beginTime))))
 
 const read = (event, type) => {
@@ -24,6 +26,18 @@ const dragDetail = (event, detail) => {
   event.dataTransfer.effectAllowed = 'move'
   event.dataTransfer.setData('application/x-pilgrimage-detail', detail.clientId)
 }
+const openTimeEditor = (detail) => {
+  editingId.value = detail.clientId
+  draftTime.value = detail.beginTime || '09:00'
+}
+const closeTimeEditor = () => {
+  editingId.value = ''
+  draftTime.value = ''
+}
+const applyTime = () => {
+  if (editingId.value && draftTime.value) emit('time', editingId.value, draftTime.value)
+  closeTimeEditor()
+}
 </script>
 
 <template>
@@ -41,7 +55,18 @@ const dragDetail = (event, detail) => {
       >
         <span class="drag-handle"><AppIcon name="drag" :size="17" /></span>
         <div><strong>{{ detail.item?.name || '장소 정보 불러오는 중' }}</strong><small>{{ detail.item?.kind === 'scene' ? '촬영지' : '주변 장소' }}</small></div>
-        <label class="time-input"><AppIcon name="clock" :size="14" /><input :value="detail.beginTime" type="time" @input="emit('time', detail.clientId, $event.target.value)" /></label>
+        <div class="time-edit-wrap">
+          <button type="button" class="time-button" @click.stop="openTimeEditor(detail)">
+            <AppIcon name="clock" :size="14" />{{ detail.beginTime }}
+          </button>
+          <div v-if="editingId === detail.clientId" class="time-popover" @click.stop>
+            <input v-model="draftTime" type="time" />
+            <div>
+              <button type="button" class="button secondary small" @click="closeTimeEditor">취소</button>
+              <button type="button" class="button primary small" @click="applyTime">확인</button>
+            </div>
+          </div>
+        </div>
         <button class="icon-button tiny" aria-label="일정에서 제거" @click="emit('remove', detail.clientId)"><AppIcon name="close" :size="15" /></button>
       </article>
       <div v-if="!ordered.length" class="day-empty"><AppIcon name="plus" :size="20" /><span>촬영지나 장소를<br />여기로 끌어놓으세요.</span></div>

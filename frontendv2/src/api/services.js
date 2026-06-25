@@ -97,7 +97,7 @@ export const authApi = {
   async me() {
     return normalizeMember(await get('/me'))
   },
-  updateMe: (member) => patch('/me', member),
+  updateMe: async (member) => normalizeMember(await patch('/me', member)),
   removeMe: (request = {}) => remove('/me', request),
 }
 

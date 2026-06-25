@@ -9,6 +9,7 @@ import LoadingState from '../components/common/LoadingState.vue'
 import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import SearchBox from '../components/common/SearchBox.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
+import { usePlanMapOverlay } from '../composables/usePlanMapOverlay'
 import { PLACE_CATEGORIES, SEOUL_CENTER } from '../config/app'
 import { usePlacesStore } from '../stores/places'
 import { useUiStore } from '../stores/ui'
@@ -18,6 +19,7 @@ const route = useRoute()
 const places = usePlacesStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
+const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
 const query = ref(String(route.query.keyword || ''))
 const category = ref(PLACE_CATEGORIES[0])
 const center = ref({ ...SEOUL_CENTER })
@@ -26,6 +28,7 @@ const selected = ref(null)
 const detailOpen = ref(false)
 const sceneId = computed(() => route.query.sceneId || null)
 const mapItems = computed(() => (sourceScene.value ? [sourceScene.value, ...places.mapItems] : places.mapItems))
+const mapFitItems = computed(() => (places.mapItems.length ? places.mapItems : sourceScene.value ? [sourceScene.value] : []))
 const resultTitle = computed(() => (query.value.trim() ? '키워드 검색' : category.value.label))
 const selectedMapId = computed(() => (selected.value ? `${selected.value.kind}:${selected.value.sceneId ?? selected.value.placeId}` : ''))
 
@@ -97,7 +100,19 @@ watch(() => route.query.sceneId, async () => {
       </div>
     </section>
     <section class="map-panel">
-      <KakaoMap :items="mapItems" :favorites="wishlist.items" :center="center" :selected-id="selectedMapId" @select="open" @center-change="center = $event" />
+      <KakaoMap
+        :items="mapItems"
+        :fit-items="mapFitItems"
+        :favorites="wishlist.items"
+        :overlay-items="planOverlayItems"
+        :route-items="planOverlayItems"
+        :route-color="planOverlayColor"
+        :center="center"
+        :selected-id="selectedMapId"
+        connect-items
+        @select="open"
+        @center-change="center = $event"
+      />
     </section>
     <LocationDetailPanel :open="detailOpen" :item="selected" :wished="selected?.kind === 'scene' && wishlist.has(selected.sceneId)" @close="detailOpen = false" @toggle-wishlist="toggle" />
   </div>

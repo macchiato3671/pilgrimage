@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/common/AppIcon.vue'
 import EmptyState from '../components/common/EmptyState.vue'
@@ -7,6 +7,8 @@ import LoadingState from '../components/common/LoadingState.vue'
 import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
 import PlanFormModal from '../components/plan/PlanFormModal.vue'
+import { usePlanMapOverlay } from '../composables/usePlanMapOverlay'
+import { SEOUL_CENTER } from '../config/app'
 import { formatDate, daysBetween } from '../models/date'
 import { useEditorStore } from '../stores/editor'
 import { usePlansStore } from '../stores/plans'
@@ -19,12 +21,14 @@ const plans = usePlansStore()
 const editor = useEditorStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
+const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
 const plan = ref(null)
 const loading = ref(true)
 const selectedDay = ref(1)
 const selected = ref(null)
 const detailOpen = ref(false)
 const formOpen = ref(false)
+const mapCenter = ref({ ...SEOUL_CENTER })
 const days = computed(() => (plan.value ? daysBetween(plan.value.beginDate, plan.value.endDate) : []))
 const dayDetails = computed(() =>
   (plan.value?.details || [])
@@ -33,6 +37,7 @@ const dayDetails = computed(() =>
 )
 const markers = computed(() => dayDetails.value.map((detail) => detail.item).filter(Boolean))
 const selectedMapId = computed(() => (selected.value ? `${selected.value.kind}:${selected.value.sceneId ?? selected.value.placeId}` : ''))
+const routeMarkers = computed(() => (planOverlayItems.value.length ? planOverlayItems.value : markers.value))
 
 const load = async () => {
   loading.value = true
@@ -40,7 +45,13 @@ const load = async () => {
   catch (error) { ui.toast(error.message, 'error') }
   finally { loading.value = false }
 }
-const openItem = (item) => { selected.value = item; detailOpen.value = true }
+const openItem = async (item) => {
+  selected.value = item
+  if (item?.latitude != null && item?.longitude != null) mapCenter.value = { latitude: item.latitude, longitude: item.longitude }
+  detailOpen.value = true
+  await nextTick()
+  if (item?.latitude != null && item?.longitude != null) mapCenter.value = { latitude: item.latitude, longitude: item.longitude }
+}
 const edit = async () => {
   try { await editor.open(plan.value); ui.toast('일정 편집기를 열었습니다.', 'success') }
   catch (error) { ui.toast(error.message, 'error') }
@@ -84,7 +95,22 @@ onMounted(load)
       </div>
       <div v-if="plan.memo" class="memo-card"><span class="eyebrow">MEMO</span><p>{{ plan.memo }}</p></div>
     </section>
-    <section class="map-panel"><KakaoMap :items="markers" :favorites="wishlist.items" :selected-id="selectedMapId" :marker-color="plan.color" connect-items @select="openItem" /></section>
+    <section class="map-panel">
+      <KakaoMap
+        :items="markers"
+        :fit-items="markers"
+        :route-items="routeMarkers"
+        :overlay-items="planOverlayItems"
+        :favorites="wishlist.items"
+        :center="mapCenter"
+        :selected-id="selectedMapId"
+        :marker-color="plan.color"
+        :route-color="planOverlayColor || plan.color"
+        connect-items
+        @select="openItem"
+        @center-change="mapCenter = $event"
+      />
+    </section>
     <LocationDetailPanel :open="detailOpen" :item="selected" :wished="selected?.kind === 'scene' && wishlist.has(selected.sceneId)" @close="detailOpen = false" @toggle-wishlist="toggle" />
     <PlanFormModal :open="formOpen" :plan="plan" @close="formOpen = false" @submit="updateInfo" />
   </div>
