@@ -1,5 +1,6 @@
 package com.ssafy.pilgrimage.integration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,11 +12,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,10 +30,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.pilgrimage.exception.code.PlanErrorCode;
 import com.ssafy.pilgrimage.model.dto.MemberDto;
 import com.ssafy.pilgrimage.model.mapper.MemberMapper;
 import com.ssafy.pilgrimage.model.type.MemberRole;
@@ -96,15 +99,83 @@ class PlanIntegrationTest {
 				"부산 여행 메모"
 				);
 
-		org.assertj.core.api.Assertions.assertThat(count).isEqualTo(1);
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	void API_009_create_plan_missing_required_field_returns_REQUIRED_FIELD_MISSING() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		Map<String, Object> request = Map.of(
+				"title", "Busan tour",
+				"beginDate", "2026-06-12"
+				);
+
+		assertPlanError(
+				mockMvc.perform(post("/api/v1/plans")
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request))),
+				PlanErrorCode.REQUIRED_FIELD_MISSING
+				);
+		assertThat(countPlans(member.getMemberId())).isZero();
+	}
+
+	@Test
+	void API_009_create_plan_blank_title_returns_INVALID_TRAVEL_PLAN_TITLE() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		Map<String, Object> request = Map.of(
+				"title", " ",
+				"beginDate", "2026-06-12",
+				"endDate", "2026-06-13"
+				);
+
+		assertPlanError(
+				mockMvc.perform(post("/api/v1/plans")
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request))),
+				PlanErrorCode.INVALID_TRAVEL_PLAN_TITLE
+				);
+		assertThat(countPlans(member.getMemberId())).isZero();
+	}
+
+	@Test
+	void API_009_create_plan_reversed_date_returns_INVALID_TRAVEL_PLAN_DATE() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		Map<String, Object> request = Map.of(
+				"title", "Busan tour",
+				"beginDate", "2026-06-13",
+				"endDate", "2026-06-12"
+				);
+
+		assertPlanError(
+				mockMvc.perform(post("/api/v1/plans")
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request))),
+				PlanErrorCode.INVALID_TRAVEL_PLAN_DATE
+				);
+		assertThat(countPlans(member.getMemberId())).isZero();
 	}
 
 	@Test
 	void API_010_여행_일정_리스트_조회_성공() throws Exception {
 		MemberDto member = activeMember();
 		memberMapper.insertMember(member);
+		MemberDto otherMember = activeMember();
+		memberMapper.insertMember(otherMember);
 		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
 		insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		insertPlan(otherMember.getMemberId(), "남의 여행", "2026-06-12", "2026-06-13", "남의 여행 메모");
 
 		mockMvc.perform(get("/api/v1/plans")
 						.with(authentication(auth))
@@ -113,6 +184,7 @@ class PlanIntegrationTest {
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.travelPlans").isArray())
+				.andExpect(jsonPath("$.travelPlans.length()").value(1))
 				.andExpect(jsonPath("$.travelPlans[0].planId").exists())
 				.andExpect(jsonPath("$.travelPlans[0].title").value("부산 국밥 투어"))
 				.andExpect(jsonPath("$.travelPlans[0].createdAt").exists())
@@ -123,12 +195,47 @@ class PlanIntegrationTest {
 	}
 
 	@Test
+	void API_010_get_plans_invalid_page_returns_INVALID_PAGE_ARG() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(get("/api/v1/plans")
+						.with(authentication(auth))
+						.param("page", "0")
+						.param("pageSize", "10")
+						.contentType(MediaType.APPLICATION_JSON)),
+				PlanErrorCode.INVALID_PAGE_ARG
+				);
+	}
+
+	@Test
+	void API_010_get_plans_invalid_page_size_returns_INVALID_PAGE_SIZE_ARG() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(get("/api/v1/plans")
+						.with(authentication(auth))
+						.param("page", "1")
+						.param("pageSize", "51")
+						.contentType(MediaType.APPLICATION_JSON)),
+				PlanErrorCode.INVALID_PAGE_SIZE_ARG
+				);
+	}
+
+	@Test
 	//@Disabled("API-011 상세 조회 엔드포인트 구현 후 활성화")
 	void API_011_여행_일정_상세_조회_성공() throws Exception {
 		MemberDto member = activeMember();
 		memberMapper.insertMember(member);
 		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
 		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+		insertPlanDetail(planId, null, sceneId, 1, "10:30:00");
 
 		mockMvc.perform(get("/api/v1/plans/{planId}", planId)
 						.with(authentication(auth))
@@ -138,7 +245,25 @@ class PlanIntegrationTest {
 				.andExpect(jsonPath("$.title").value("부산 국밥 투어"))
 				.andExpect(jsonPath("$.beginDate").value("2026-06-12"))
 				.andExpect(jsonPath("$.endDate").value("2026-06-13"))
-				.andExpect(jsonPath("$.details").isArray());
+				.andExpect(jsonPath("$.details").isArray())
+				.andExpect(jsonPath("$.details.length()").value(1))
+				.andExpect(jsonPath("$.details[0].dayNo").value(1))
+				.andExpect(jsonPath("$.details[0].beginTime").value("10:30:00"))
+				.andExpect(jsonPath("$.details[0].sceneId").value(sceneId));
+	}
+
+	@Test
+	void API_011_get_plan_not_found_returns_TRAVEL_PLAN_NOT_FOUND() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(get("/api/v1/plans/{planId}", nextPositiveId())
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)),
+				PlanErrorCode.TRAVEL_PLAN_NOT_FOUND
+				);
 	}
 
 	@Test
@@ -160,7 +285,126 @@ class PlanIntegrationTest {
 						.with(authentication(auth))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.planId").value(planId))
+				.andExpect(jsonPath("$.memberId").value(member.getMemberId()))
+				.andExpect(jsonPath("$.title").value("부산 바다 투어"))
+				.andExpect(jsonPath("$.beginDate").value("2026-07-01"))
+				.andExpect(jsonPath("$.endDate").value("2026-07-03"))
+				.andExpect(jsonPath("$.memo").value("수정된 부산 여행 메모"));
+
+		Integer count = jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM TravelPlan "
+						+ "WHERE plan_id = ? "
+						+ "AND member_id = ? "
+						+ "AND title = ? "
+						+ "AND begin_date = ? "
+						+ "AND end_date = ? "
+						+ "AND memo = ?",
+				Integer.class,
+				planId,
+				member.getMemberId(),
+				"부산 바다 투어",
+				"2026-07-01",
+				"2026-07-03",
+				"수정된 부산 여행 메모"
+				);
+
+		assertThat(count).isEqualTo(1);
+	}
+
+	@Test
+	void API_014_update_plan_invalid_plan_id_returns_INVALID_PLAN_ID() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}", "abc")
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(validPlanRequest()))),
+				PlanErrorCode.INVALID_PLAN_ID
+				);
+	}
+
+	@Test
+	void API_014_update_plan_missing_required_field_returns_REQUIRED_FIELD_MISSING() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		Map<String, Object> request = Map.of(
+				"title", "Busan tour",
+				"beginDate", "2026-06-12"
+				);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request))),
+				PlanErrorCode.REQUIRED_FIELD_MISSING
+				);
+	}
+
+	@Test
+	void API_014_update_plan_reversed_date_returns_INVALID_TRAVEL_PLAN_DATE() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		Map<String, Object> request = Map.of(
+				"title", "Busan tour",
+				"beginDate", "2026-06-13",
+				"endDate", "2026-06-12"
+				);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(request))),
+				PlanErrorCode.INVALID_TRAVEL_PLAN_DATE
+				);
+	}
+
+	@Test
+	void API_014_update_plan_not_found_returns_TRAVEL_PLAN_NOT_FOUND() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}", nextPositiveId())
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(validPlanRequest()))),
+				PlanErrorCode.TRAVEL_PLAN_NOT_FOUND
+				);
+	}
+
+	@Test
+	void API_014_update_plan_access_denied_returns_TRAVEL_PLAN_ACCESS_DENIED() throws Exception {
+		MemberDto owner = activeMember();
+		memberMapper.insertMember(owner);
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(owner.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(validPlanRequest()))),
+				PlanErrorCode.TRAVEL_PLAN_ACCESS_DENIED
+				);
+
+		assertThat(countPlans(owner.getMemberId())).isEqualTo(1);
 	}
 
 	@Test
@@ -170,11 +414,64 @@ class PlanIntegrationTest {
 		memberMapper.insertMember(member);
 		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
 		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int contentTypeId = insertContentType();
+		int placeId = insertPlace(contentTypeId);
+		insertPlanDetail(planId, placeId, null, 1, "09:00:00");
 
 		mockMvc.perform(delete("/api/v1/plans/{planId}", planId)
 						.with(authentication(auth))
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk());
+
+		assertThat(countPlanByPlanId(planId)).isZero();
+		assertThat(countPlanDetails(planId)).isZero();
+	}
+
+	@Test
+	void API_015_delete_plan_invalid_plan_id_returns_INVALID_PLAN_ID() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(delete("/api/v1/plans/{planId}", "abc")
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)),
+				PlanErrorCode.INVALID_PLAN_ID
+				);
+	}
+
+	@Test
+	void API_015_delete_plan_not_found_returns_TRAVEL_PLAN_NOT_FOUND() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(delete("/api/v1/plans/{planId}", nextPositiveId())
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)),
+				PlanErrorCode.TRAVEL_PLAN_NOT_FOUND
+				);
+	}
+
+	@Test
+	void API_015_delete_plan_access_denied_returns_TRAVEL_PLAN_ACCESS_DENIED() throws Exception {
+		MemberDto owner = activeMember();
+		memberMapper.insertMember(owner);
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(owner.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		assertPlanError(
+				mockMvc.perform(delete("/api/v1/plans/{planId}", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)),
+				PlanErrorCode.TRAVEL_PLAN_ACCESS_DENIED
+				);
+
+		assertThat(countPlanByPlanId(planId)).isEqualTo(1);
 	}
 
 	@Test
@@ -267,10 +564,350 @@ class PlanIntegrationTest {
 				deleteDetailId
 				);
 
-		org.assertj.core.api.Assertions.assertThat(totalCount).isEqualTo(2);
-		org.assertj.core.api.Assertions.assertThat(updatedCount).isEqualTo(1);
-		org.assertj.core.api.Assertions.assertThat(insertedCount).isEqualTo(1);
-		org.assertj.core.api.Assertions.assertThat(deletedCount).isZero();
+		assertThat(totalCount).isEqualTo(2);
+		assertThat(updatedCount).isEqualTo(1);
+		assertThat(insertedCount).isEqualTo(1);
+		assertThat(deletedCount).isZero();
+	}
+
+	@Test
+	void API_033_update_plan_details_invalid_plan_id_returns_INVALID_PLAN_ID() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", "abc")
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(Map.of(
+								"details", List.of()
+								)))),
+				PlanErrorCode.INVALID_PLAN_ID
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_empty_details_returns_INVALID_PLAN_DETAIL() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(Map.of(
+								"details", List.of()
+								)))),
+				PlanErrorCode.INVALID_PLAN_DETAIL
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_missing_required_field_returns_INVALID_PLAN_DETAIL() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								Map.of(
+										"beginTime", "10:30:00",
+										"sceneId", sceneId
+										)
+								))))),
+				PlanErrorCode.INVALID_PLAN_DETAIL
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_duplicate_detail_id_returns_INVALID_PLAN_DETAIL() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+		int detailId = insertPlanDetail(planId, null, sceneId, 1, "10:30:00");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(detailId, 1, "10:30:00", sceneId),
+								sceneDetail(detailId, 2, "11:00:00", sceneId)
+								))))),
+				PlanErrorCode.INVALID_PLAN_DETAIL
+				);
+		assertThat(countPlanDetails(planId)).isEqualTo(1);
+	}
+
+	@Test
+	void API_033_update_plan_details_invalid_time_returns_INVALID_PLAN_DETAIL_TIME() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(null, 1, "24:00:00", sceneId)
+								))))),
+				PlanErrorCode.INVALID_PLAN_DETAIL_TIME
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_both_targets_returns_INVALID_PLAN_DETAIL_TARGET() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int contentTypeId = insertContentType();
+		int placeId = insertPlace(contentTypeId);
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								bothTargetDetail(1, "10:30:00", placeId, sceneId)
+								))))),
+				PlanErrorCode.INVALID_PLAN_DETAIL_TARGET
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_no_target_returns_INVALID_PLAN_DETAIL_TARGET() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								noTargetDetail(1, "10:30:00")
+								))))),
+				PlanErrorCode.INVALID_PLAN_DETAIL_TARGET
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_plan_not_found_returns_TRAVEL_PLAN_NOT_FOUND() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", nextPositiveId())
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(null, 1, "10:30:00", sceneId)
+								))))),
+				PlanErrorCode.TRAVEL_PLAN_NOT_FOUND
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_access_denied_returns_TRAVEL_PLAN_ACCESS_DENIED() throws Exception {
+		MemberDto owner = activeMember();
+		memberMapper.insertMember(owner);
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(owner.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(null, 1, "10:30:00", sceneId)
+								))))),
+				PlanErrorCode.TRAVEL_PLAN_ACCESS_DENIED
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_unknown_detail_id_returns_INVALID_PLAN_DETAIL() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int otherPlanId = insertPlan(member.getMemberId(), "다른 여행", "2026-06-12", "2026-06-13", "다른 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+		int otherDetailId = insertPlanDetail(otherPlanId, null, sceneId, 1, "10:30:00");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(otherDetailId, 1, "10:30:00", sceneId)
+								))))),
+				PlanErrorCode.INVALID_PLAN_DETAIL
+				);
+		assertThat(countPlanDetails(otherPlanId)).isEqualTo(1);
+	}
+
+	@Test
+	void API_033_update_plan_details_out_of_range_returns_PLAN_DETAIL_OUT_OF_RANGE() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+		int dramaId = insertDrama();
+		int sceneId = insertScene(dramaId);
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(null, 3, "10:30:00", sceneId)
+								))))),
+				PlanErrorCode.PLAN_DETAIL_OUT_OF_RANGE
+				);
+		assertThat(countPlanDetails(planId)).isZero();
+	}
+
+	@Test
+	void API_033_update_plan_details_missing_place_returns_PLACE_NOT_FOUND() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								placeDetail(null, 1, "10:30:00", nextPositiveId())
+								))))),
+				PlanErrorCode.PLACE_NOT_FOUND
+				);
+	}
+
+	@Test
+	void API_033_update_plan_details_missing_scene_returns_SCENE_NOT_FOUND() throws Exception {
+		MemberDto member = activeMember();
+		memberMapper.insertMember(member);
+		UsernamePasswordAuthenticationToken auth = authenticate(member.getMemberId());
+		int planId = insertPlan(member.getMemberId(), "부산 국밥 투어", "2026-06-12", "2026-06-13", "부산 여행 메모");
+
+		assertPlanError(
+				mockMvc.perform(put("/api/v1/plans/{planId}/details", planId)
+						.with(authentication(auth))
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(planDetailsRequest(List.of(
+								sceneDetail(null, 1, "10:30:00", nextPositiveId())
+								))))),
+				PlanErrorCode.SCENE_NOT_FOUND
+				);
+	}
+
+	private void assertPlanError(
+			ResultActions resultActions,
+			PlanErrorCode errorCode
+			) throws Exception {
+		resultActions
+				.andExpect(status().is(errorCode.getStatus().value()))
+				.andExpect(jsonPath("$.status").value(errorCode.getStatus().value()))
+				.andExpect(jsonPath("$.errorCode").value(errorCode.name()))
+				.andExpect(jsonPath("$.message").value(errorCode.getMessage()));
+	}
+
+	private Map<String, Object> validPlanRequest() {
+		return Map.of(
+				"title", "Busan tour",
+				"beginDate", "2026-06-12",
+				"endDate", "2026-06-13",
+				"memo", "Busan memo"
+				);
+	}
+
+	private Map<String, Object> planDetailsRequest(final List<Map<String, Object>> details) {
+		return Map.of("details", details);
+	}
+
+	private Map<String, Object> sceneDetail(
+			final Integer detailId,
+			final int dayNo,
+			final String beginTime,
+			final int sceneId
+			) {
+		Map<String, Object> detail = new HashMap<>();
+		if (detailId != null)
+			detail.put("detailId", detailId);
+		detail.put("dayNo", dayNo);
+		detail.put("beginTime", beginTime);
+		detail.put("sceneId", sceneId);
+		return detail;
+	}
+
+	private Map<String, Object> placeDetail(
+			final Integer detailId,
+			final int dayNo,
+			final String beginTime,
+			final int placeId
+			) {
+		Map<String, Object> detail = new HashMap<>();
+		if (detailId != null)
+			detail.put("detailId", detailId);
+		detail.put("dayNo", dayNo);
+		detail.put("beginTime", beginTime);
+		detail.put("placeId", placeId);
+		return detail;
+	}
+
+	private Map<String, Object> bothTargetDetail(
+			final int dayNo,
+			final String beginTime,
+			final int placeId,
+			final int sceneId
+			) {
+		Map<String, Object> detail = new HashMap<>();
+		detail.put("dayNo", dayNo);
+		detail.put("beginTime", beginTime);
+		detail.put("placeId", placeId);
+		detail.put("sceneId", sceneId);
+		return detail;
+	}
+
+	private Map<String, Object> noTargetDetail(
+			final int dayNo,
+			final String beginTime
+			) {
+		Map<String, Object> detail = new HashMap<>();
+		detail.put("dayNo", dayNo);
+		detail.put("beginTime", beginTime);
+		return detail;
 	}
 
 	private MemberDto activeMember() {
@@ -328,6 +965,36 @@ class PlanIntegrationTest {
 		}, keyHolder);
 
 		return keyHolder.getKey().intValue();
+	}
+
+	private int countPlans(int memberId) {
+		return jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM TravelPlan "
+						+ "WHERE member_id = ?",
+				Integer.class,
+				memberId
+				);
+	}
+
+	private int countPlanByPlanId(int planId) {
+		return jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM TravelPlan "
+						+ "WHERE plan_id = ?",
+				Integer.class,
+				planId
+				);
+	}
+
+	private int countPlanDetails(int planId) {
+		return jdbcTemplate.queryForObject(
+				"SELECT COUNT(*) "
+						+ "FROM PlanDetail "
+						+ "WHERE plan_id = ?",
+				Integer.class,
+				planId
+				);
 	}
 
 	private int insertContentType() {
