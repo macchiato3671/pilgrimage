@@ -131,18 +131,26 @@ export const normalizeMember = (raw = {}) => ({
 export const normalizePage = (value, listKeys = []) => {
   const data = unwrap(value) || {}
   const items = arrayOf(data, listKeys)
-  const page = data.page || data.pagination || {}
-  const number = Number(page.number ?? data.number ?? 0)
-  const size = Number(page.size ?? data.size ?? items.length)
-  const totalElements = Number(page.totalElements ?? data.totalElements ?? items.length)
-  const totalPages = Number(page.totalPages ?? data.totalPages ?? (totalElements && size ? Math.ceil(totalElements / size) : 1))
+  const page = data.page ?? data.pagination ?? {}
+  const pageNumber = typeof page === 'number' ? page : page.number
+  const number = Number(pageNumber ?? data.number ?? 0)
+  const size = Number((typeof page === 'object' ? page.size : undefined) ?? data.size ?? items.length)
+  const totalElements = Number(
+    (typeof page === 'object' ? page.totalElements : undefined) ?? data.totalElements ?? items.length,
+  )
+  const totalPages = Number(
+    (typeof page === 'object' ? page.totalPages : undefined) ??
+      data.totalPages ??
+      (totalElements && size ? Math.ceil(totalElements / size) : 1),
+  )
+  const hasNext = typeof page === 'object' ? page.hasNext : data.hasNext
   return {
     items,
     page: number,
     size,
     totalElements,
     totalPages,
-    hasNext: Boolean(page.hasNext ?? data.hasNext ?? number + 1 < totalPages),
+    hasNext: Boolean(hasNext ?? number + 1 < totalPages),
   }
 }
 

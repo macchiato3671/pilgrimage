@@ -19,12 +19,15 @@ export const usePlacesStore = defineStore('places', {
       this.category = category
       this.sceneId = sceneId
       try {
-        if (sceneId) {
-          this.items = await placeApi.nearby(sceneId, {
-            keyword: keyword || undefined,
+        if (sceneId && category && !keyword.trim()) {
+          const response = await placeApi.nearby(sceneId, {
             contentTypeId: category || undefined,
+            page,
+            size: DEFAULT_PAGE_SIZE,
           })
-          this.hasNext = false
+          this.items = page ? [...this.items, ...response.items] : response.items
+          this.page = response.page
+          this.hasNext = response.hasNext
           return
         }
         const response = await placeApi.search({
