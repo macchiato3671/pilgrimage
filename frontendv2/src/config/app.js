@@ -36,6 +36,7 @@ export const STORAGE_KEYS = {
   guest: 'pilgrimage.guest',
   colors: 'pilgrimage.plan-colors',
   editor: 'pilgrimage.editor-draft',
+  translation: 'pilgrimage.screen-translation',
 }
 
 export const DEFAULT_PAGE_SIZE = 20
