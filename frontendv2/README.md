@@ -16,8 +16,8 @@
 ## 실행
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 기본 프론트엔드 주소는 `http://localhost:5173`, 기본 백엔드 주소는 `http://localhost:8080/api/v1`입니다.
@@ -25,8 +25,8 @@ npm run dev
 프로덕션 빌드 검증:
 
 ```bash
-npm run build
-npm run preview
+pnpm build
+pnpm preview
 ```
 
 ## 환경 변수
@@ -118,7 +118,6 @@ View는 API나 `localStorage`를 직접 변경하지 않고 Pinia ViewModel의 �
 | 작품별 촬영지 | GET | `/dramas/{dramaId}` |
 | 촬영지 상세 | GET | `/scenes/{sceneId}` |
 | 위시리스트 추가·삭제 | POST / DELETE | `/wishlist/{sceneId}` |
-| 위시리스트 조회 | GET | `/wishlist` |
 | 위시리스트 작품 | GET | `/wishlist/dramas` |
 | 작품별 위시리스트 촬영지 | GET | `/wishlist/dramas/{dramaId}/scenes` |
 | 여행 계획 생성·목록 | POST / GET | `/plans` |

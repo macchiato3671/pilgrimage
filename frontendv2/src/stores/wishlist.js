@@ -34,19 +34,6 @@ export const useWishlistStore = defineStore('wishlist', {
           return
         }
         this.items = await wishlistApi.list()
-        if (this.items.length && this.items.every((scene) => !scene.dramaTitle)) {
-          const dramas = await wishlistApi.dramas()
-          const groups = await Promise.all(
-            dramas.map(async (drama) =>
-              (await wishlistApi.scenesForDrama(drama.dramaId)).map((scene) => ({
-                ...scene,
-                dramaId: drama.dramaId,
-                dramaTitle: drama.title,
-              })),
-            ),
-          )
-          this.items = groups.flat()
-        }
       } finally {
         this.loading = false
       }
