@@ -7,6 +7,7 @@ import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
 import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
+import { usePlanMapOverlay } from '../composables/usePlanMapOverlay'
 import { dramaApi } from '../api/services'
 import { useAuthStore } from '../stores/auth'
 import { useUiStore } from '../stores/ui'
@@ -16,6 +17,7 @@ const auth = useAuthStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
 const router = useRouter()
+const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
 const selectedGroup = ref(null)
 const selected = ref(null)
 const detailOpen = ref(false)
@@ -50,7 +52,19 @@ const nearby = (scene) => { detailOpen.value = false; router.push({ name: 'place
         <div class="card-list location-list"><LocationCard v-for="scene in group?.scenes" :key="scene.sceneId" :item="scene" wished @select="open" @toggle-wishlist="toggle" /></div>
       </template>
     </section>
-    <section class="map-panel"><KakaoMap :items="group?.scenes || []" :favorites="wishlist.items" :selected-id="selected?.sceneId" @select="open" /></section>
+    <section class="map-panel">
+      <KakaoMap
+        :items="group?.scenes || []"
+        :fit-items="group?.scenes || []"
+        :favorites="wishlist.items"
+        :overlay-items="planOverlayItems"
+        :route-items="planOverlayItems"
+        :route-color="planOverlayColor"
+        :selected-id="selected?.sceneId"
+        connect-items
+        @select="open"
+      />
+    </section>
     <LocationDetailPanel :open="detailOpen" :item="selected" :wished="true" @close="detailOpen = false" @toggle-wishlist="toggle" @nearby="nearby" />
   </div>
 </template>

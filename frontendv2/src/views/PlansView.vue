@@ -72,7 +72,17 @@ const remove = async (plan) => {
         </article>
       </div>
     </section>
-    <section class="map-panel"><KakaoMap :items="activeMarkers" :favorites="wishlist.items" :marker-color="editor.activePlan?.color" connect-items /></section>
+    <section class="map-panel">
+      <KakaoMap
+        :items="activeMarkers"
+        :fit-items="activeMarkers"
+        :route-items="activeMarkers"
+        :favorites="wishlist.items"
+        :marker-color="editor.activePlan?.color"
+        :route-color="editor.activePlan?.color"
+        connect-items
+      />
+    </section>
     <PlanFormModal :open="formOpen" @close="formOpen = false" @submit="create" />
   </div>
 </template>

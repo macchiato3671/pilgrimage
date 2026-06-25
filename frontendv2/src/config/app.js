@@ -11,6 +11,14 @@ export const PLAN_COLORS = [
   '#ad5ca8',
 ]
 
+export const MAP_MARKER_COLORS = {
+  selected: '#111827',
+  scene: '#d946ef',
+  place: '#06b6d4',
+  favorite: '#64748b',
+  route: '#334155',
+}
+
 // 한국관광공사 ContentType ID 기준. 백엔드 분류가 바뀌면 이 목록만 수정합니다.
 export const PLACE_CATEGORIES = [
   { id: null, label: '주변 전체', keyword: '' },

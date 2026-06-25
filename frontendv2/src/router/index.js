@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth'
 import DramaScenesView from '../views/DramaScenesView.vue'
 import DramasView from '../views/DramasView.vue'
 import LoginView from '../views/LoginView.vue'
+import MemberProfileView from '../views/MemberProfileView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import PlacesView from '../views/PlacesView.vue'
 import PlanDetailView from '../views/PlanDetailView.vue'
@@ -28,6 +29,7 @@ const router = createRouter({
         { path: 'wishlist', name: 'wishlist', component: WishlistView },
         { path: 'plans', name: 'plans', component: PlansView },
         { path: 'plans/:planId', name: 'plan-detail', component: PlanDetailView },
+        { path: 'profile', name: 'profile', component: MemberProfileView, meta: { requiresAuth: true } },
       ],
     },
     { path: '/login', name: 'login', component: LoginView, meta: { guestOnly: true, allowPendingGuest: true } },

@@ -7,6 +7,7 @@ import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
 import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
+import { usePlanMapOverlay } from '../composables/usePlanMapOverlay'
 import { useExploreStore } from '../stores/explore'
 import { useUiStore } from '../stores/ui'
 import { useWishlistStore } from '../stores/wishlist'
@@ -16,6 +17,7 @@ const router = useRouter()
 const explore = useExploreStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
+const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
 const selected = ref(null)
 const detailOpen = ref(false)
 const filter = ref('')
@@ -55,7 +57,17 @@ onMounted(async () => {
       </div>
     </section>
     <section class="map-panel">
-      <KakaoMap :items="explore.scenes" :favorites="wishlist.items" :selected-id="selected?.sceneId" @select="open" />
+      <KakaoMap
+        :items="explore.scenes"
+        :fit-items="explore.scenes"
+        :favorites="wishlist.items"
+        :overlay-items="planOverlayItems"
+        :route-items="planOverlayItems"
+        :route-color="planOverlayColor"
+        :selected-id="selected?.sceneId"
+        connect-items
+        @select="open"
+      />
     </section>
     <LocationDetailPanel :open="detailOpen" :item="selected" :wished="selected ? wishlist.has(selected.sceneId) : false" @close="detailOpen = false" @toggle-wishlist="toggle" @nearby="nearby" />
   </div>
