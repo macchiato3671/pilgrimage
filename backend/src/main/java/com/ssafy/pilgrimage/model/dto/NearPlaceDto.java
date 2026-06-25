@@ -1,5 +1,7 @@
 package com.ssafy.pilgrimage.model.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +19,7 @@ public class NearPlaceDto {
 	private String address;
 	private double latitude;
 	private double longitude;
-	private String imgUrl;
+	private List<PlaceImageDto> images;
 	private int contentTypeId;
 	private String contentTypeName;
 	private double distanceKm;
