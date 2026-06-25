@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 export const useUiStore = defineStore('ui', {
-  state: () => ({ toasts: [], sidebarCollapsed: false, routePanelOpen: true }),
+  state: () => ({ toasts: [] }),
   actions: {
     toast(message, type = 'info', duration = 3500) {
       const id = `${Date.now()}-${Math.random()}`
@@ -10,15 +10,6 @@ export const useUiStore = defineStore('ui', {
     },
     dismiss(id) {
       this.toasts = this.toasts.filter((toast) => toast.id !== id)
-    },
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed
-    },
-    openRoutePanel() {
-      this.routePanelOpen = true
-    },
-    closeRoutePanel() {
-      this.routePanelOpen = false
     },
   },
 })

@@ -24,8 +24,7 @@ img { display: block; max-width: 100%; }
 p, h1, h2, h3 { margin: 0; }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid rgba(243, 95, 69, 0.25); outline-offset: 2px; }
 
-.app-shell { display: grid; grid-template-columns: 238px minmax(0, 1fr); min-height: 100vh; transition: grid-template-columns .25s ease; }
-.app-shell.sidebar-collapsed { grid-template-columns: 84px minmax(0, 1fr); }
+.app-shell { display: grid; grid-template-columns: 238px minmax(0, 1fr); min-height: 100vh; }
 .sidebar { position: sticky; top: 0; z-index: 600; display: flex; flex-direction: column; height: 100vh; padding: 24px 18px 18px; background: #141c2c; color: #fff; box-shadow: 7px 0 30px rgba(15, 23, 42, .12); overflow: hidden; }
 .brand { display: flex; align-items: center; gap: 12px; min-height: 54px; white-space: nowrap; }
 .brand-image { flex: 0 0 46px; width: 46px; height: 46px; overflow: hidden; border-radius: 14px; background: #fff; }
@@ -47,22 +46,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .session-copy strong { font-size: 13px; }
 .session-copy small { margin-top: 3px; color: #8f9bae; font-size: 10px; }
 .login-link { display: flex; align-items: center; gap: 12px; width: 100%; padding: 0 6px; font-size: 14px; font-weight: 700; }
-.sidebar-toggle { position: absolute; top: 92px; right: -14px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: #fff; color: var(--ink); box-shadow: 0 5px 14px rgba(0, 0, 0, .18); cursor: pointer; }
-.sidebar-collapsed .brand-copy, .sidebar-collapsed .main-nav span, .sidebar-collapsed .session-copy, .sidebar-collapsed .session-card .icon-button, .sidebar-collapsed .login-link span { opacity: 0; pointer-events: none; }
-.sidebar-collapsed .sidebar { padding-inline: 19px; }
-.sidebar-collapsed .main-nav a { justify-content: center; padding: 0; }
-.sidebar-collapsed .session-card { justify-content: center; padding: 8px 4px; }
 .app-main { position: relative; min-width: 0; min-height: 100vh; }
-.workspace-close { position: absolute; top: 15px; left: 15px; z-index: 500; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.94); color: var(--ink); box-shadow: 0 8px 22px rgba(29,35,48,.12); cursor: pointer; }
-.workspace-close:hover { background: #fff; }
 
 .split-page { display: grid; grid-template-columns: minmax(500px, 570px) minmax(560px, 1fr); height: 100vh; background: var(--canvas); }
 .split-page.detail-open { grid-template-columns: minmax(380px, 500px) minmax(320px, 400px) minmax(360px, 1fr); }
 .split-page.detail-open .detail-panel { grid-column: 2; grid-row: 1; }
 .split-page.detail-open .map-panel { grid-column: 3; grid-row: 1; }
-.route-panel-closed .split-page, .route-panel-closed .split-page.detail-open { grid-template-columns: minmax(0, 1fr); }
-.route-panel-closed .split-page > .content-panel, .route-panel-closed .split-page > .detail-panel { display: none; }
-.route-panel-closed .split-page > .map-panel { grid-column: 1; }
 .content-panel { position: relative; z-index: 2; height: 100vh; padding: 42px 38px 70px; overflow-y: auto; background: rgba(255, 255, 255, .98); border-right: 1px solid var(--line); scrollbar-width: thin; }
 .map-panel { position: relative; min-width: 0; height: 100vh; background: #eae4dc; overflow: hidden; }
 .map-shell, .kakao-map { width: 100%; height: 100%; }

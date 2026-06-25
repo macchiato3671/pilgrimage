@@ -18,7 +18,7 @@ const read = (event, type) => {
 const drop = (event, beforeClientId = null) => {
   over.value = false
   const external = read(event, 'application/x-pilgrimage-item')
-  if (external) return emit('external-drop', external, props.day.dayNo)
+  if (external) return emit('external-drop', external, props.day.dayNo, beforeClientId)
   const clientId = read(event, 'application/x-pilgrimage-detail')
   if (clientId) emit('move', clientId, props.day.dayNo, beforeClientId)
 }

@@ -17,7 +17,7 @@ const router = useRouter()
 const explore = useExploreStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
-const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
+const { planOverlayItems } = usePlanMapOverlay()
 const selected = ref(null)
 const detailOpen = ref(false)
 const filter = ref('')
@@ -62,10 +62,7 @@ onMounted(async () => {
         :fit-items="explore.scenes"
         :favorites="wishlist.items"
         :overlay-items="planOverlayItems"
-        :route-items="planOverlayItems"
-        :route-color="planOverlayColor"
         :selected-id="selected?.sceneId"
-        connect-items
         @select="open"
       />
     </section>

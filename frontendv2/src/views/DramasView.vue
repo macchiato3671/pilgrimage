@@ -15,7 +15,7 @@ const explore = useExploreStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
 const router = useRouter()
-const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
+const { planOverlayItems } = usePlanMapOverlay()
 const query = ref(explore.keyword)
 const error = ref('')
 const heading = computed(() => {
@@ -70,9 +70,6 @@ onMounted(() => {
       <KakaoMap
         :favorites="wishlist.items"
         :overlay-items="planOverlayItems"
-        :route-items="planOverlayItems"
-        :route-color="planOverlayColor"
-        connect-items
       />
       <div class="map-callout"><strong>위시리스트 촬영지는 항상 지도에 표시됩니다.</strong><span>마커를 눌러 저장한 장소를 다시 확인하세요.</span></div>
     </section>

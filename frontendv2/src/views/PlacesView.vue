@@ -19,7 +19,7 @@ const route = useRoute()
 const places = usePlacesStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
-const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
+const { planOverlayItems } = usePlanMapOverlay()
 const query = ref(String(route.query.keyword || ''))
 const category = ref(PLACE_CATEGORIES[0])
 const center = ref({ ...SEOUL_CENTER })
@@ -105,11 +105,8 @@ watch(() => route.query.sceneId, async () => {
         :fit-items="mapFitItems"
         :favorites="wishlist.items"
         :overlay-items="planOverlayItems"
-        :route-items="planOverlayItems"
-        :route-color="planOverlayColor"
         :center="center"
         :selected-id="selectedMapId"
-        connect-items
         @select="open"
         @center-change="center = $event"
       />

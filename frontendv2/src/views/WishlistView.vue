@@ -17,7 +17,7 @@ const auth = useAuthStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
 const router = useRouter()
-const { planOverlayItems, planOverlayColor } = usePlanMapOverlay()
+const { planOverlayItems } = usePlanMapOverlay()
 const selectedGroup = ref(null)
 const selected = ref(null)
 const detailOpen = ref(false)
@@ -58,10 +58,7 @@ const nearby = (scene) => { detailOpen.value = false; router.push({ name: 'place
         :fit-items="group?.scenes || []"
         :favorites="wishlist.items"
         :overlay-items="planOverlayItems"
-        :route-items="planOverlayItems"
-        :route-color="planOverlayColor"
         :selected-id="selected?.sceneId"
-        connect-items
         @select="open"
       />
     </section>

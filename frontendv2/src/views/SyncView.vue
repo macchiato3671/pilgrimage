@@ -1,17 +1,28 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import brandMark from '../assets/images/brand-mark.png'
 import AppIcon from '../components/common/AppIcon.vue'
+import { clearGuest } from '../models/guest'
 import { useSyncStore } from '../stores/sync'
 
 const sync = useSyncStore()
-const route = useRoute()
 const router = useRouter()
 const done = ref(false)
 const wishlistCount = computed(() => sync.snapshot.wishlist.length)
 const planCount = computed(() => sync.snapshot.plans.length)
-const next = () => router.replace(sync.resolveNextPath(String(route.query.next || '/plans')))
+const next = async () => {
+  clearGuest()
+  sync.refresh()
+  try {
+    await router.replace({ name: 'dramas' })
+  } catch (error) {
+    // Fall through to the hard navigation below.
+  }
+  if (router.currentRoute.value.name !== 'dramas') {
+    window.location.assign('/dramas')
+  }
+}
 
 const run = async () => {
   try { await sync.run(); done.value = true } catch { /* 로그에 표시 */ }

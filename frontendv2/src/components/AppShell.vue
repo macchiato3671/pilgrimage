@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeUnmount, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import brandMark from '../assets/images/brand-mark.png'
 import { useAuthStore } from '../stores/auth'
 import { useEditorStore } from '../stores/editor'
@@ -17,9 +17,6 @@ const plans = usePlansStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
 const router = useRouter()
-const route = useRoute()
-const panelRouteNames = new Set(['dramas', 'drama-scenes', 'places', 'wishlist', 'plans', 'plan-detail'])
-const canCloseRoutePanel = computed(() => panelRouteNames.has(route.name))
 
 const nav = [
   { to: '/dramas', label: '작품·촬영지', icon: 'film' },
@@ -60,21 +57,21 @@ onBeforeUnmount(() => window.removeEventListener('pilgrimage:unauthorized', unau
 </script>
 
 <template>
-  <div class="app-shell" :class="{ 'sidebar-collapsed': ui.sidebarCollapsed }">
+  <div class="app-shell">
     <aside class="sidebar">
-      <RouterLink class="brand" to="/dramas" @click="ui.openRoutePanel()">
+      <RouterLink class="brand" to="/dramas">
         <span class="brand-image"><img :src="brandMark" alt="" /></span>
         <span class="brand-copy"><strong>필그리미지</strong><small>장면이 여행지가 되다</small></span>
       </RouterLink>
       <nav class="main-nav">
-        <RouterLink v-for="item in nav" :key="item.to" :to="item.to" :title="item.label" @click="ui.openRoutePanel()">
+        <RouterLink v-for="item in nav" :key="item.to" :to="item.to" :title="item.label">
           <AppIcon :name="item.icon" :size="21" /><span>{{ item.label }}</span>
         </RouterLink>
       </nav>
       <div class="sidebar-spacer" />
       <div class="session-card">
         <template v-if="auth.isAuthenticated">
-          <RouterLink class="session-profile" to="/profile" title="회원정보" @click="ui.openRoutePanel()">
+          <RouterLink class="session-profile" to="/profile" title="회원정보">
             <span class="avatar">{{ auth.member?.nickname?.slice(0, 1) || '여' }}</span>
             <span class="session-copy"><strong>{{ auth.member?.nickname || '여행자' }}</strong><small>{{ auth.member?.email }}</small></span>
           </RouterLink>
@@ -82,10 +79,8 @@ onBeforeUnmount(() => window.removeEventListener('pilgrimage:unauthorized', unau
         </template>
         <button v-else class="login-link session-login-button" @click="goLogin"><AppIcon name="login" :size="19" /><span>로그인</span></button>
       </div>
-      <button class="sidebar-toggle" @click="ui.toggleSidebar()"><AppIcon :name="ui.sidebarCollapsed ? 'chevron' : 'back'" :size="18" /></button>
     </aside>
-    <main class="app-main" :class="{ 'route-panel-closed': !ui.routePanelOpen }">
-      <button v-if="canCloseRoutePanel && ui.routePanelOpen" class="workspace-close" title="패널 닫기" @click="ui.closeRoutePanel()"><AppIcon name="close" :size="16" /></button>
+    <main class="app-main">
       <RouterView />
     </main>
     <PlanEditorDock />
