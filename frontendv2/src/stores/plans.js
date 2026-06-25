@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
+import { toRaw } from 'vue'
 import { dramaApi, placeApi, planApi } from '../api/services'
 import { PLAN_COLORS, STORAGE_KEYS } from '../config/app'
 import { readGuest, writeGuest } from '../models/guest'
 import { makeId, readStorage, writeStorage } from '../models/storage'
 import { useAuthStore } from './auth'
 
-const clone = (value) => structuredClone(value)
+const clone = (value) => (value == null ? value : JSON.parse(JSON.stringify(toRaw(value))))
 
 export const usePlansStore = defineStore('plans', {
   state: () => ({

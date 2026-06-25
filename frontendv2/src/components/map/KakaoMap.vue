@@ -13,6 +13,7 @@ const props = defineProps({
   selectedId: [String, Number],
   center: { type: Object, default: () => SEOUL_CENTER },
   level: { type: Number, default: 7 },
+  selectedLevel: { type: Number, default: 4 },
   markerColor: { type: String, default: '' },
   routeColor: { type: String, default: '' },
   connectItems: Boolean,
@@ -115,9 +116,9 @@ const focusItem = (item, { level } = {}) => {
   if (!map || !window.kakao?.maps || !hasCoordinate(item)) return
   const current = map.getCenter()
   const next = { latitude: item.latitude, longitude: item.longitude }
+  if (level && map.getLevel() !== level) map.setLevel(level)
   if (closeEnough({ latitude: current.getLat(), longitude: current.getLng() }, next)) return
   movingFromProp = true
-  if (level) map.setLevel(level)
   map.panTo(latLngOf(item))
 }
 
@@ -138,7 +139,7 @@ const draw = ({ fit = true } = {}) => {
     markerObjects.push(marker)
   })
   if (selectedItem.value) {
-    focusItem(selectedItem.value)
+    focusItem(selectedItem.value, { level: props.selectedLevel })
     return
   }
   fitCandidates.value.forEach((item) => bounds.extend(latLngOf(item)))
@@ -178,7 +179,7 @@ const init = async () => {
   }
 }
 
-watch(() => [props.items, props.favorites, props.fitItems, props.routeItems, props.overlayItems, props.connectItems, props.markerColor, props.routeColor, props.mapPadding], () => draw({ fit: !selectedItem.value }), { deep: true })
+watch(() => [props.items, props.favorites, props.fitItems, props.routeItems, props.overlayItems, props.connectItems, props.markerColor, props.routeColor, props.selectedLevel, props.mapPadding], () => draw({ fit: !selectedItem.value }), { deep: true })
 watch(() => props.selectedId, () => draw({ fit: false }))
 watch(
   () => props.center,

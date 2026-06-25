@@ -99,8 +99,15 @@ export const useExploreStore = defineStore('explore', {
     async sceneDetail(sceneId) {
       const detail = await dramaApi.scene(sceneId)
       const index = this.scenes.findIndex((scene) => String(scene.sceneId) === String(sceneId))
-      if (index >= 0) this.scenes[index] = { ...this.scenes[index], ...detail }
-      return detail
+      const previous = index >= 0 ? this.scenes[index] : {}
+      const merged = {
+        ...previous,
+        ...detail,
+        dramaId: detail.dramaId ?? previous.dramaId ?? this.drama?.dramaId,
+        dramaTitle: detail.dramaTitle || previous.dramaTitle || this.drama?.title || '',
+      }
+      if (index >= 0) this.scenes[index] = merged
+      return merged
     },
   },
 })
