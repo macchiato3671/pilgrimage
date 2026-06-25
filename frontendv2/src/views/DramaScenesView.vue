@@ -32,7 +32,12 @@ const open = async (scene) => {
   try { selected.value = await explore.sceneDetail(scene.sceneId) } catch { /* 목록 정보로 표시 */ }
 }
 const toggle = async (scene) => {
-  try { await wishlist.toggle(scene); ui.toast(wishlist.has(scene.sceneId) ? '위시리스트에 담았습니다.' : '위시리스트에서 제거했습니다.', 'success') }
+  const enrichedScene = {
+    ...scene,
+    dramaId: scene.dramaId && Number(scene.dramaId) !== 0 ? scene.dramaId : explore.drama?.dramaId ?? route.params.dramaId,
+    dramaTitle: scene.dramaTitle || explore.drama?.title || '',
+  }
+  try { await wishlist.toggle(enrichedScene); ui.toast(wishlist.has(enrichedScene.sceneId) ? '위시리스트에 담았습니다.' : '위시리스트에서 제거했습니다.', 'success') }
   catch (error) { ui.toast(error.message, 'error') }
 }
 const nearby = (scene) => { detailOpen.value = false; router.push({ name: 'places', query: { sceneId: scene.sceneId } }) }

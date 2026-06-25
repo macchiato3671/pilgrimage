@@ -24,6 +24,13 @@ const numberOrNull = (value) => {
   const number = Number(value)
   return Number.isFinite(number) ? number : null
 }
+const validId = (value) => {
+  if (value === '' || value == null) return null
+  const number = Number(value)
+  if (Number.isFinite(number) && number === 0) return null
+  return value
+}
+const firstValidId = (...values) => values.map(validId).find((value) => value != null) ?? null
 
 const imageUrls = (raw = {}) => {
   const candidates = [
@@ -67,7 +74,7 @@ export const normalizeScene = (raw = {}, drama = {}) => {
   return {
     kind: 'scene',
     sceneId: source.sceneId ?? source.scene_id ?? source.id,
-    dramaId: source.dramaId ?? source.drama_id ?? source.drama?.dramaId ?? raw.dramaId ?? drama.dramaId,
+    dramaId: firstValidId(source.dramaId, source.drama_id, source.drama?.dramaId, raw.dramaId, drama.dramaId),
     dramaTitle: source.dramaTitle || source.drama?.title || raw.dramaTitle || raw.titleOfDrama || drama.title || '',
     name: source.name || source.sceneName || source.title || '이름 없는 촬영지',
     description: source.description || source.sceneDescription || '',
