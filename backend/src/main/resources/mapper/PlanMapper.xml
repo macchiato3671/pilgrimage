@@ -4,5 +4,152 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.moonback.pilgrimage.model.mapper.PlanMapper">
+	<select
+			id="selectPlans"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
+			>
+		SELECT *
+		FROM TravelPlan
+		WHERE member_id = #{memberId}
+		ORDER BY updated_at DESC
+		LIMIT #{offset}, #{pageSize};
+	</select>
+
+	<select
+			id="selectPlan"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
+			>
+		SELECT *
+		FROM TravelPlan
+		WHERE member_id = #{memberId}
+			AND plan_id = #{planId};
+	</select>
+
+	<select
+			id="selectPlanByPlanId"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
+			>
+		SELECT *
+		FROM TravelPlan
+		WHERE plan_id = #{planId};
+	</select>
+
+	<select
+			id="selectPlanDetails"
+			resultType="com.moonback.pilgrimage.model.dto.TravelPlanDetailRowDto"
+			>
+		SELECT *
+		FROM PlanDetail
+		WHERE plan_id = #{planId}
+		ORDER BY day_no ASC, begin_time ASC;
+	</select>
+
+	<select
+			id="countPlaceByPlaceId"
+			resultType="int"
+			>
+		SELECT COUNT(*)
+		FROM Place
+		WHERE place_id = #{placeId}
+	</select>
+
+	<select
+			id="countSceneBySceneId"
+			resultType="int"
+			>
+		SELECT COUNT(*)
+		FROM Scene
+		WHERE scene_id = #{sceneId}
+	</select>
+
+	<insert
+			id="insertPlan"
+			>
+		INSERT INTO TravelPlan(
+			member_id,
+			title,
+			begin_date,
+			end_date,
+			memo
+		)
+		VALUES(
+			#{memberId},
+			#{title},
+			#{beginDate},
+			#{endDate},
+			#{memo}
+		)
+	</insert>
+
+	<insert
+			id="insertPlanDetail"
+			useGeneratedKeys="true"
+			keyProperty="detailId"
+			>
+		INSERT INTO PlanDetail(
+			plan_id,
+			place_id,
+			scene_id,
+			day_no,
+			begin_time
+		)
+		VALUES(
+			#{planId},
+			#{placeId},
+			#{sceneId},
+			#{dayNo},
+			#{beginTime}
+		)
+	</insert>
+
+	<update
+			id="updatePlan"
+			>
+		UPDATE TravelPlan
+		SET title = #{title},
+			begin_date = #{beginDate},
+			end_date = #{endDate},
+			memo = #{memo}
+		WHERE plan_id = #{planId}
+			AND member_id = #{memberId}
+	</update>
+
+	<update
+			id="updatePlanDetail"
+			>
+		UPDATE PlanDetail
+		SET place_id = #{placeId},
+			scene_id = #{sceneId},
+			day_no = #{dayNo},
+			begin_time = #{beginTime}
+		WHERE plan_id = #{planId}
+			AND detail_id = #{detailId}
+	</update>
+
+	<delete
+			id="deletePlan"
+			>
+		DELETE FROM TravelPlan
+		WHERE plan_id = #{planId}
+			AND member_id = #{memberId}
+	</delete>
+
+	<delete
+			id="deletePlanDetails"
+			>
+		DELETE FROM PlanDetail
+		WHERE plan_id = #{planId}
+	</delete>
+
+	<delete
+			id="deletePlanDetailsExcept"
+			>
+		DELETE FROM PlanDetail
+		WHERE plan_id = #{planId}
+			AND detail_id NOT IN
+			<foreach collection="detailIds" item="detailId" open="(" separator="," close=")">
+				#{detailId}
+			</foreach>
+	</delete>
 
 </mapper>
