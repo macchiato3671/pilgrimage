@@ -6,13 +6,30 @@ import { useEditorStore } from './editor'
 import { useWishlistStore } from './wishlist'
 
 export const useSyncStore = defineStore('sync', {
-  state: () => ({ running: false, current: 0, total: 0, logs: [], error: '', snapshot: readGuest() }),
+  state: () => ({
+    running: false,
+    current: 0,
+    total: 0,
+    logs: [],
+    error: '',
+    snapshot: readGuest(),
+    planIdMap: {},
+  }),
   getters: {
     progress: (state) => (state.total ? Math.round((state.current / state.total) * 100) : 0),
   },
   actions: {
     refresh() {
       this.snapshot = readGuest()
+    },
+    resolveNextPath(path = '/plans') {
+      const next = String(path || '/plans')
+      const match = next.match(/^\/plans\/([^/?#]+)/)
+      if (!match) return next
+      const oldPlanId = decodeURIComponent(match[1])
+      const newPlanId = this.planIdMap[oldPlanId]
+      if (newPlanId) return next.replace(match[1], encodeURIComponent(newPlanId))
+      return oldPlanId.startsWith('guest-plan') ? '/plans' : next
     },
     log(message, type = 'ok') {
       this.logs.push({ message, type })
@@ -25,6 +42,7 @@ export const useSyncStore = defineStore('sync', {
       this.logs = []
       this.current = 0
       this.total = guest.wishlist.length + guest.plans.length
+      this.planIdMap = {}
       try {
         for (const scene of [...guest.wishlist]) {
           try {
@@ -44,6 +62,7 @@ export const useSyncStore = defineStore('sync', {
         for (const localPlan of [...guest.plans]) {
           const created = await planApi.create(localPlan)
           if (localPlan.details.length) await planApi.syncDetails(created.planId, localPlan.details)
+          this.planIdMap[String(localPlan.planId)] = String(created.planId)
           plansStore.assignColor(created.planId, localPlan.color)
           guest.plans = guest.plans.filter((plan) => String(plan.planId) !== String(localPlan.planId))
           writeGuest(guest)
@@ -68,6 +87,7 @@ export const useSyncStore = defineStore('sync', {
     discard() {
       clearGuest()
       this.snapshot = { wishlist: [], plans: [] }
+      this.planIdMap = {}
       useEditorStore().close()
       this.logs = [{ message: '로컬 작업을 삭제했습니다.', type: 'skip' }]
     },

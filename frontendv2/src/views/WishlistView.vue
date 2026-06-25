@@ -1,10 +1,11 @@
 <script setup>
 import { computed, ref, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 import LocationCard from '../components/cards/LocationCard.vue'
 import AppIcon from '../components/common/AppIcon.vue'
 import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
-import LocationDetailModal from '../components/common/LocationDetailModal.vue'
+import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
 import { dramaApi } from '../api/services'
 import { useAuthStore } from '../stores/auth'
@@ -14,6 +15,7 @@ import { useWishlistStore } from '../stores/wishlist'
 const auth = useAuthStore()
 const wishlist = useWishlistStore()
 const ui = useUiStore()
+const router = useRouter()
 const selectedGroup = ref(null)
 const selected = ref(null)
 const detailOpen = ref(false)
@@ -30,10 +32,11 @@ const toggle = async (scene) => {
   try { await wishlist.toggle(scene); ui.toast(wishlist.has(scene.sceneId) ? '위시리스트에 담았습니다.' : '위시리스트에서 제거했습니다.', 'success') }
   catch (error) { ui.toast(error.message, 'error') }
 }
+const nearby = (scene) => { detailOpen.value = false; router.push({ name: 'places', query: { sceneId: scene.sceneId } }) }
 </script>
 
 <template>
-  <div class="split-page wishlist-page">
+  <div class="split-page wishlist-page" :class="{ 'detail-open': detailOpen }">
     <section class="content-panel wishlist-panel">
       <header class="page-heading compact-heading"><span class="eyebrow">MY PILGRIMAGE</span><h1>위시리스트</h1><p>가 보고 싶은 촬영지를 작품별로 모아 여행 계획에 추가하세요.</p></header>
       <RouterLink v-if="!auth.isAuthenticated && wishlist.items.length" class="guest-banner" to="/login"><AppIcon name="sync" :size="20" /><span><strong>비회원 저장 중</strong> 로그인하면 이 위시리스트를 계정에 동기화할 수 있습니다.</span><AppIcon name="chevron" :size="17" /></RouterLink>
@@ -48,6 +51,6 @@ const toggle = async (scene) => {
       </template>
     </section>
     <section class="map-panel"><KakaoMap :items="group?.scenes || []" :favorites="wishlist.items" :selected-id="selected?.sceneId" @select="open" /></section>
-    <LocationDetailModal :open="detailOpen" :item="selected" :wished="true" @close="detailOpen = false" @toggle-wishlist="toggle" />
+    <LocationDetailPanel :open="detailOpen" :item="selected" :wished="true" @close="detailOpen = false" @toggle-wishlist="toggle" @nearby="nearby" />
   </div>
 </template>

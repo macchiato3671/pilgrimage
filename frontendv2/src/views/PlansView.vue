@@ -20,7 +20,12 @@ const wishlist = useWishlistStore()
 const ui = useUiStore()
 const router = useRouter()
 const formOpen = ref(false)
-const activeMarkers = computed(() => editor.activePlan?.details.map((detail) => detail.item).filter(Boolean) || [])
+const activeMarkers = computed(() =>
+  [...(editor.activePlan?.details || [])]
+    .sort((a, b) => Number(a.dayNo) - Number(b.dayNo) || String(a.beginTime).localeCompare(String(b.beginTime)))
+    .map((detail) => detail.item)
+    .filter(Boolean),
+)
 
 const newPlan = async () => {
   if (editor.isOpen && editor.dirty) {
@@ -67,7 +72,7 @@ const remove = async (plan) => {
         </article>
       </div>
     </section>
-    <section class="map-panel"><KakaoMap :items="activeMarkers" :favorites="wishlist.items" :marker-color="editor.activePlan?.color" /></section>
+    <section class="map-panel"><KakaoMap :items="activeMarkers" :favorites="wishlist.items" :marker-color="editor.activePlan?.color" connect-items /></section>
     <PlanFormModal :open="formOpen" @close="formOpen = false" @submit="create" />
   </div>
 </template>

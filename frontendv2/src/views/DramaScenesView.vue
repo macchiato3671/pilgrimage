@@ -5,7 +5,7 @@ import LocationCard from '../components/cards/LocationCard.vue'
 import AppIcon from '../components/common/AppIcon.vue'
 import EmptyState from '../components/common/EmptyState.vue'
 import LoadingState from '../components/common/LoadingState.vue'
-import LocationDetailModal from '../components/common/LocationDetailModal.vue'
+import LocationDetailPanel from '../components/common/LocationDetailPanel.vue'
 import KakaoMap from '../components/map/KakaoMap.vue'
 import { useExploreStore } from '../stores/explore'
 import { useUiStore } from '../stores/ui'
@@ -41,7 +41,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="split-page">
+  <div class="split-page" :class="{ 'detail-open': detailOpen }">
     <section class="content-panel location-list-panel">
       <header class="subpage-header">
         <button class="icon-button" aria-label="뒤로" @click="router.back()"><AppIcon name="back" /></button>
@@ -57,6 +57,6 @@ onMounted(async () => {
     <section class="map-panel">
       <KakaoMap :items="explore.scenes" :favorites="wishlist.items" :selected-id="selected?.sceneId" @select="open" />
     </section>
-    <LocationDetailModal :open="detailOpen" :item="selected" :wished="selected ? wishlist.has(selected.sceneId) : false" @close="detailOpen = false" @toggle-wishlist="toggle" @nearby="nearby" />
+    <LocationDetailPanel :open="detailOpen" :item="selected" :wished="selected ? wishlist.has(selected.sceneId) : false" @close="detailOpen = false" @toggle-wishlist="toggle" @nearby="nearby" />
   </div>
 </template>

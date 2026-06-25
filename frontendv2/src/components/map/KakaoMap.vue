@@ -11,6 +11,8 @@ const props = defineProps({
   center: { type: Object, default: () => SEOUL_CENTER },
   level: { type: Number, default: 7 },
   markerColor: { type: String, default: '' },
+  connectItems: Boolean,
+  mapPadding: { type: Object, default: () => ({ top: 52, right: 52, bottom: 52, left: 52 }) },
 })
 const emit = defineEmits(['select', 'center-change'])
 
@@ -18,9 +20,17 @@ const element = ref(null)
 const status = ref('loading')
 let map
 let markerObjects = []
+let polylineObject = null
 let observer
+let movingFromProp = false
 
 const idOf = (item) => `${item.kind}:${item.sceneId ?? item.placeId}`
+const hasCoordinate = (item) => item?.latitude != null && item?.longitude != null
+const latLngOf = (item) => new window.kakao.maps.LatLng(item.latitude, item.longitude)
+const closeEnough = (a, b) => {
+  if (!a || !b) return false
+  return Math.abs(a.latitude - b.latitude) < 0.00001 && Math.abs(a.longitude - b.longitude) < 0.00001
+}
 const selectedKey = computed(() => {
   if (String(props.selectedId || '').includes(':')) return String(props.selectedId)
   const item = props.items.find((candidate) => String(candidate.sceneId ?? candidate.placeId) === String(props.selectedId))
@@ -28,10 +38,18 @@ const selectedKey = computed(() => {
 })
 const mergedItems = computed(() => {
   const mapById = new Map()
-  props.favorites.forEach((item) => mapById.set(idOf(item), { ...item, favorite: true }))
-  props.items.forEach((item) => mapById.set(idOf(item), { ...mapById.get(idOf(item)), ...item }))
-  return [...mapById.values()].filter((item) => item.latitude != null && item.longitude != null)
+  props.favorites.forEach((item) => mapById.set(idOf(item), { ...item, favorite: true, primary: false }))
+  props.items.forEach((item) => mapById.set(idOf(item), { ...mapById.get(idOf(item)), ...item, primary: true }))
+  return [...mapById.values()].filter(hasCoordinate)
 })
+const selectedItem = computed(() => mergedItems.value.find((item) => idOf(item) === selectedKey.value))
+const routeItems = computed(() => props.items.filter(hasCoordinate))
+const padding = computed(() => ({
+  top: props.mapPadding?.top ?? 52,
+  right: props.mapPadding?.right ?? 52,
+  bottom: props.mapPadding?.bottom ?? 52,
+  left: props.mapPadding?.left ?? 52,
+}))
 
 const markerSvg = (color, selected) => {
   const size = selected ? 42 : 34
@@ -41,6 +59,7 @@ const markerSvg = (color, selected) => {
 
 const markerColor = (item, selected) => {
   if (selected) return '#1f2937'
+  if (item.primary && props.markerColor) return props.markerColor
   if (item.favorite) return '#f35f45'
   if (props.markerColor) return props.markerColor
   return item.kind === 'scene' ? '#f35f45' : '#3e88d6'
@@ -50,13 +69,41 @@ const clearMarkers = () => {
   markerObjects.forEach((marker) => marker.setMap(null))
   markerObjects = []
 }
+const clearPolyline = () => {
+  polylineObject?.setMap(null)
+  polylineObject = null
+}
+
+const drawPolyline = () => {
+  clearPolyline()
+  if (!props.connectItems || routeItems.value.length < 2) return
+  polylineObject = new window.kakao.maps.Polyline({
+    map,
+    path: routeItems.value.map(latLngOf),
+    strokeWeight: 4,
+    strokeColor: props.markerColor || '#3e88d6',
+    strokeOpacity: 0.78,
+    strokeStyle: 'solid',
+  })
+}
+
+const focusItem = (item, { level } = {}) => {
+  if (!map || !window.kakao?.maps || !hasCoordinate(item)) return
+  const current = map.getCenter()
+  const next = { latitude: item.latitude, longitude: item.longitude }
+  if (closeEnough({ latitude: current.getLat(), longitude: current.getLng() }, next)) return
+  movingFromProp = true
+  if (level) map.setLevel(level)
+  map.panTo(latLngOf(item))
+}
 
 const draw = ({ fit = true } = {}) => {
   if (!map || !window.kakao?.maps) return
   clearMarkers()
+  drawPolyline()
   const bounds = new window.kakao.maps.LatLngBounds()
   mergedItems.value.forEach((item) => {
-    const position = new window.kakao.maps.LatLng(item.latitude, item.longitude)
+    const position = latLngOf(item)
     const selected = idOf(item) === selectedKey.value
     const imageSize = selected ? new window.kakao.maps.Size(42, 52) : new window.kakao.maps.Size(34, 44)
     const image = new window.kakao.maps.MarkerImage(markerSvg(markerColor(item, selected), selected), imageSize, {
@@ -69,9 +116,8 @@ const draw = ({ fit = true } = {}) => {
   })
   if (!fit || !mergedItems.value.length) return
   if (mergedItems.value.length === 1) {
-    map.setCenter(bounds.getSouthWest())
-    map.setLevel(4)
-  } else map.setBounds(bounds, 52, 52, 52, 52)
+    focusItem(mergedItems.value[0], { level: 4 })
+  } else map.setBounds(bounds, padding.value.top, padding.value.right, padding.value.bottom, padding.value.left)
 }
 
 const init = async () => {
@@ -84,6 +130,12 @@ const init = async () => {
     })
     window.kakao.maps.event.addListener(map, 'idle', () => {
       const center = map.getCenter()
+      const next = { latitude: center.getLat(), longitude: center.getLng() }
+      if (movingFromProp && closeEnough(props.center, next)) {
+        movingFromProp = false
+        return
+      }
+      movingFromProp = false
       emit('center-change', { latitude: center.getLat(), longitude: center.getLng() })
     })
     status.value = 'ready'
@@ -98,12 +150,16 @@ const init = async () => {
   }
 }
 
-watch(() => [props.items, props.favorites], () => draw(), { deep: true })
-watch(() => props.selectedId, () => draw({ fit: false }))
+watch(() => [props.items, props.favorites, props.connectItems, props.markerColor, props.mapPadding], () => draw(), { deep: true })
+watch(() => props.selectedId, () => { draw({ fit: false }); focusItem(selectedItem.value) })
 watch(
   () => props.center,
   (center) => {
-    if (map && center?.latitude != null) map.panTo(new window.kakao.maps.LatLng(center.latitude, center.longitude))
+    if (!map || center?.latitude == null) return
+    const current = map.getCenter()
+    if (closeEnough({ latitude: current.getLat(), longitude: current.getLng() }, center)) return
+    movingFromProp = true
+    map.panTo(new window.kakao.maps.LatLng(center.latitude, center.longitude))
   },
   { deep: true },
 )
@@ -111,6 +167,7 @@ watch(
 onMounted(init)
 onBeforeUnmount(() => {
   clearMarkers()
+  clearPolyline()
   observer?.disconnect()
 })
 </script>
