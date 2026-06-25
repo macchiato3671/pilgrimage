@@ -81,7 +81,14 @@ class PlanIntegrationTest {
 						.with(authentication(auth))
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(request)))
-				.andExpect(status().isCreated());
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.planId").isNumber())
+				.andExpect(jsonPath("$.title").value(request.get("title")))
+				.andExpect(jsonPath("$.beginDate").value(request.get("beginDate")))
+				.andExpect(jsonPath("$.endDate").value(request.get("endDate")))
+				.andExpect(jsonPath("$.memo").value(request.get("memo")))
+				.andExpect(jsonPath("$.details").isArray())
+				.andExpect(jsonPath("$.details.length()").value(0));
 
 		Integer count = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "

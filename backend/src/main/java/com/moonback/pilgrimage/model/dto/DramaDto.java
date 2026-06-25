@@ -16,4 +16,5 @@ public class DramaDto {
 	private String title;
 	private LocalDate releasedAt;
 	private String description;
+	private int sceneCount;
 }
