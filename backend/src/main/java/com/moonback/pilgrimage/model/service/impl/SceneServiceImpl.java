@@ -1,6 +1,8 @@
 package com.moonback.pilgrimage.model.service.impl;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.moonback.pilgrimage.exception.BusinessException;
 import com.moonback.pilgrimage.exception.code.SceneErrorCode;
 import com.moonback.pilgrimage.model.dto.NearPlaceDto;
+import com.moonback.pilgrimage.model.dto.PlaceImageDto;
+import com.moonback.pilgrimage.model.dto.PlaceImageRowDto;
 import com.moonback.pilgrimage.model.dto.SceneDto;
 import com.moonback.pilgrimage.model.dto.SceneImageDto;
 import com.moonback.pilgrimage.model.dto.response.NearPlaceResponseDto;
@@ -80,6 +84,8 @@ public class SceneServiceImpl implements SceneService {
 				offset
 		);
 
+		attachImages(attractions);
+
 		return NearPlaceResponseDto.builder()
 				.sceneId(scene.getSceneId())
 				.sceneName(scene.getName())
@@ -93,6 +99,34 @@ public class SceneServiceImpl implements SceneService {
 				.totalPages(totalPages)
 				.hasNext(page + 1 < totalPages)
 				.build();
+	}
+
+	private void attachImages(List<NearPlaceDto> attractions) {
+		if (attractions.isEmpty()) {
+			return;
+		}
+
+		List<Integer> placeIds = attractions.stream()
+				.map(NearPlaceDto::getPlaceId)
+				.toList();
+
+		List<PlaceImageRowDto> imageRows = placeMapper.selectPlaceImagesByPlaceIds(placeIds);
+
+		Map<Integer, List<PlaceImageDto>> imageMap = imageRows.stream()
+				.collect(Collectors.groupingBy(
+						PlaceImageRowDto::getPlaceId,
+						Collectors.mapping(
+								image -> PlaceImageDto.builder()
+										.imgId(image.getImgId())
+										.url(image.getUrl())
+										.build(),
+								Collectors.toList()
+						)
+				));
+
+		attractions.forEach(attraction -> {
+			attraction.setImages(imageMap.getOrDefault(attraction.getPlaceId(), List.of()));
+		});
 	}
 
 	private void validateNearPlaceRequest(int contentTypeId, double radiusKm, int page, int size) {

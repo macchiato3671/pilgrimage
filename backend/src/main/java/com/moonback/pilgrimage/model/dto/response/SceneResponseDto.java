@@ -17,6 +17,7 @@ import lombok.Setter;
 @Builder
 public class SceneResponseDto {
 	private int sceneId;
+	private int dramaId;
 	private String name;
 	private String description;
 	private String address;
