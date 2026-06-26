@@ -8,6 +8,7 @@ import { usePlansStore } from '../stores/plans'
 import { useUiStore } from '../stores/ui'
 import { useWishlistStore } from '../stores/wishlist'
 import AppIcon from './common/AppIcon.vue'
+import ScreenTranslator from './ScreenTranslator.vue'
 import ToastStack from './common/ToastStack.vue'
 import PlanEditorDock from './plan/PlanEditorDock.vue'
 
@@ -69,6 +70,7 @@ onBeforeUnmount(() => window.removeEventListener('pilgrimage:unauthorized', unau
         </RouterLink>
       </nav>
       <div class="sidebar-spacer" />
+      <ScreenTranslator />
       <div class="session-card">
         <template v-if="auth.isAuthenticated">
           <RouterLink class="session-profile" to="/profile" title="회원정보">
