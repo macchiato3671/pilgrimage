@@ -5,29 +5,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moonback.pilgrimage.model.dto.request.LoginRequestDto;
 import com.moonback.pilgrimage.model.dto.request.SignupRequestDto;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @Rollback
-public class AuthIntegrationTest {
+@TestPropertySource(properties = "jwt.access-token-expiration=5")
+public class AuthIntegrationTest extends AbstractMySqlIntegrationTest {
 	
 	@Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    void setUpMember() {
+		jdbcTemplate.update(
+				"INSERT INTO member (email, password, nickname, role_id, status_id) VALUES (?, ?, ?, ?, ?)",
+				"member@example.com",
+				passwordEncoder.encode("Password123!"),
+				"일반 사용자",
+				1,
+				1);
+	}
     
     @Test
 	void 로그인_성공() throws Exception {

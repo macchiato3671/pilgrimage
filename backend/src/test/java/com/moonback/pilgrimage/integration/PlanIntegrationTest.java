@@ -40,12 +40,13 @@ import com.moonback.pilgrimage.model.dto.MemberDto;
 import com.moonback.pilgrimage.model.mapper.MemberMapper;
 import com.moonback.pilgrimage.model.type.MemberRole;
 import com.moonback.pilgrimage.model.type.MemberStatus;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @Rollback
-class PlanIntegrationTest {
+class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -1035,7 +1036,7 @@ class PlanIntegrationTest {
 							+ ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS
 					);
-			ps.setString(1, "plan-integration-place-" + System.nanoTime());
+			ps.setString(1, String.valueOf(nextPositiveId()));
 			ps.setInt(2, contentTypeId);
 			ps.setString(3, "테스트 장소");
 			ps.setString(4, "부산광역시 테스트구");

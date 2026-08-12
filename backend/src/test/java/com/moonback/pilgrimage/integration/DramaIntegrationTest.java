@@ -4,28 +4,71 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @Rollback
-public class DramaIntegrationTest {
+public class DramaIntegrationTest extends AbstractMySqlIntegrationTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	private static final AtomicInteger TEST_IDS = new AtomicInteger(100_000);
+	private int dramaId;
+	private int genreId;
+
+	@BeforeEach
+	void setUpDramaData() {
+		dramaId = TEST_IDS.getAndIncrement();
+		genreId = TEST_IDS.getAndIncrement();
+
+		jdbcTemplate.update(
+				"INSERT INTO drama (drama_id, title, released_at, description) VALUES (?, ?, ?, ?)",
+				dramaId,
+				"테스트 드라마",
+				"2024-01-01",
+				"통합 테스트용 드라마");
+		jdbcTemplate.update(
+				"INSERT INTO genre (genre_id, name) VALUES (?, ?)",
+				genreId,
+				"테스트 장르 " + genreId);
+		jdbcTemplate.update(
+				"INSERT INTO dramagenre (drama_id, genre_id) VALUES (?, ?)",
+				dramaId,
+				genreId);
+		jdbcTemplate.update(
+				"INSERT INTO scene (drama_id, name, description, address, latitude, longitude) "
+						+ "VALUES (?, ?, ?, ?, ?, ?)",
+				dramaId,
+				"테스트 장면",
+				"통합 테스트용 장면",
+				"서울특별시 중구 테스트로 1",
+				37.5665,
+				126.9780);
+	}
+
 	@Test
 	void drama_scene_list_success() throws Exception {
 		// given
-		int dramaId = 2265;
+		int dramaId = this.dramaId;
 
 		// when & then
 		mockMvc.perform(get("/api/v1/dramas/{dramaId}", dramaId)
@@ -70,7 +113,7 @@ public class DramaIntegrationTest {
 	@Test
 	void drama_scene_list_invalid_page() throws Exception {
 		// given
-		int dramaId = 2265;
+		int dramaId = this.dramaId;
 
 		// when & then
 		mockMvc.perform(get("/api/v1/dramas/{dramaId}", dramaId)
@@ -127,7 +170,7 @@ public class DramaIntegrationTest {
 	@Test
 	void drama_genre_list_success() throws Exception {
 		// given
-		int genreId = 18;
+		int genreId = this.genreId;
 
 		// when & then
 		mockMvc.perform(get("/api/v1/dramas/genres/{genreId}", genreId)

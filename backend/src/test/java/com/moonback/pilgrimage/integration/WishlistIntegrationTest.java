@@ -7,13 +7,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
@@ -22,23 +29,92 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
+
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @Rollback
-public class WishlistIntegrationTest {
+public class WishlistIntegrationTest extends AbstractMySqlIntegrationTest {
 
 	@Autowired
 	private MockMvc mockMvc;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	private static final AtomicInteger TEST_IDS = new AtomicInteger(300_000);
+	private int memberId;
+	private int dramaId;
+	private int sceneId;
+	private int secondSceneId;
+
+	@BeforeEach
+	void setUpWishlistData() {
+		memberId = insertMember();
+		dramaId = TEST_IDS.getAndIncrement();
+		jdbcTemplate.update(
+				"INSERT INTO drama (drama_id, title, released_at, description) VALUES (?, ?, ?, ?)",
+				dramaId,
+				"위시리스트 테스트 드라마",
+				"2024-01-01",
+				"위시리스트 통합 테스트용 드라마");
+
+		int genreId = TEST_IDS.getAndIncrement();
+		jdbcTemplate.update(
+				"INSERT INTO genre (genre_id, name) VALUES (?, ?)",
+				genreId,
+				"위시리스트 테스트 장르 " + genreId);
+		jdbcTemplate.update(
+				"INSERT INTO dramagenre (drama_id, genre_id) VALUES (?, ?)",
+				dramaId,
+				genreId);
+
+		sceneId = insertScene("위시리스트 테스트 장면");
+		secondSceneId = insertScene("위시리스트 보조 장면");
+	}
+
+	private int insertMember() {
+		String email = "wishlist-" + System.nanoTime() + "@example.com";
+		jdbcTemplate.update(
+				"INSERT INTO member (email, password, nickname, role_id, status_id) VALUES (?, ?, ?, ?, ?)",
+				email,
+				"test-password",
+				"위시리스트 테스트 사용자",
+				1,
+				1);
+		return jdbcTemplate.queryForObject(
+				"SELECT member_id FROM member WHERE email = ?",
+				Integer.class,
+				email);
+	}
+
+	private int insertScene(String name) {
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		jdbcTemplate.update(connection -> {
+			PreparedStatement statement = connection.prepareStatement(
+					"INSERT INTO scene (drama_id, name, description, address, latitude, longitude) "
+							+ "VALUES (?, ?, ?, ?, ?, ?)",
+					Statement.RETURN_GENERATED_KEYS);
+			statement.setInt(1, dramaId);
+			statement.setString(2, name);
+			statement.setString(3, "위시리스트 통합 테스트용 장면 설명");
+			statement.setString(4, "서울특별시 중구 테스트로 1");
+			statement.setDouble(5, 37.5665);
+			statement.setDouble(6, 126.9780);
+			return statement;
+		}, keyHolder);
+		return keyHolder.getKey().intValue();
+	}
+
 	@Test
 	void 위시리스트_추가_성공() throws Exception {
 		// given
-		int sceneId = 1;
+		int sceneId = this.sceneId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
@@ -61,11 +137,11 @@ public class WishlistIntegrationTest {
 	@Test
 	void 위시리스트_중복_추가() throws Exception {
 		// given
-		int sceneId = 1;
+		int sceneId = this.sceneId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
@@ -96,11 +172,11 @@ public class WishlistIntegrationTest {
 	@Test
 	void 위시리스트_드라마_목록_조회() throws Exception {
 		// given
-		int sceneId = 1;
+		int sceneId = this.sceneId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
@@ -135,12 +211,12 @@ public class WishlistIntegrationTest {
 	@Test
 	void 위시리스트_드라마별_씬_조회() throws Exception {
 		// given
-		int sceneId = 895;
-		int dramaId = 2265;
+		int sceneId = this.secondSceneId;
+		int dramaId = this.dramaId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
@@ -185,11 +261,11 @@ public class WishlistIntegrationTest {
 	@Test
 	void 위시리스트_드라마별_씬_조회_페이지_오류() throws Exception {
 		// given
-		int dramaId = 1;
+		int dramaId = this.dramaId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
@@ -213,11 +289,11 @@ public class WishlistIntegrationTest {
 	@Test
 	void 위시리스트_삭제_성공() throws Exception {
 		// given
-		int sceneId = 1;
+		int sceneId = this.sceneId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
@@ -245,11 +321,11 @@ public class WishlistIntegrationTest {
 	@Test
 	void 위시리스트_삭제_실패() throws Exception {
 		// given
-		int sceneId = 1;
+		int sceneId = this.sceneId;
 
 		UsernamePasswordAuthenticationToken auth =
 				new UsernamePasswordAuthenticationToken(
-						1,
+						memberId,
 						null,
 						List.of(new SimpleGrantedAuthority("ROLE_USER"))
 				);
