@@ -19,11 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.moonback.pilgrimage.model.dto.MemberDto;
 import com.moonback.pilgrimage.model.type.MemberRole;
 import com.moonback.pilgrimage.model.type.MemberStatus;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(JWTFilterIntegrationTest.ProtectedTestController.class)
-class JWTFilterIntegrationTest {
+class JWTFilterIntegrationTest extends AbstractMySqlIntegrationTest {
 
 	private static final String PROTECTED_PATH = "/api/v1/test/protected";
 

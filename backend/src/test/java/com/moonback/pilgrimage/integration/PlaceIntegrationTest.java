@@ -4,23 +4,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.moonback.pilgrimage.model.dto.PlaceDto;
 import com.moonback.pilgrimage.model.mapper.PlaceMapper;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @Rollback
-public class PlaceIntegrationTest {
+public class PlaceIntegrationTest extends AbstractMySqlIntegrationTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -28,10 +33,37 @@ public class PlaceIntegrationTest {
 	@Autowired
 	private PlaceMapper placeMapper;
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	private static final AtomicInteger TEST_CONTENT_IDS = new AtomicInteger(400_000);
+	private int placeId;
+
+	@BeforeEach
+	void setUpPlaceData() {
+		String contentId = String.valueOf(TEST_CONTENT_IDS.getAndIncrement());
+		jdbcTemplate.update(
+				"INSERT INTO place (content_id, content_type_id, name, address, latitude, longitude, "
+						+ "description, src_created_at, src_updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+				contentId,
+				12,
+				"테스트 관광지",
+				"서울특별시 중구 테스트로 1",
+				37.5665,
+				126.9780,
+				"통합 테스트용 관광지",
+				"2024-01-01 00:00:00",
+				"2024-01-01 00:00:00");
+		placeId = jdbcTemplate.queryForObject(
+				"SELECT place_id FROM place WHERE content_id = ?",
+				Integer.class,
+				contentId);
+	}
+
 	@Test
 	void place_detail_success() throws Exception {
 		// given
-		int placeId = 1;
+		int placeId = this.placeId;
 
 		// when & then
 		mockMvc.perform(get("/api/v1/places/{placeId}", placeId)
@@ -66,7 +98,7 @@ public class PlaceIntegrationTest {
 	@Test
 	void place_search_success() throws Exception {
 		// given
-		int placeId = 1;
+		int placeId = this.placeId;
 		PlaceDto place = placeMapper.getPlace(placeId);
 
 		// when & then
@@ -112,7 +144,7 @@ public class PlaceIntegrationTest {
 	@Test
 	void place_search_invalid_page_fail() throws Exception {
 		// given
-		int placeId = 1;
+		int placeId = this.placeId;
 		PlaceDto place = placeMapper.getPlace(placeId);
 
 		// when & then

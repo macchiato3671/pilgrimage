@@ -11,13 +11,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.annotation.Rollback;
@@ -29,18 +32,42 @@ import com.moonback.pilgrimage.model.dto.request.LoginRequestDto;
 import com.moonback.pilgrimage.model.dto.request.PatchRequestDto;
 import com.moonback.pilgrimage.model.dto.request.SignupRequestDto;
 import com.moonback.pilgrimage.model.dto.request.WithdrawRequestDto;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @Transactional
 @Rollback
-public class MemberIntegrationTest {
+public class MemberIntegrationTest extends AbstractMySqlIntegrationTest {
 	
 	@Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    private int memberId;
+
+    @BeforeEach
+    void setUpMember() {
+		jdbcTemplate.update(
+				"INSERT INTO member (email, password, nickname, role_id, status_id) VALUES (?, ?, ?, ?, ?)",
+				"member@example.com",
+				passwordEncoder.encode("Password123!"),
+				"일반 사용자",
+				1,
+				1);
+		memberId = jdbcTemplate.queryForObject(
+				"SELECT member_id FROM member WHERE email = ?",
+				Integer.class,
+				"member@example.com");
+	}
     
     @Test
     void 회원가입_성공() throws Exception {
@@ -75,7 +102,7 @@ public class MemberIntegrationTest {
 		
 		UsernamePasswordAuthenticationToken auth =
 	            new UsernamePasswordAuthenticationToken(
-	                    1,
+	                    memberId,
 	                    null,
 	                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
 	            );
@@ -109,7 +136,7 @@ public class MemberIntegrationTest {
     	
     	UsernamePasswordAuthenticationToken auth =
 	            new UsernamePasswordAuthenticationToken(
-	                    1,
+	                    memberId,
 	                    null,
 	                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
 	            );
@@ -142,7 +169,7 @@ public class MemberIntegrationTest {
     	
     	UsernamePasswordAuthenticationToken auth =
 	            new UsernamePasswordAuthenticationToken(
-	                    1,
+	                    memberId,
 	                    null,
 	                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
 	            );

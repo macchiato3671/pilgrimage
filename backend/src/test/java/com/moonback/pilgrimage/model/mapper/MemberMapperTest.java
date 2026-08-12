@@ -13,11 +13,12 @@ import com.moonback.pilgrimage.config.MyBatisConfig;
 import com.moonback.pilgrimage.model.dto.MemberDto;
 import com.moonback.pilgrimage.model.type.MemberRole;
 import com.moonback.pilgrimage.model.type.MemberStatus;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @MybatisTest
 @Import(MyBatisConfig.class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class MemberMapperTest {
+public class MemberMapperTest extends AbstractMySqlIntegrationTest {
 	
 	@Autowired
 	private MemberMapper memberMapper;

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.flywaydb.core.Flyway;
+//import org.flywaydb.core.Flyway;
 import org.apache.ibatis.session.Configuration;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -22,25 +22,25 @@ import com.moonback.pilgrimage.batch.ingest.model.DramaUpsert;
 import com.moonback.pilgrimage.batch.ingest.model.GenreUpsert;
 import com.moonback.pilgrimage.batch.ingest.model.IngestStatus;
 import com.moonback.pilgrimage.batch.ingest.support.Hashing;
+import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 
 @Testcontainers(disabledWithoutDocker = true)
-class PilgrimageMigrationTest {
+class PilgrimageMigrationTest extends AbstractMySqlIntegrationTest {
 
-	@Container
-	static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0")
-			.withDatabaseName("pilgrimage")
-			.withUsername("test")
-			.withPassword("test");
-
+//	@Container
+//	static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0")
+//			.withDatabaseName("pilgrimage")
+//			.withUsername("test")
+//			.withPassword("test");
 	@Test
-	void migrationSucceedsAndDramaUpsertIsIdempotent() {
-		Flyway.configure()
-				.dataSource(MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword())
-				.locations("classpath:db/migration")
-				.baselineOnMigrate(true)
-				.baselineVersion("1")
-				.load()
-				.migrate();
+	void initScriptLoadsAndDramaUpsertIsIdempotent() {
+//		Flyway.configure()
+//				.dataSource(MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword())
+//				.locations("classpath:db/migration")
+//				.baselineOnMigrate(true)
+//				.baselineVersion("1")
+//				.load()
+//				.migrate();
 
 		SqlSessionTemplate sqlSessionTemplate = sqlSessionTemplate(dataSource());
 		PilgrimageIngestMapper mapper = sqlSessionTemplate.getMapper(PilgrimageIngestMapper.class);
@@ -66,6 +66,7 @@ class PilgrimageMigrationTest {
 			SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
 			Configuration configuration = new Configuration();
 			configuration.setMapUnderscoreToCamelCase(true);
+			configuration.getTypeAliasRegistry().registerAliases("com.moonback.pilgrimage.model.dto");
 			factoryBean.setConfiguration(configuration);
 			factoryBean.setDataSource(dataSource);
 			factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/*.xml"));
