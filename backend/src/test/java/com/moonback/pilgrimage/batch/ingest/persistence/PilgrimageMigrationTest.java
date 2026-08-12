@@ -5,15 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDate;
 import java.util.List;
 
-//import org.flywaydb.core.Flyway;
 import org.apache.ibatis.session.Configuration;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,21 +24,8 @@ import com.moonback.pilgrimage.support.AbstractMySqlIntegrationTest;
 @Testcontainers(disabledWithoutDocker = true)
 class PilgrimageMigrationTest extends AbstractMySqlIntegrationTest {
 
-//	@Container
-//	static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0")
-//			.withDatabaseName("pilgrimage")
-//			.withUsername("test")
-//			.withPassword("test");
 	@Test
 	void initScriptLoadsAndDramaUpsertIsIdempotent() {
-//		Flyway.configure()
-//				.dataSource(MYSQL.getJdbcUrl(), MYSQL.getUsername(), MYSQL.getPassword())
-//				.locations("classpath:db/migration")
-//				.baselineOnMigrate(true)
-//				.baselineVersion("1")
-//				.load()
-//				.migrate();
-
 		SqlSessionTemplate sqlSessionTemplate = sqlSessionTemplate(dataSource());
 		PilgrimageIngestMapper mapper = sqlSessionTemplate.getMapper(PilgrimageIngestMapper.class);
 		PilgrimageIngestRepository repository = new PilgrimageIngestRepository(mapper, new ObjectMapper());
