@@ -1,0 +1,97 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pilgrimage-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+
+  mysql:
+    image: mysql:8.4
+    container_name: pilgrimage-mysql
+    environment:
+      MYSQL_DATABASE: moonbackdb
+      MYSQL_USER: ${SPRING_DATASOURCE_USERNAME}
+      MYSQL_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - pilgrimage-mysql:/var/lib/mysql
+
+  nginx:
+    build:
+      context: .
+      dockerfile: infra/nginx/Dockerfile
+    image: nginx:alpine
+    container_name: pilgrimage-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  prometheus:
+    image: prom/prometheus
+    container_name: pilgrimage-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - pilgrimage-prometheus:/prometheus
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana
+    container_name: pilgrimage-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - pilgrimage-grafana:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+  pilgrimage-ingest:
+    build: ./backend
+    profiles: ["batch"]
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/moonbackdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: moonback
+      SPRING_DATASOURCE_PASSWORD: moonback
+      TMDB_READ_TOKEN: ${TMDB_READ_TOKEN}
+      KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
+      AWS_REGION: ${AWS_REGION}
+      S3_BUCKET: ${S3_BUCKET}
+      S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-}
+      IMAGE_TEMP_DIR: /tmp/pilgrimage-ingest
+    command:
+      - --spring.batch.job.enabled=true
+      - --spring.batch.job.name=pilgrimageIngestJob
+      - ingestKey=initial-v1
+      - fullScan=true
+      - retryFailed=true
+      - prune=false
+
+volumes:
+  pilgrimage-mysql:
+    name: backend_pilgrimage-mysql
+    external: true
+  pilgrimage-prometheus:
+    name: backend_pilgrimage-prometheus
+    external: true
+  pilgrimage-grafana:
+    name: backend_pilgrimage-grafana
+    external: true
