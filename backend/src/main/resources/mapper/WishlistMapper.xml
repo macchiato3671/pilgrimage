@@ -9,7 +9,7 @@
 	</select>
 	
 	<delete id="deleteWishlist">
-		DELETE FROM Wishlist
+		DELETE FROM wishlist
 		WHERE member_id = #{memberId} and scene_id = #{sceneId}
 	</delete>
 	
@@ -20,10 +20,10 @@
 			d.title as title,
 			d.released_at as releasedAt,
 			d.description as description,
-			(SELECT COUNT(*) FROM Scene all_s WHERE all_s.drama_id = d.drama_id) as sceneCount
-		FROM WISHLIST w
-		join Scene s on w.scene_id = s.scene_id 
-		join Drama d on s.drama_id = d.drama_id
+			(SELECT COUNT(*) FROM scene all_s WHERE all_s.drama_id = d.drama_id) as sceneCount
+		FROM wishlist w
+		join scene s on w.scene_id = s.scene_id
+		join drama d on s.drama_id = d.drama_id
 		WHERE w.member_id = #{memberId}
 		GROUP BY d.drama_id
 		ORDER BY MAX(w.created_at) DESC
@@ -32,8 +32,8 @@
 	<select id="countWishlistedScenesByDrama"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM Wishlist w
-		join Scene s on w.scene_id = s.scene_id
+		FROM wishlist w
+		join scene s on w.scene_id = s.scene_id
 		WHERE w.member_id = #{memberId} 
 			AND s.drama_id = #{dramaId}
 	</select>
@@ -49,8 +49,8 @@
 			s.latitude as latitude,
 			s.longitude as longitude,
 			w.created_at as createdAt
-		FROM Wishlist w
-		join Scene s on w.scene_id = s.scene_id
+		FROM wishlist w
+		join scene s on w.scene_id = s.scene_id
 		WHERE w.member_id = #{memberId} and s.drama_id = #{dramaId}
 		ORDER BY w.created_at DESC
 		LIMIT #{size}
@@ -58,7 +58,7 @@
 	</select>
 	
 	<insert id="addWishlist">
-		INSERT INTO WISHLIST(
+		INSERT INTO wishlist(
 			member_id,
 			scene_id
 		)
@@ -68,7 +68,7 @@
 	<select id="countByMemberIdAndSceneId"
 			resultType="int">
 		SELECT count(*)
-		FROM WISHLIST
+		FROM wishlist
 		WHERE member_id = #{memberId} and scene_id = #{sceneId}
 	</select>
 </mapper>

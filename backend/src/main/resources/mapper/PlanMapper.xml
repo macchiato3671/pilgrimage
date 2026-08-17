@@ -9,7 +9,7 @@
 			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
 			>
 		SELECT *
-		FROM TravelPlan
+		FROM travel_plan
 		WHERE member_id = #{memberId}
 		ORDER BY updated_at DESC
 		LIMIT #{offset}, #{pageSize};
@@ -20,7 +20,7 @@
 			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
 			>
 		SELECT *
-		FROM TravelPlan
+		FROM travel_plan
 		WHERE member_id = #{memberId}
 			AND plan_id = #{planId};
 	</select>
@@ -30,7 +30,7 @@
 			resultType="com.moonback.pilgrimage.model.dto.TravelPlanRowDto"
 			>
 		SELECT *
-		FROM TravelPlan
+		FROM travel_plan
 		WHERE plan_id = #{planId};
 	</select>
 
@@ -39,7 +39,7 @@
 			resultType="com.moonback.pilgrimage.model.dto.TravelPlanDetailRowDto"
 			>
 		SELECT *
-		FROM PlanDetail
+		FROM plan_detail
 		WHERE plan_id = #{planId}
 		ORDER BY day_no ASC, begin_time ASC;
 	</select>
@@ -49,7 +49,7 @@
 			resultType="int"
 			>
 		SELECT COUNT(*)
-		FROM Place
+		FROM place
 		WHERE place_id = #{placeId}
 	</select>
 
@@ -58,7 +58,7 @@
 			resultType="int"
 			>
 		SELECT COUNT(*)
-		FROM Scene
+		FROM scene
 		WHERE scene_id = #{sceneId}
 	</select>
 
@@ -67,7 +67,7 @@
 			useGeneratedKeys="true"
 			keyProperty="planId"
 			>
-		INSERT INTO TravelPlan(
+		INSERT INTO travel_plan(
 			member_id,
 			title,
 			begin_date,
@@ -88,7 +88,7 @@
 			useGeneratedKeys="true"
 			keyProperty="detailId"
 			>
-		INSERT INTO PlanDetail(
+		INSERT INTO plan_detail(
 			plan_id,
 			place_id,
 			scene_id,
@@ -107,7 +107,7 @@
 	<update
 			id="updatePlan"
 			>
-		UPDATE TravelPlan
+		UPDATE travel_plan
 		SET title = #{title},
 			begin_date = #{beginDate},
 			end_date = #{endDate},
@@ -119,7 +119,7 @@
 	<update
 			id="updatePlanDetail"
 			>
-		UPDATE PlanDetail
+		UPDATE plan_detail
 		SET place_id = #{placeId},
 			scene_id = #{sceneId},
 			day_no = #{dayNo},
@@ -131,7 +131,7 @@
 	<delete
 			id="deletePlan"
 			>
-		DELETE FROM TravelPlan
+		DELETE FROM travel_plan
 		WHERE plan_id = #{planId}
 			AND member_id = #{memberId}
 	</delete>
@@ -139,14 +139,14 @@
 	<delete
 			id="deletePlanDetails"
 			>
-		DELETE FROM PlanDetail
+		DELETE FROM plan_detail
 		WHERE plan_id = #{planId}
 	</delete>
 
 	<delete
 			id="deletePlanDetailsExcept"
 			>
-		DELETE FROM PlanDetail
+		DELETE FROM plan_detail
 		WHERE plan_id = #{planId}
 			AND detail_id NOT IN
 			<foreach collection="detailIds" item="detailId" open="(" separator="," close=")">

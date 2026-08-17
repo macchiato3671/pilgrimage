@@ -16,8 +16,8 @@
 			p.description as description,
 			ct.content_type_id as contentTypeId,
 			ct.name as contentTypeName
-		FROM Place p
-		join ContentType ct on p.content_type_id = ct.content_type_id
+		FROM place p
+		join content_type ct on p.content_type_id = ct.content_type_id
 		WHERE p.place_id = #{placeId}
 	</select>
 
@@ -26,7 +26,7 @@
 		SELECT
 			img_id as imgId,
 			url
-		FROM PlaceImg
+		FROM place_img
 		WHERE place_id = #{placeId}
 		ORDER BY img_id ASC
 	</select>
@@ -37,7 +37,7 @@
 			place_id as placeId,
 			img_id as imgId,
 			url
-		FROM PlaceImg
+		FROM place_img
 		WHERE place_id IN
 		<foreach collection="placeIds" item="placeId" open="(" separator="," close=")">
 			#{placeId}
@@ -67,8 +67,8 @@
 	<select id="countSearchPlace"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM Place p
-		join ContentType ct on p.content_type_id = ct.content_type_id
+		FROM place p
+		join content_type ct on p.content_type_id = ct.content_type_id
 		<include refid="searchPlaceWhere"/>
 	</select>
 
@@ -84,8 +84,8 @@
 			p.description as description,
 			ct.content_type_id as contentTypeId,
 			ct.name as contentTypeName
-		FROM Place p
-		join ContentType ct on p.content_type_id = ct.content_type_id
+		FROM place p
+		join content_type ct on p.content_type_id = ct.content_type_id
 		<include refid="searchPlaceWhere"/>
 		ORDER BY p.place_id ASC
 		LIMIT #{size}
@@ -103,7 +103,7 @@
 	<select id="countNearPlaces"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM Place p
+		FROM place p
 		<include refid="nearPlaceWhere"/>
 	</select>
 
@@ -120,8 +120,8 @@
 			ct.content_type_id as contentTypeId,
 			ct.name as contentTypeName,
 			ROUND((ABS(p.latitude - #{latitude}) + ABS(p.longitude - #{longitude})) * 111, 3) as distanceKm
-		FROM Place p
-		join ContentType ct on p.content_type_id = ct.content_type_id
+		FROM place p
+		join content_type ct on p.content_type_id = ct.content_type_id
 		<include refid="nearPlaceWhere"/>
 		ORDER BY distanceKm ASC, p.place_id ASC
 		LIMIT #{size}
