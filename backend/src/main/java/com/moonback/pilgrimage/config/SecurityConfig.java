@@ -63,7 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/places/**").permitAll()
                         
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        
+						.requestMatchers("/actuator/prometheus").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
