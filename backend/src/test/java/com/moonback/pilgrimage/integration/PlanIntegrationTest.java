@@ -93,7 +93,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		Integer count = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM TravelPlan "
+						+ "FROM travel_plan "
 						+ "WHERE member_id = ? "
 						+ "AND title = ? "
 						+ "AND begin_date = ? "
@@ -303,7 +303,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		Integer count = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM TravelPlan "
+						+ "FROM travel_plan "
 						+ "WHERE plan_id = ? "
 						+ "AND member_id = ? "
 						+ "AND title = ? "
@@ -529,14 +529,14 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		Integer totalCount = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM PlanDetail "
+						+ "FROM plan_detail "
 						+ "WHERE plan_id = ?",
 				Integer.class,
 				planId
 				);
 		Integer updatedCount = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM PlanDetail "
+						+ "FROM plan_detail "
 						+ "WHERE detail_id = ? "
 						+ "AND plan_id = ? "
 						+ "AND scene_id = ? "
@@ -552,7 +552,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 				);
 		Integer insertedCount = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM PlanDetail "
+						+ "FROM plan_detail "
 						+ "WHERE plan_id = ? "
 						+ "AND place_id = ? "
 						+ "AND scene_id IS NULL "
@@ -566,7 +566,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 				);
 		Integer deletedCount = jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM PlanDetail "
+						+ "FROM plan_detail "
 						+ "WHERE detail_id = ?",
 				Integer.class,
 				deleteDetailId
@@ -955,7 +955,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		jdbcTemplate.update(connection -> {
 			PreparedStatement ps = connection.prepareStatement(
-					"INSERT INTO TravelPlan("
+					"INSERT INTO travel_plan("
 							+ "member_id, "
 							+ "title, "
 							+ "begin_date, "
@@ -978,7 +978,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 	private int countPlans(int memberId) {
 		return jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM TravelPlan "
+						+ "FROM travel_plan "
 						+ "WHERE member_id = ?",
 				Integer.class,
 				memberId
@@ -988,7 +988,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 	private int countPlanByPlanId(int planId) {
 		return jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM TravelPlan "
+						+ "FROM travel_plan "
 						+ "WHERE plan_id = ?",
 				Integer.class,
 				planId
@@ -998,7 +998,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 	private int countPlanDetails(int planId) {
 		return jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) "
-						+ "FROM PlanDetail "
+						+ "FROM plan_detail "
 						+ "WHERE plan_id = ?",
 				Integer.class,
 				planId
@@ -1008,7 +1008,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 	private int insertContentType() {
 		int contentTypeId = nextPositiveId();
 		jdbcTemplate.update(
-				"INSERT INTO ContentType("
+				"INSERT INTO content_type("
 						+ "content_type_id, "
 						+ "name"
 						+ ") VALUES (?, ?)",
@@ -1023,7 +1023,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		jdbcTemplate.update(connection -> {
 			PreparedStatement ps = connection.prepareStatement(
-					"INSERT INTO Place("
+					"INSERT INTO place("
 							+ "content_id, "
 							+ "content_type_id, "
 							+ "name, "
@@ -1054,7 +1054,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 	private int insertDrama() {
 		int dramaId = nextPositiveId();
 		jdbcTemplate.update(
-				"INSERT INTO Drama("
+				"INSERT INTO drama("
 						+ "drama_id, "
 						+ "title, "
 						+ "released_at, "
@@ -1073,7 +1073,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		jdbcTemplate.update(connection -> {
 			PreparedStatement ps = connection.prepareStatement(
-					"INSERT INTO Scene("
+					"INSERT INTO scene("
 							+ "drama_id, "
 							+ "name, "
 							+ "description, "
@@ -1106,7 +1106,7 @@ class PlanIntegrationTest extends AbstractMySqlIntegrationTest {
 
 		jdbcTemplate.update(connection -> {
 			PreparedStatement ps = connection.prepareStatement(
-					"INSERT INTO PlanDetail("
+					"INSERT INTO plan_detail("
 							+ "plan_id, "
 							+ "place_id, "
 							+ "scene_id, "

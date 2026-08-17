@@ -8,14 +8,14 @@
 	<select id="getYears"
 			resultType="int">
 		SELECT DISTINCT YEAR(released_at)
-		FROM Drama
+		FROM drama
 		ORDER BY YEAR(released_at) ASC
 	</select>
 	
 	<select id="countDramasByYear"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM DRAMA
+		FROM drama
 		WHERE YEAR(released_at) = #{year}
 	</select>
 	
@@ -26,8 +26,8 @@
 	        d.title AS title,
 	        d.released_at AS releasedAt,
 	        d.description AS description,
-	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
-		FROM Drama d
+	        (SELECT COUNT(*) FROM scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM drama d
 		WHERE YEAR(d.released_at) = #{year}
 		ORDER BY d.released_at DESC, d.drama_id DESC
 	    LIMIT #{size}
@@ -40,8 +40,8 @@
 			dg.drama_id as dramaId,
 			g.genre_id as genreId,
 			g.name as name
-		FROM DramaGenre dg
-		join Genre g on dg.genre_id = g.genre_id
+		FROM drama_genre dg
+		join genre g on dg.genre_id = g.genre_id
 		WHERE dg.drama_id IN 
 		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
 	        #{dramaId}
@@ -52,21 +52,21 @@
 	<select id="getGenres"
 			resultType="com.moonback.pilgrimage.model.dto.GenreDto">
 		SELECT genre_id as genreId, name
-		FROM Genre
+		FROM genre
 		ORDER BY name ASC
 	</select>
 	
 	<select id="findGenreById"
 			resultType="com.moonback.pilgrimage.model.dto.GenreDto">
 		SELECT genre_id as genreId, name
-		FROM Genre
+		FROM genre
 		WHERE genre_id = #{genreId}
 	</select>
 	
 	<select id="countDramasByGenre"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM DramaGenre
+		FROM drama_genre
 		WHERE genre_id = #{genreId}
 	</select>
 	
@@ -77,9 +77,9 @@
 	        d.title AS title,
 	        d.released_at AS releasedAt,
 	        d.description AS description,
-	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
-		FROM Drama d
-		JOIN DramaGenre dg on d.drama_id = dg.drama_id
+	        (SELECT COUNT(*) FROM scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM drama d
+		JOIN drama_genre dg on d.drama_id = dg.drama_id
 		WHERE dg.genre_id = #{genreId}
 		ORDER BY dg.genre_id DESC, d.drama_id DESC
 	    LIMIT #{size}
@@ -89,7 +89,7 @@
 	<select id="countDramasByKeyword"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM Drama
+		FROM drama
 		WHERE title LIKE CONCAT('%', #{keyword}, '%')
 	</select>
 	
@@ -100,8 +100,8 @@
 	        d.title AS title,
 	        d.released_at AS releasedAt,
 	        d.description AS description,
-	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
-		FROM Drama d
+	        (SELECT COUNT(*) FROM scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM drama d
 		WHERE d.title LIKE CONCAT('%', #{keyword}, '%')
 		ORDER BY d.released_at DESC, d.drama_id DESC
 	    LIMIT #{size}
@@ -111,7 +111,7 @@
 	<select id="existsByDramaId" resultType="boolean">
 		SELECT EXISTS (
 			SELECT 1
-			FROM Drama
+			FROM drama
 			WHERE drama_id = #{dramaId}
 		)
 	</select>
@@ -123,8 +123,8 @@
 	        d.title AS title,
 	        d.released_at AS releasedAt,
 	        d.description AS description,
-	        (SELECT COUNT(*) FROM Scene s WHERE s.drama_id = d.drama_id) AS sceneCount
-		FROM Drama d
+	        (SELECT COUNT(*) FROM scene s WHERE s.drama_id = d.drama_id) AS sceneCount
+		FROM drama d
 		WHERE d.drama_id = #{dramaId}
 	</select>
 	
@@ -134,7 +134,7 @@
 			drama_id AS dramaId,
 			img_id AS imgId,
 			url AS url
-		FROM DramaImg
+		FROM drama_img
 		WHERE drama_id IN
 		<foreach collection="dramaIds" item="dramaId" open="(" separator="," close=")">
 			#{dramaId}

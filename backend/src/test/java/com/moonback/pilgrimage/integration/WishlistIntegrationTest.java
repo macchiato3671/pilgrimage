@@ -66,7 +66,7 @@ public class WishlistIntegrationTest extends AbstractMySqlIntegrationTest {
 				genreId,
 				"위시리스트 테스트 장르 " + genreId);
 		jdbcTemplate.update(
-				"INSERT INTO dramagenre (drama_id, genre_id) VALUES (?, ?)",
+				"INSERT INTO drama_genre (drama_id, genre_id) VALUES (?, ?)",
 				dramaId,
 				genreId);
 
