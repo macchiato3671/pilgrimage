@@ -1,0 +1,126 @@
+name: Frontend CI/CD
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "frontendv2/**"
+      - ".github/workflows/frontend.yml"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "frontendv2/**"
+      - ".github/workflows/frontend.yml"
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ghcr.io/macchiato3671/pilgrimage-frontend
+
+jobs:
+  # =========================
+  # CI
+  # PR / main push 모두 실행
+  # =========================
+  test:
+    name: Frontend Build Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontendv2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontendv2/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          VITE_API_BASE_URL: /api/v1
+          # CI에서는 실제 Kakao 키가 필요하지 않음
+          VITE_KAKAO_MAP_APP_KEY: ci-dummy-key
+        run: npm run build
+
+  # =========================
+  # CD - Docker Image Push
+  # main에 merge된 경우만 실행
+  # =========================
+  publish:
+    name: Build & Push Frontend Image
+    if: github.event_name == 'push'
+    needs: test
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontendv2
+          file: ./frontendv2/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=/api/v1
+            VITE_KAKAO_MAP_APP_KEY=${{ secrets.VITE_KAKAO_MAP_APP_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =========================
+  # CD - Server Deploy
+  # =========================
+  deploy:
+    name: Deploy Frontend
+    if: github.event_name == 'push'
+    needs: publish
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            cd /opt/pilgrimage
+
+            docker compose pull frontend
+            docker compose up -d --no-deps frontend
+
+            docker image prune -f
