@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.pnpm-store
+**/.vite
+**/.vite-temp
+**/.env
+**/.env.*
+!frontendv2/.env
+!**/.env.example
+.git
+.idea
+backend/target
