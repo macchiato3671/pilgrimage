@@ -1,0 +1,134 @@
+name: Backend CI/CD
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yml"
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ghcr.io/macchiato3671/pilgrimage-backend
+
+jobs:
+  # =========================
+  # CI
+  # =========================
+  test:
+    name: Backend Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Grant execute permission
+        run: chmod +x mvnw
+
+      - name: Run tests
+        run: ./mvnw -B test
+
+  # =========================
+  # CD - Docker Image Push
+  # =========================
+  publish:
+    name: Build & Push Backend Image
+    if: github.event_name == 'push'
+    needs: test
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Grant execute permission
+        working-directory: backend
+        run: chmod +x mvnw
+
+      # 현재 Backend Dockerfile은 target/*.jar를 COPY하므로
+      # Docker build 전에 jar 생성 필요
+      - name: Build JAR
+        working-directory: backend
+        run: ./mvnw -B package -DskipTests
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =========================
+  # CD - Server Deploy
+  # =========================
+  deploy:
+    name: Deploy Backend
+    if: github.event_name == 'push'
+    needs: publish
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            cd /opt/pilgrimage
+
+            docker compose pull backend
+            docker compose up -d --no-deps backend
+
+            docker image prune -f
