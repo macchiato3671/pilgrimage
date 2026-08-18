@@ -84,8 +84,8 @@ Use the same `ingestKey` to restart a failed execution. Use a new `ingestKey` fo
 
 ```bash
 bash ./backend/mvnw -DskipTests package
-docker compose --env-file ./backend/.env up mysql
-docker compose --env-file ./backend/.env --profile batch run --rm pilgrimage-ingest
+docker compose -f ./docker-compose.pilgrimage.yml --env-file ./backend/.env up -d mysql
+docker compose -f ./docker-compose.pilgrimage.yml --env-file ./backend/.env --profile batch run --rm pilgrimage-ingest
 ```
 
 The container runs as a non-root user and writes temporary image files under `/tmp/pilgrimage-ingest`.

@@ -18,7 +18,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: Asia/Seoul
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -29,7 +29,6 @@ services:
     build:
       context: .
       dockerfile: infra/nginx/Dockerfile
-    image: nginx:alpine
     container_name: pilgrimage-nginx
     restart: unless-stopped
     ports:
@@ -42,7 +41,7 @@ services:
     container_name: pilgrimage-prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - pilgrimage-prometheus:/prometheus
@@ -54,7 +53,7 @@ services:
     container_name: pilgrimage-grafana
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - pilgrimage-grafana:/var/lib/grafana
       - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -69,8 +68,8 @@ services:
       - mysql
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/moonbackdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: moonback
-      SPRING_DATASOURCE_PASSWORD: moonback
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       TMDB_READ_TOKEN: ${TMDB_READ_TOKEN}
       KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY}
       AWS_REGION: ${AWS_REGION}
@@ -88,10 +87,7 @@ services:
 volumes:
   pilgrimage-mysql:
     name: backend_pilgrimage-mysql
-    external: true
   pilgrimage-prometheus:
     name: backend_pilgrimage-prometheus
-    external: true
   pilgrimage-grafana:
     name: backend_pilgrimage-grafana
-    external: true
