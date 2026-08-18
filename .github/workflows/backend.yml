@@ -48,6 +48,8 @@ jobs:
         run: chmod +x mvnw
 
       - name: Run tests
+        env:
+          JWT_SECRET: ci-test-secret-key-that-is-at-least-32-bytes-long
         run: ./mvnw -B test
 
   # =========================
