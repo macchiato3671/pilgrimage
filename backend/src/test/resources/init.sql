@@ -11,16 +11,16 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- Service tables used by the application API (batch tables excluded).
 
-DROP TABLE IF EXISTS `memberrole`;
-CREATE TABLE `memberrole` (
+DROP TABLE IF EXISTS `member_role`;
+CREATE TABLE `member_role` (
   `role_id` int NOT NULL,
   `role_name` varchar(50) NOT NULL,
   PRIMARY KEY (`role_id`),
   UNIQUE KEY `uk_member_role_name` (`role_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `memberstatus`;
-CREATE TABLE `memberstatus` (
+DROP TABLE IF EXISTS `member_status`;
+CREATE TABLE `member_status` (
   `status_id` int NOT NULL,
   `status` varchar(50) NOT NULL,
   PRIMARY KEY (`status_id`),
@@ -38,8 +38,8 @@ CREATE TABLE `member` (
   `status_id` int NOT NULL,
   PRIMARY KEY (`member_id`),
   UNIQUE KEY `uk_member_email` (`email`),
-  CONSTRAINT `fk_member_role` FOREIGN KEY (`role_id`) REFERENCES `memberrole` (`role_id`),
-  CONSTRAINT `fk_member_status` FOREIGN KEY (`status_id`) REFERENCES `memberstatus` (`status_id`)
+  CONSTRAINT `fk_member_role` FOREIGN KEY (`role_id`) REFERENCES `member_role` (`role_id`),
+  CONSTRAINT `fk_member_status` FOREIGN KEY (`status_id`) REFERENCES `member_status` (`status_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 DROP TABLE IF EXISTS `drama`;
@@ -63,8 +63,8 @@ CREATE TABLE `genre` (
   UNIQUE KEY `uk_genre_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `dramagenre`;
-CREATE TABLE `dramagenre` (
+DROP TABLE IF EXISTS `drama_genre`;
+CREATE TABLE `drama_genre` (
   `drama_id` int NOT NULL,
   `genre_id` int NOT NULL,
   PRIMARY KEY (`drama_id`,`genre_id`),
@@ -73,8 +73,8 @@ CREATE TABLE `dramagenre` (
   CONSTRAINT `fk_drama_genre_genre` FOREIGN KEY (`genre_id`) REFERENCES `genre` (`genre_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `dramaimg`;
-CREATE TABLE `dramaimg` (
+DROP TABLE IF EXISTS `drama_img`;
+CREATE TABLE `drama_img` (
   `img_id` int NOT NULL AUTO_INCREMENT,
   `drama_id` int NOT NULL,
   `url` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -108,8 +108,8 @@ CREATE TABLE `scene` (
   CONSTRAINT `fk_scene_drama` FOREIGN KEY (`drama_id`) REFERENCES `drama` (`drama_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2755 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `sceneimg`;
-CREATE TABLE `sceneimg` (
+DROP TABLE IF EXISTS `scene_img`;
+CREATE TABLE `scene_img` (
   `img_id` int NOT NULL AUTO_INCREMENT,
   `scene_id` int NOT NULL,
   `url` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -124,8 +124,8 @@ CREATE TABLE `sceneimg` (
   CONSTRAINT `fk_scene_img_scene` FOREIGN KEY (`scene_id`) REFERENCES `scene` (`scene_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8864 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `contenttype`;
-CREATE TABLE `contenttype` (
+DROP TABLE IF EXISTS `content_type`;
+CREATE TABLE `content_type` (
   `content_type_id` int NOT NULL,
   `name` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`content_type_id`)
@@ -147,11 +147,11 @@ CREATE TABLE `place` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`place_id`),
   UNIQUE KEY `uk_place_content_id` (`content_id`),
-  CONSTRAINT `fk_place_content_type` FOREIGN KEY (`content_type_id`) REFERENCES `contenttype` (`content_type_id`)
+  CONSTRAINT `fk_place_content_type` FOREIGN KEY (`content_type_id`) REFERENCES `content_type` (`content_type_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=65536 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `placeimg`;
-CREATE TABLE `placeimg` (
+DROP TABLE IF EXISTS `place_img`;
+CREATE TABLE `place_img` (
   `img_id` int NOT NULL AUTO_INCREMENT,
   `place_id` int NOT NULL,
   `url` varchar(1000) NOT NULL,
@@ -160,8 +160,8 @@ CREATE TABLE `placeimg` (
   CONSTRAINT `fk_place_img_place` FOREIGN KEY (`place_id`) REFERENCES `place` (`place_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=131071 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `travelplan`;
-CREATE TABLE `travelplan` (
+DROP TABLE IF EXISTS `travel_plan`;
+CREATE TABLE `travel_plan` (
   `plan_id` int NOT NULL AUTO_INCREMENT,
   `member_id` int NOT NULL,
   `title` varchar(255) NOT NULL,
@@ -175,8 +175,8 @@ CREATE TABLE `travelplan` (
   CONSTRAINT `fk_travel_plan_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`member_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `plandetail`;
-CREATE TABLE `plandetail` (
+DROP TABLE IF EXISTS `plan_detail`;
+CREATE TABLE `plan_detail` (
   `detail_id` int NOT NULL AUTO_INCREMENT,
   `plan_id` int NOT NULL,
   `place_id` int DEFAULT NULL,
@@ -186,7 +186,7 @@ CREATE TABLE `plandetail` (
   PRIMARY KEY (`detail_id`),
   CONSTRAINT `ck_plandetail_day` CHECK ((`day_no` >= 1)),
   CONSTRAINT `place_xor` CHECK ((((`place_id` is not null) and (`scene_id` is null)) or ((`place_id` is null) and (`scene_id` is not null)))),
-  CONSTRAINT `fk_plan_detail_plan` FOREIGN KEY (`plan_id`) REFERENCES `travelplan` (`plan_id`),
+  CONSTRAINT `fk_plan_detail_plan` FOREIGN KEY (`plan_id`) REFERENCES `travel_plan` (`plan_id`),
   CONSTRAINT `fk_plan_detail_place` FOREIGN KEY (`place_id`) REFERENCES `place` (`place_id`),
   CONSTRAINT `fk_plan_detail_scene` FOREIGN KEY (`scene_id`) REFERENCES `scene` (`scene_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -204,16 +204,16 @@ CREATE TABLE `wishlist` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Static reference data required by service foreign keys.
-INSERT INTO `memberrole` (`role_id`, `role_name`) VALUES
+INSERT INTO `member_role` (`role_id`, `role_name`) VALUES
   (1, 'USER'),
   (2, 'ADMIN');
 
-INSERT INTO `memberstatus` (`status_id`, `status`) VALUES
+INSERT INTO `member_status` (`status_id`, `status`) VALUES
   (1, 'ACTIVE'),
   (2, 'WITHDRAWN'),
   (3, 'SUSPENDED');
 
-INSERT INTO `contenttype` (`content_type_id`, `name`) VALUES
+INSERT INTO `content_type` (`content_type_id`, `name`) VALUES
   (12, '관광지'),
   (14, '문화시설'),
   (15, '축제공연행사'),
@@ -245,14 +245,14 @@ CREATE TABLE `attractions` (
   PRIMARY KEY (`no`),
   KEY `attractions_typeid_to_types_typeid_fk_idx` (`content_type_id`),
   KEY `attractions_sido_to_sidos_code_fk_idx` (`area_code`),
-  KEY `attractions_sigungu_to_guguns_gugun_fk_idx` (`si_gun_gu_code`),
+  KEY `attractions_sigungu_to_guguns_gugun_fk_idx` (`area_code`, `si_gun_gu_code`),
   CONSTRAINT `attractions_area_to_sidos_code_fk` FOREIGN KEY (`area_code`) REFERENCES `sidos` (`sido_code`),
-  CONSTRAINT `attractions_sigungu_to_guguns_gugun_fk` FOREIGN KEY (`si_gun_gu_code`) REFERENCES `guguns` (`gugun_code`),
-  CONSTRAINT `attractions_typeid_to_types_typeid_fk` FOREIGN KEY (`content_type_id`) REFERENCES `contenttypes` (`content_type_id`)
+  CONSTRAINT `attractions_sigungu_to_guguns_gugun_fk` FOREIGN KEY (`area_code`, `si_gun_gu_code`) REFERENCES `guguns` (`sido_code`, `gugun_code`),
+  CONSTRAINT `attractions_typeid_to_types_typeid_fk` FOREIGN KEY (`content_type_id`) REFERENCES `content_types` (`content_type_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=107559 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='명소정보테이블';
 
-DROP TABLE IF EXISTS `contenttypes`;
-CREATE TABLE `contenttypes` (
+DROP TABLE IF EXISTS `content_types`;
+CREATE TABLE `content_types` (
   `content_type_id` int NOT NULL COMMENT '콘텐츠타입번호',
   `content_type_name` varchar(45) DEFAULT NULL COMMENT '콘텐츠타입이름',
   PRIMARY KEY (`content_type_id`)
@@ -274,8 +274,8 @@ CREATE TABLE `flyway_schema_history` (
   KEY `flyway_schema_history_s_idx` (`success`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `geocodecache`;
-CREATE TABLE `geocodecache` (
+DROP TABLE IF EXISTS `geocode_cache`;
+CREATE TABLE `geocode_cache` (
   `query_hash` binary(32) NOT NULL,
   `query_text` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -299,11 +299,12 @@ CREATE TABLE `guguns` (
   PRIMARY KEY (`no`),
   KEY `guguns_sido_to_sidos_cdoe_fk_idx` (`sido_code`),
   KEY `gugun_code_idx` (`gugun_code`),
+  UNIQUE KEY `guguns_sido_gugun_code_unique` (`sido_code`, `gugun_code`),
   CONSTRAINT `guguns_sido_to_sidos_cdoe_fk` FOREIGN KEY (`sido_code`) REFERENCES `sidos` (`sido_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=469 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='구군정보테이블';
 
-DROP TABLE IF EXISTS `imageimporttask`;
-CREATE TABLE `imageimporttask` (
+DROP TABLE IF EXISTS `image_import_task`;
+CREATE TABLE `image_import_task` (
   `task_key` binary(32) NOT NULL,
   `owner_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `owner_id` int NOT NULL,
@@ -339,8 +340,8 @@ CREATE TABLE `sidos` (
 
 -- Flyway migration changes are already incorporated into the lowercase table definitions above.
 -- Crawl and drama match override tables are intentionally created last.
-DROP TABLE IF EXISTS `crawlpost`;
-CREATE TABLE `crawlpost` (
+DROP TABLE IF EXISTS `crawl_post`;
+CREATE TABLE `crawl_post` (
   `post_key` binary(32) NOT NULL,
   `post_url` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL,
   `post_title` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -361,8 +362,8 @@ CREATE TABLE `crawlpost` (
   KEY `idx_crawl_post_tmdb` (`tmdb_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `crawlscene`;
-CREATE TABLE `crawlscene` (
+DROP TABLE IF EXISTS `crawl_scene`;
+CREATE TABLE `crawl_scene` (
   `source_key` binary(32) NOT NULL,
   `post_key` binary(32) NOT NULL,
   `source_order` int NOT NULL,
@@ -381,120 +382,16 @@ CREATE TABLE `crawlscene` (
   UNIQUE KEY `uk_crawl_scene_post_order` (`post_key`,`source_order`),
   KEY `idx_crawl_scene_status` (`status`),
   KEY `idx_crawl_scene_scene` (`scene_id`),
-  CONSTRAINT `fk_crawl_scene_post` FOREIGN KEY (`post_key`) REFERENCES `crawlpost` (`post_key`),
+  CONSTRAINT `fk_crawl_scene_post` FOREIGN KEY (`post_key`) REFERENCES `crawl_post` (`post_key`),
   CONSTRAINT `fk_crawl_scene_scene` FOREIGN KEY (`scene_id`) REFERENCES `scene` (`scene_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-DROP TABLE IF EXISTS `dramamatchoverride`;
-CREATE TABLE `dramamatchoverride` (
+DROP TABLE IF EXISTS `drama_match_override`;
+CREATE TABLE `drama_match_override` (
   `normalized_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `tmdb_id` int NOT NULL,
   `memo` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`normalized_title`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Legacy Spring Batch metadata tables from DBSchema.sql.sql.
-DROP TABLE IF EXISTS `batch_job_execution`;
-CREATE TABLE `batch_job_execution` (
-  `JOB_EXECUTION_ID` bigint NOT NULL,
-  `VERSION` bigint DEFAULT NULL,
-  `JOB_INSTANCE_ID` bigint NOT NULL,
-  `CREATE_TIME` datetime(6) NOT NULL,
-  `START_TIME` datetime(6) DEFAULT NULL,
-  `END_TIME` datetime(6) DEFAULT NULL,
-  `STATUS` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `EXIT_CODE` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `EXIT_MESSAGE` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `LAST_UPDATED` datetime(6) DEFAULT NULL,
-  PRIMARY KEY (`JOB_EXECUTION_ID`),
-  KEY `JOB_INST_EXEC_FK` (`JOB_INSTANCE_ID`),
-  CONSTRAINT `JOB_INST_EXEC_FK` FOREIGN KEY (`JOB_INSTANCE_ID`) REFERENCES `batch_job_instance` (`JOB_INSTANCE_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_job_execution_context`;
-CREATE TABLE `batch_job_execution_context` (
-  `JOB_EXECUTION_ID` bigint NOT NULL,
-  `SHORT_CONTEXT` varchar(2500) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SERIALIZED_CONTEXT` text COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`JOB_EXECUTION_ID`),
-  CONSTRAINT `JOB_EXEC_CTX_FK` FOREIGN KEY (`JOB_EXECUTION_ID`) REFERENCES `batch_job_execution` (`JOB_EXECUTION_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_job_execution_params`;
-CREATE TABLE `batch_job_execution_params` (
-  `JOB_EXECUTION_ID` bigint NOT NULL,
-  `PARAMETER_NAME` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `PARAMETER_TYPE` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `PARAMETER_VALUE` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `IDENTIFYING` char(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  KEY `JOB_EXEC_PARAMS_FK` (`JOB_EXECUTION_ID`),
-  CONSTRAINT `JOB_EXEC_PARAMS_FK` FOREIGN KEY (`JOB_EXECUTION_ID`) REFERENCES `batch_job_execution` (`JOB_EXECUTION_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_job_execution_seq`;
-CREATE TABLE `batch_job_execution_seq` (
-  `ID` bigint NOT NULL,
-  `UNIQUE_KEY` char(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  UNIQUE KEY `UNIQUE_KEY_UN` (`UNIQUE_KEY`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_job_instance`;
-CREATE TABLE `batch_job_instance` (
-  `JOB_INSTANCE_ID` bigint NOT NULL,
-  `VERSION` bigint DEFAULT NULL,
-  `JOB_NAME` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `JOB_KEY` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`JOB_INSTANCE_ID`),
-  UNIQUE KEY `JOB_INST_UN` (`JOB_NAME`,`JOB_KEY`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_job_seq`;
-CREATE TABLE `batch_job_seq` (
-  `ID` bigint NOT NULL,
-  `UNIQUE_KEY` char(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  UNIQUE KEY `UNIQUE_KEY_UN` (`UNIQUE_KEY`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_step_execution`;
-CREATE TABLE `batch_step_execution` (
-  `STEP_EXECUTION_ID` bigint NOT NULL,
-  `VERSION` bigint NOT NULL,
-  `STEP_NAME` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `JOB_EXECUTION_ID` bigint NOT NULL,
-  `CREATE_TIME` datetime(6) NOT NULL,
-  `START_TIME` datetime(6) DEFAULT NULL,
-  `END_TIME` datetime(6) DEFAULT NULL,
-  `STATUS` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `COMMIT_COUNT` bigint DEFAULT NULL,
-  `READ_COUNT` bigint DEFAULT NULL,
-  `FILTER_COUNT` bigint DEFAULT NULL,
-  `WRITE_COUNT` bigint DEFAULT NULL,
-  `READ_SKIP_COUNT` bigint DEFAULT NULL,
-  `WRITE_SKIP_COUNT` bigint DEFAULT NULL,
-  `PROCESS_SKIP_COUNT` bigint DEFAULT NULL,
-  `ROLLBACK_COUNT` bigint DEFAULT NULL,
-  `EXIT_CODE` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `EXIT_MESSAGE` varchar(2500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `LAST_UPDATED` datetime(6) DEFAULT NULL,
-  PRIMARY KEY (`STEP_EXECUTION_ID`),
-  KEY `JOB_EXEC_STEP_FK` (`JOB_EXECUTION_ID`),
-  CONSTRAINT `JOB_EXEC_STEP_FK` FOREIGN KEY (`JOB_EXECUTION_ID`) REFERENCES `batch_job_execution` (`JOB_EXECUTION_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_step_execution_context`;
-CREATE TABLE `batch_step_execution_context` (
-  `STEP_EXECUTION_ID` bigint NOT NULL,
-  `SHORT_CONTEXT` varchar(2500) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `SERIALIZED_CONTEXT` text COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`STEP_EXECUTION_ID`),
-  CONSTRAINT `STEP_EXEC_CTX_FK` FOREIGN KEY (`STEP_EXECUTION_ID`) REFERENCES `batch_step_execution` (`STEP_EXECUTION_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-DROP TABLE IF EXISTS `batch_step_execution_seq`;
-CREATE TABLE `batch_step_execution_seq` (
-  `ID` bigint NOT NULL,
-  `UNIQUE_KEY` char(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  UNIQUE KEY `UNIQUE_KEY_UN` (`UNIQUE_KEY`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Spring Batch metadata tables are intentionally created last.

@@ -15,7 +15,7 @@
             role_id,
             status_id,
             created_at
-        FROM Member
+        FROM member
         WHERE email = #{email}
 	</select>
 	
@@ -30,7 +30,7 @@
             role_id,
             status_id,
             created_at
-        FROM Member
+        FROM member
         WHERE member_id = #{memberId}
 	</select>
 	
@@ -39,7 +39,7 @@
 			resultType="int"
 	>
 		SELECT COUNT(*)
-        FROM Member
+        FROM member
         WHERE email = #{email}	
 	</select>
 	
@@ -48,7 +48,7 @@
 			useGeneratedKeys="true"
 			keyProperty="memberId"
 			>
-		INSERT INTO MEMBER(
+		INSERT INTO member(
 			email,
 			password,
 			nickname,
@@ -65,7 +65,7 @@
 	</insert>
 	
 	<update id="updateMember">
-		UPDATE MEMBER
+		UPDATE member
 		<set>
 			<if test="email != null">
 				email = #{email},
@@ -82,7 +82,7 @@
 	
 	<update id="withdrawById"
 			parameterType="int">
-		UPDATE MEMBER
+		UPDATE member
 		SET status_id = 2
 		WHERE member_id = #{memberId}
 	</update>

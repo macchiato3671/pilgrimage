@@ -14,7 +14,7 @@
 			s.address,
 			s.latitude,
 			s.longitude
-		FROM Scene s
+		FROM scene s
 		WHERE scene_id = #{sceneId}
 	</select>
 	
@@ -23,7 +23,7 @@
 		SELECT
 			img_id AS imgId,
 			url
-		FROM SceneImg
+		FROM scene_img
 		WHERE scene_id = #{sceneId}
 		ORDER BY img_id ASC
 	</select>
@@ -34,7 +34,7 @@
 	        scene_id AS sceneId,
 	        img_id AS imgId,
 	        url
-	    FROM SceneImg
+	    FROM scene_img
 	    WHERE scene_id IN
 	    <foreach collection="sceneIds" item="sceneId" open="(" separator="," close=")">
 	        #{sceneId}
@@ -45,7 +45,7 @@
 	<select id="countSceneByDramaId"
 			resultType="int">
 		SELECT COUNT(*)
-		FROM Scene
+		FROM scene
 		WHERE drama_id = #{dramaId}
 	</select>
 	
@@ -59,7 +59,7 @@
 	        address AS address,
 	        latitude AS latitude,
 	        longitude AS longitude
-		FROM SCENE
+		FROM scene
 		WHERE drama_id = #{dramaId}
 		ORDER BY scene_id ASC
 		LIMIT #{size}

@@ -51,7 +51,7 @@ public class DramaIntegrationTest extends AbstractMySqlIntegrationTest {
 				genreId,
 				"테스트 장르 " + genreId);
 		jdbcTemplate.update(
-				"INSERT INTO dramagenre (drama_id, genre_id) VALUES (?, ?)",
+				"INSERT INTO drama_genre (drama_id, genre_id) VALUES (?, ?)",
 				dramaId,
 				genreId);
 		jdbcTemplate.update(
