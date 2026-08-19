@@ -38,22 +38,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontendv2/package-lock.json
+          cache: pnpm
+          cache-dependency-path: frontendv2/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         env:
           VITE_API_BASE_URL: /api/v1
           # CI에서는 실제 Kakao 키가 필요하지 않음
           VITE_KAKAO_MAP_APP_KEY: ci-dummy-key
-        run: npm run build
+        run: pnpm build
 
   # =========================
   # CD - Docker Image Push
