@@ -1,0 +1,373 @@
+{
+  "seed": 3671,
+  "place": {
+    "profiles": {
+      "small": 10000,
+      "medium": 500000,
+      "real": 6000000
+    },
+    "chunk_size": 500000,
+    "output_dir": "mock_data/generated",
+    "content_id": {
+      "base": 1700000000,
+      "namespace_slots": 64,
+      "namespace_capacity": 6000000
+    },
+    "korea_bounds": [
+      33.0,
+      38.6,
+      126.0,
+      129.7
+    ],
+    "content_types": [
+      {
+        "id": 12,
+        "name": "관광지",
+        "weight": 24,
+        "suffixes": [
+          {"value": "공원", "weight": 30},
+          {"value": "전망대", "weight": 18},
+          {"value": "해변", "weight": 14},
+          {"value": "산", "weight": 12},
+          {"value": "광장", "weight": 12},
+          {"value": "유적지", "weight": 9},
+          {"value": "수목원", "weight": 5}
+        ]
+      },
+      {
+        "id": 14,
+        "name": "문화시설",
+        "weight": 15,
+        "suffixes": [
+          {"value": "박물관", "weight": 30},
+          {"value": "미술관", "weight": 24},
+          {"value": "문화회관", "weight": 20},
+          {"value": "공연장", "weight": 14},
+          {"value": "도서관", "weight": 12}
+        ]
+      },
+      {
+        "id": 15,
+        "name": "축제공연행사",
+        "weight": 7,
+        "suffixes": [
+          {"value": "축제", "weight": 34},
+          {"value": "문화제", "weight": 28},
+          {"value": "페스티벌", "weight": 23},
+          {"value": "행사장", "weight": 15}
+        ]
+      },
+      {
+        "id": 25,
+        "name": "여행코스",
+        "weight": 5,
+        "suffixes": [
+          {"value": "둘레길", "weight": 30},
+          {"value": "탐방코스", "weight": 25},
+          {"value": "문화탐방길", "weight": 20},
+          {"value": "생태코스", "weight": 15},
+          {"value": "도보여행길", "weight": 10}
+        ]
+      },
+      {
+        "id": 28,
+        "name": "레포츠",
+        "weight": 12,
+        "suffixes": [
+          {"value": "체육공원", "weight": 25},
+          {"value": "캠핑장", "weight": 30},
+          {"value": "골프장", "weight": 15},
+          {"value": "레저센터", "weight": 20},
+          {"value": "스포츠파크", "weight": 10}
+        ]
+      },
+      {
+        "id": 32,
+        "name": "숙박",
+        "weight": 13,
+        "suffixes": [
+          {"value": "호텔", "weight": 32},
+          {"value": "모텔", "weight": 8},
+          {"value": "게스트하우스", "weight": 24},
+          {"value": "리조트", "weight": 26},
+          {"value": "한옥스테이", "weight": 10}
+        ]
+      },
+      {
+        "id": 38,
+        "name": "쇼핑",
+        "weight": 10,
+        "suffixes": [
+          {"value": "시장", "weight": 27},
+          {"value": "백화점", "weight": 20},
+          {"value": "아울렛", "weight": 18},
+          {"value": "쇼핑몰", "weight": 25},
+          {"value": "상점가", "weight": 10}
+        ]
+      },
+      {
+        "id": 39,
+        "name": "관광지",
+        "weight": 14,
+        "suffixes": [
+          {"value": "공원", "weight": 28},
+          {"value": "전망대", "weight": 18},
+          {"value": "해변", "weight": 16},
+          {"value": "산책로", "weight": 14},
+          {"value": "명소", "weight": 14},
+          {"value": "유적지", "weight": 10}
+        ]
+      }
+    ],
+    "name": {
+      "prefixes": [
+        {"value": "푸른", "weight": 12},
+        {"value": "한빛", "weight": 12},
+        {"value": "바람", "weight": 10},
+        {"value": "솔빛", "weight": 10},
+        {"value": "느티", "weight": 8},
+        {"value": "새봄", "weight": 8},
+        {"value": "아트", "weight": 8},
+        {"value": "해안", "weight": 8},
+        {"value": "온누리", "weight": 8},
+        {"value": "별내", "weight": 6},
+        {"value": "마루", "weight": 5},
+        {"value": "초록", "weight": 5}
+      ],
+      "forms": [
+        {"template": "{hotspot}{prefix}{suffix}", "weight": 38},
+        {"template": "{region}{prefix}{suffix}", "weight": 24},
+        {"template": "{hotspot}{suffix}", "weight": 20},
+        {"template": "{prefix}{hotspot}{suffix}", "weight": 12},
+        {"template": "{region}{hotspot}{suffix}", "weight": 6}
+      ],
+      "rare_token": {
+        "token": "별빛누리",
+        "probability": 0.0002
+      },
+      "verification_tokens": [
+        {"token": "공원", "expected": "common"},
+        {"token": "문화", "expected": "medium"},
+        {"token": "별빛누리", "expected": "rare"}
+      ]
+    },
+    "description": {
+      "max_bytes": 60000,
+      "length_buckets": [
+        {"kind": "null", "probability": 0.08},
+        {"kind": "short", "probability": 0.12, "min": 12, "max": 28},
+        {"kind": "medium", "probability": 0.35, "min": 30, "max": 100},
+        {"kind": "long", "probability": 0.30, "min": 101, "max": 300},
+        {"kind": "very_long", "probability": 0.10, "min": 301, "max": 700},
+        {"kind": "extra_long", "probability": 0.05, "min": 701, "max": 1400}
+      ]
+    },
+    "dates": {
+      "created_start": "2016-01-01T00:00:00",
+      "created_end": "2025-12-31T23:59:59",
+      "updated_end": "2026-06-30T23:59:59",
+      "max_update_days": 730
+    },
+    "regions": [
+      {
+        "name": "수도권",
+        "short_name": "수도권",
+        "weight": 52,
+        "address_prefixes": ["서울특별시", "인천광역시", "경기도"],
+        "bounds": [37.0, 38.2, 126.5, 127.9],
+        "hotspots": [
+          {"name": "강남", "weight": 18, "city": "서울특별시", "district": "강남구", "neighborhood": "역삼동", "center": [37.4979, 127.0276], "sigma": [0.009, 0.011], "address_variants": [
+            {"neighborhood": "역삼동", "weight": 24}, {"neighborhood": "삼성동", "weight": 20}, {"neighborhood": "논현동", "weight": 16},
+            {"neighborhood": "청담동", "weight": 14}, {"neighborhood": "압구정동", "weight": 14}, {"neighborhood": "대치동", "weight": 12}
+          ]},
+          {"name": "홍대", "weight": 16, "city": "서울특별시", "district": "마포구", "neighborhood": "서교동", "center": [37.5563, 126.9236], "sigma": [0.009, 0.011], "address_variants": [
+            {"neighborhood": "서교동", "weight": 24}, {"neighborhood": "연남동", "weight": 20}, {"neighborhood": "동교동", "weight": 16},
+            {"neighborhood": "합정동", "weight": 14}, {"neighborhood": "망원동", "weight": 14}, {"neighborhood": "상수동", "weight": 12}
+          ]},
+          {"name": "종로", "weight": 12, "city": "서울특별시", "district": "종로구", "neighborhood": "종로2가", "center": [37.5704, 126.9850], "sigma": [0.010, 0.012], "address_variants": [
+            {"neighborhood": "종로2가", "weight": 24}, {"neighborhood": "인사동", "weight": 20}, {"neighborhood": "관철동", "weight": 16},
+            {"neighborhood": "익선동", "weight": 14}, {"neighborhood": "혜화동", "weight": 14}, {"neighborhood": "창신동", "weight": 12}
+          ]},
+          {"name": "잠실", "weight": 12, "city": "서울특별시", "district": "송파구", "neighborhood": "잠실동", "center": [37.5133, 127.1001], "sigma": [0.009, 0.011], "address_variants": [
+            {"neighborhood": "잠실동", "weight": 24}, {"neighborhood": "신천동", "weight": 20}, {"neighborhood": "석촌동", "weight": 16},
+            {"neighborhood": "방이동", "weight": 14}, {"neighborhood": "문정동", "weight": 14}, {"neighborhood": "가락동", "weight": 12}
+          ]},
+          {"name": "성수", "weight": 12, "city": "서울특별시", "district": "성동구", "neighborhood": "성수동1가", "center": [37.5446, 127.0559], "sigma": [0.008, 0.010], "address_variants": [
+            {"neighborhood": "성수동1가", "weight": 24}, {"neighborhood": "성수동2가", "weight": 20}, {"neighborhood": "행당동", "weight": 16},
+            {"neighborhood": "왕십리도선동", "weight": 14}, {"neighborhood": "금호동", "weight": 14}, {"neighborhood": "옥수동", "weight": 12}
+          ]},
+          {"name": "여의도", "weight": 10, "city": "서울특별시", "district": "영등포구", "neighborhood": "여의도동", "center": [37.5219, 126.9245], "sigma": [0.010, 0.012], "address_variants": [
+            {"neighborhood": "여의도동", "weight": 24}, {"neighborhood": "당산동", "weight": 20}, {"neighborhood": "문래동", "weight": 16},
+            {"neighborhood": "영등포동", "weight": 14}, {"neighborhood": "양평동", "weight": 14}, {"neighborhood": "신길동", "weight": 12}
+          ]},
+          {"name": "수원", "weight": 10, "city": "경기도", "district": "수원시 팔달구", "neighborhood": "인계동", "center": [37.2636, 127.0286], "sigma": [0.013, 0.015], "address_variants": [
+            {"neighborhood": "인계동", "weight": 24}, {"neighborhood": "매산동", "weight": 20}, {"neighborhood": "행궁동", "weight": 16},
+            {"neighborhood": "우만동", "weight": 14}, {"neighborhood": "지동", "weight": 14}, {"neighborhood": "팔달로2가", "weight": 12}
+          ]},
+          {"name": "인천", "weight": 10, "city": "인천광역시", "district": "남동구", "neighborhood": "구월동", "center": [37.4475, 126.7013], "sigma": [0.014, 0.016], "address_variants": [
+            {"neighborhood": "구월동", "weight": 24}, {"neighborhood": "논현동", "weight": 20}, {"neighborhood": "간석동", "weight": 16},
+            {"neighborhood": "만수동", "weight": 14}, {"neighborhood": "서창동", "weight": 14}, {"neighborhood": "장수동", "weight": 12}
+          ]}
+        ]
+      },
+      {
+        "name": "부산/울산",
+        "short_name": "동남권",
+        "weight": 12,
+        "address_prefixes": ["부산광역시", "울산광역시"],
+        "bounds": [34.7, 35.8, 128.7, 129.6],
+        "hotspots": [
+          {"name": "해운대", "weight": 35, "city": "부산광역시", "district": "해운대구", "neighborhood": "중동", "center": [35.1631, 129.1635], "sigma": [0.012, 0.014], "address_variants": [
+            {"neighborhood": "중동", "weight": 24}, {"neighborhood": "우동", "weight": 20}, {"neighborhood": "좌동", "weight": 16},
+            {"neighborhood": "송정동", "weight": 14}, {"neighborhood": "재송동", "weight": 14}, {"neighborhood": "반여동", "weight": 12}
+          ]},
+          {"name": "서면", "weight": 25, "city": "부산광역시", "district": "부산진구", "neighborhood": "부전동", "center": [35.1577, 129.0597], "sigma": [0.014, 0.015], "address_variants": [
+            {"neighborhood": "부전동", "weight": 24}, {"neighborhood": "전포동", "weight": 20}, {"neighborhood": "범천동", "weight": 16},
+            {"neighborhood": "양정동", "weight": 14}, {"neighborhood": "초읍동", "weight": 14}, {"neighborhood": "당감동", "weight": 12}
+          ]},
+          {"name": "광안리", "weight": 20, "city": "부산광역시", "district": "수영구", "neighborhood": "광안동", "center": [35.1532, 129.1186], "sigma": [0.012, 0.014], "address_variants": [
+            {"neighborhood": "광안동", "weight": 30}, {"neighborhood": "남천동", "weight": 24}, {"neighborhood": "민락동", "weight": 20},
+            {"neighborhood": "수영동", "weight": 14}, {"neighborhood": "망미동", "weight": 12}
+          ]},
+          {"name": "울산", "weight": 20, "city": "울산광역시", "district": "남구", "neighborhood": "삼산동", "center": [35.5396, 129.3348], "sigma": [0.018, 0.020], "address_variants": [
+            {"neighborhood": "삼산동", "weight": 24}, {"neighborhood": "달동", "weight": 20}, {"neighborhood": "신정동", "weight": 16},
+            {"neighborhood": "무거동", "weight": 14}, {"neighborhood": "옥동", "weight": 14}, {"neighborhood": "야음동", "weight": 12}
+          ]}
+        ]
+      },
+      {
+        "name": "대구/경북",
+        "short_name": "대경권",
+        "weight": 9,
+        "address_prefixes": ["대구광역시", "경상북도"],
+        "bounds": [35.4, 36.6, 128.3, 129.7],
+        "hotspots": [
+          {"name": "동성로", "weight": 35, "city": "대구광역시", "district": "중구", "neighborhood": "동성로2가", "center": [35.8690, 128.5950], "sigma": [0.014, 0.016], "address_variants": [
+            {"neighborhood": "동성로2가", "weight": 24}, {"neighborhood": "동성로1가", "weight": 20}, {"neighborhood": "삼덕동", "weight": 16},
+            {"neighborhood": "공평동", "weight": 14}, {"neighborhood": "남산동", "weight": 14}, {"neighborhood": "계산동", "weight": 12}
+          ]},
+          {"name": "수성못", "weight": 25, "city": "대구광역시", "district": "수성구", "neighborhood": "두산동", "center": [35.8280, 128.6130], "sigma": [0.015, 0.017], "address_variants": [
+            {"neighborhood": "두산동", "weight": 24}, {"neighborhood": "범어동", "weight": 20}, {"neighborhood": "만촌동", "weight": 16},
+            {"neighborhood": "수성동", "weight": 14}, {"neighborhood": "황금동", "weight": 14}, {"neighborhood": "지산동", "weight": 12}
+          ]},
+          {"name": "경주", "weight": 20, "city": "경상북도", "district": "경주시", "neighborhood": "황남동", "center": [35.8397, 129.2139], "sigma": [0.019, 0.021], "address_variants": [
+            {"neighborhood": "황남동", "weight": 24}, {"neighborhood": "황오동", "weight": 20}, {"neighborhood": "성건동", "weight": 16},
+            {"neighborhood": "동천동", "weight": 14}, {"neighborhood": "충효동", "weight": 14}, {"neighborhood": "보문동", "weight": 12}
+          ]},
+          {"name": "포항", "weight": 20, "city": "경상북도", "district": "포항시 북구", "neighborhood": "죽도동", "center": [36.0388, 129.3650], "sigma": [0.020, 0.022], "address_variants": [
+            {"neighborhood": "죽도동", "weight": 24}, {"neighborhood": "양덕동", "weight": 20}, {"neighborhood": "장성동", "weight": 16},
+            {"neighborhood": "두호동", "weight": 14}, {"neighborhood": "환호동", "weight": 14}, {"neighborhood": "대흥동", "weight": 12}
+          ]}
+        ]
+      },
+      {
+        "name": "대전/충청",
+        "short_name": "충청권",
+        "weight": 10,
+        "address_prefixes": ["대전광역시", "세종특별자치시", "충청북도", "충청남도"],
+        "bounds": [36.0, 37.2, 126.5, 128.0],
+        "hotspots": [
+          {"name": "둔산", "weight": 30, "city": "대전광역시", "district": "서구", "neighborhood": "둔산동", "center": [36.3511, 127.3770], "sigma": [0.015, 0.017], "address_variants": [
+            {"neighborhood": "둔산동", "weight": 24}, {"neighborhood": "탄방동", "weight": 20}, {"neighborhood": "월평동", "weight": 16},
+            {"neighborhood": "갈마동", "weight": 14}, {"neighborhood": "괴정동", "weight": 14}, {"neighborhood": "도안동", "weight": 12}
+          ]},
+          {"name": "유성", "weight": 25, "city": "대전광역시", "district": "유성구", "neighborhood": "봉명동", "center": [36.3622, 127.3560], "sigma": [0.016, 0.018], "address_variants": [
+            {"neighborhood": "봉명동", "weight": 24}, {"neighborhood": "궁동", "weight": 20}, {"neighborhood": "어은동", "weight": 16},
+            {"neighborhood": "도룡동", "weight": 14}, {"neighborhood": "관평동", "weight": 14}, {"neighborhood": "노은동", "weight": 12}
+          ]},
+          {"name": "청주", "weight": 20, "city": "충청북도", "district": "청주시 상당구", "neighborhood": "성안동", "center": [36.6358, 127.4913], "sigma": [0.020, 0.022], "address_variants": [
+            {"neighborhood": "성안동", "weight": 24}, {"neighborhood": "중앙동", "weight": 20}, {"neighborhood": "탑동", "weight": 16},
+            {"neighborhood": "용암동", "weight": 14}, {"neighborhood": "금천동", "weight": 14}, {"neighborhood": "영운동", "weight": 12}
+          ]},
+          {"name": "천안", "weight": 15, "city": "충청남도", "district": "천안시 동남구", "neighborhood": "신부동", "center": [36.8190, 127.1560], "sigma": [0.020, 0.022], "address_variants": [
+            {"neighborhood": "신부동", "weight": 24}, {"neighborhood": "원성동", "weight": 20}, {"neighborhood": "청수동", "weight": 16},
+            {"neighborhood": "구성동", "weight": 14}, {"neighborhood": "대흥동", "weight": 14}, {"neighborhood": "봉명동", "weight": 12}
+          ]},
+          {"name": "세종", "weight": 10, "city": "세종특별자치시", "district": "세종시", "neighborhood": "나성동", "center": [36.4800, 127.2890], "sigma": [0.018, 0.020], "address_variants": [
+            {"neighborhood": "나성동", "weight": 24}, {"neighborhood": "어진동", "weight": 20}, {"neighborhood": "도담동", "weight": 16},
+            {"neighborhood": "종촌동", "weight": 14}, {"neighborhood": "고운동", "weight": 14}, {"neighborhood": "아름동", "weight": 12}
+          ]}
+        ]
+      },
+      {
+        "name": "광주/전라",
+        "short_name": "호남권",
+        "weight": 8,
+        "address_prefixes": ["광주광역시", "전라북도", "전라남도"],
+        "bounds": [34.4, 35.9, 126.2, 127.9],
+        "hotspots": [
+          {"name": "상무", "weight": 30, "city": "광주광역시", "district": "서구", "neighborhood": "치평동", "center": [35.1530, 126.8510], "sigma": [0.016, 0.018], "address_variants": [
+            {"neighborhood": "치평동", "weight": 24}, {"neighborhood": "상무1동", "weight": 20}, {"neighborhood": "상무2동", "weight": 16},
+            {"neighborhood": "마륵동", "weight": 14}, {"neighborhood": "금호동", "weight": 14}, {"neighborhood": "풍암동", "weight": 12}
+          ]},
+          {"name": "전주", "weight": 25, "city": "전라북도", "district": "전주시 완산구", "neighborhood": "풍남동", "center": [35.8150, 127.1530], "sigma": [0.020, 0.022], "address_variants": [
+            {"neighborhood": "풍남동", "weight": 24}, {"neighborhood": "교동", "weight": 20}, {"neighborhood": "전동", "weight": 16},
+            {"neighborhood": "중화산동", "weight": 14}, {"neighborhood": "효자동", "weight": 14}, {"neighborhood": "서신동", "weight": 12}
+          ]},
+          {"name": "여수", "weight": 20, "city": "전라남도", "district": "여수시", "neighborhood": "중앙동", "center": [34.7604, 127.6622], "sigma": [0.021, 0.023], "address_variants": [
+            {"neighborhood": "중앙동", "weight": 24}, {"neighborhood": "교동", "weight": 20}, {"neighborhood": "학동", "weight": 16},
+            {"neighborhood": "여서동", "weight": 14}, {"neighborhood": "국동", "weight": 14}, {"neighborhood": "돌산읍", "weight": 12}
+          ]},
+          {"name": "순천", "weight": 15, "city": "전라남도", "district": "순천시", "neighborhood": "중앙동", "center": [34.9507, 127.4872], "sigma": [0.022, 0.024], "address_variants": [
+            {"neighborhood": "중앙동", "weight": 24}, {"neighborhood": "조례동", "weight": 20}, {"neighborhood": "연향동", "weight": 16},
+            {"neighborhood": "장천동", "weight": 14}, {"neighborhood": "덕연동", "weight": 14}, {"neighborhood": "왕조동", "weight": 12}
+          ]},
+          {"name": "목포", "weight": 10, "city": "전라남도", "district": "목포시", "neighborhood": "만호동", "center": [34.7914, 126.3826], "sigma": [0.023, 0.025], "address_variants": [
+            {"neighborhood": "만호동", "weight": 24}, {"neighborhood": "대안동", "weight": 20}, {"neighborhood": "죽교동", "weight": 16},
+            {"neighborhood": "상동", "weight": 14}, {"neighborhood": "옥암동", "weight": 14}, {"neighborhood": "하당동", "weight": 12}
+          ]}
+        ]
+      },
+      {
+        "name": "강원",
+        "short_name": "강원권",
+        "weight": 5,
+        "address_prefixes": ["강원특별자치도"],
+        "bounds": [37.0, 38.4, 127.5, 129.5],
+        "hotspots": [
+          {"name": "춘천", "weight": 25, "city": "강원특별자치도", "district": "춘천시", "neighborhood": "명동", "center": [37.8813, 127.7298], "sigma": [0.024, 0.026], "address_variants": [
+            {"neighborhood": "명동", "weight": 24}, {"neighborhood": "소양동", "weight": 20}, {"neighborhood": "약사명동", "weight": 16},
+            {"neighborhood": "후평동", "weight": 14}, {"neighborhood": "퇴계동", "weight": 14}, {"neighborhood": "석사동", "weight": 12}
+          ]},
+          {"name": "강릉", "weight": 25, "city": "강원특별자치도", "district": "강릉시", "neighborhood": "교동", "center": [37.7519, 128.8761], "sigma": [0.024, 0.026], "address_variants": [
+            {"neighborhood": "교동", "weight": 24}, {"neighborhood": "옥천동", "weight": 20}, {"neighborhood": "포남동", "weight": 16},
+            {"neighborhood": "성남동", "weight": 14}, {"neighborhood": "홍제동", "weight": 14}, {"neighborhood": "주문진읍", "weight": 12}
+          ]},
+          {"name": "속초", "weight": 20, "city": "강원특별자치도", "district": "속초시", "neighborhood": "청학동", "center": [38.2070, 128.5918], "sigma": [0.022, 0.024], "address_variants": [
+            {"neighborhood": "청학동", "weight": 24}, {"neighborhood": "중앙동", "weight": 20}, {"neighborhood": "금호동", "weight": 16},
+            {"neighborhood": "교동", "weight": 14}, {"neighborhood": "조양동", "weight": 14}, {"neighborhood": "대포동", "weight": 12}
+          ]},
+          {"name": "원주", "weight": 20, "city": "강원특별자치도", "district": "원주시", "neighborhood": "중앙동", "center": [37.3422, 127.9202], "sigma": [0.025, 0.027], "address_variants": [
+            {"neighborhood": "중앙동", "weight": 24}, {"neighborhood": "단계동", "weight": 20}, {"neighborhood": "무실동", "weight": 16},
+            {"neighborhood": "명륜동", "weight": 14}, {"neighborhood": "단구동", "weight": 14}, {"neighborhood": "반곡동", "weight": 12}
+          ]},
+          {"name": "평창", "weight": 10, "city": "강원특별자치도", "district": "평창군", "neighborhood": "대관령면", "center": [37.6776, 128.7183], "sigma": [0.028, 0.030], "address_variants": [
+            {"neighborhood": "대관령면", "weight": 30}, {"neighborhood": "평창읍", "weight": 24}, {"neighborhood": "봉평면", "weight": 20},
+            {"neighborhood": "진부면", "weight": 14}, {"neighborhood": "용평면", "weight": 12}
+          ]}
+        ]
+      },
+      {
+        "name": "제주",
+        "short_name": "제주권",
+        "weight": 4,
+        "address_prefixes": ["제주특별자치도"],
+        "bounds": [33.1, 33.6, 126.1, 126.95],
+        "hotspots": [
+          {"name": "제주시", "weight": 45, "city": "제주특별자치도", "district": "제주시", "neighborhood": "연동", "center": [33.4908, 126.4850], "sigma": [0.014, 0.016], "address_variants": [
+            {"neighborhood": "연동", "weight": 24}, {"neighborhood": "노형동", "weight": 20}, {"neighborhood": "이도이동", "weight": 16},
+            {"neighborhood": "삼도이동", "weight": 14}, {"neighborhood": "아라동", "weight": 14}, {"neighborhood": "외도동", "weight": 12}
+          ]},
+          {"name": "애월", "weight": 25, "city": "제주특별자치도", "district": "제주시", "neighborhood": "애월읍", "center": [33.4630, 126.3280], "sigma": [0.016, 0.018], "address_variants": [
+            {"neighborhood": "애월읍", "weight": 30}, {"neighborhood": "곽지리", "weight": 24}, {"neighborhood": "고내리", "weight": 20},
+            {"neighborhood": "하귀1리", "weight": 14}, {"neighborhood": "장전리", "weight": 12}
+          ]},
+          {"name": "서귀포", "weight": 30, "city": "제주특별자치도", "district": "서귀포시", "neighborhood": "서귀동", "center": [33.2530, 126.5600], "sigma": [0.017, 0.019], "address_variants": [
+            {"neighborhood": "서귀동", "weight": 24}, {"neighborhood": "중문동", "weight": 20}, {"neighborhood": "동홍동", "weight": 16},
+            {"neighborhood": "법환동", "weight": 14}, {"neighborhood": "색달동", "weight": 14}, {"neighborhood": "하효동", "weight": 12}
+          ]}
+        ]
+      }
+    ]
+  }
+}

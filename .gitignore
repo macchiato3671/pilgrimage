@@ -38,3 +38,8 @@ Desktop.ini
 
 # Local/generated database dumps
 backend/src/main/resources/scripts/MOONBACK_TRIP_*.sql
+
+# Place mock data generated outside Git
+/mock_data/generated/
+/mock_data/*.manifest.json
+/mock_data/__pycache__/
