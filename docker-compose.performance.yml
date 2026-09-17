@@ -1,0 +1,176 @@
+name: pilgrimage-performance
+
+services:
+  mysql-perf:
+    image: mysql:8.4
+    restart: "no"
+    environment:
+      MYSQL_DATABASE: moonbackdb
+      MYSQL_USER: ${PERF_MYSQL_USER:-moonback}
+      MYSQL_PASSWORD: ${PERF_MYSQL_PASSWORD:-moonback}
+      MYSQL_ROOT_PASSWORD: ${PERF_MYSQL_ROOT_PASSWORD:-root}
+      TZ: ${PERF_TZ:-Asia/Seoul}
+    ports:
+      - "127.0.0.1:${PERF_MYSQL_PORT:-3306}:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --local-infile=1
+      - --max-connections=${PERF_MYSQL_MAX_CONNECTIONS:-200}
+    volumes:
+      - perf-mysql-data:/var/lib/mysql
+      # Schema bootstrap only. The fixed Performance Dataset is loaded by the
+      # Harness after the database has become healthy.
+      - ./backend/src/test/resources/init.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - ./perf/mysql/002-exporter.sql:/docker-entrypoint-initdb.d/002-exporter.sql:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    cpus: ${PERF_MYSQL_CPUS:-2.0}
+    mem_limit: ${PERF_MYSQL_MEMORY:-2g}
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.performance
+    restart: "no"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-perf:3306/moonbackdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
+      SPRING_DATASOURCE_USERNAME: ${PERF_MYSQL_USER:-moonback}
+      SPRING_DATASOURCE_PASSWORD: ${PERF_MYSQL_PASSWORD:-moonback}
+      JWT_SECRET: ${PERF_JWT_SECRET:-local-performance-harness-secret-change-me}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${PERF_JWT_ACCESS_TOKEN_EXPIRATION:-5000000}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${PERF_JWT_REFRESH_TOKEN_EXPIRATION:-20160}
+      AWS_REGION: ${PERF_AWS_REGION:-ap-northeast-2}
+      S3_BUCKET: ${PERF_S3_BUCKET:-performance-placeholder}
+      S3_PUBLIC_BASE_URL: ${PERF_S3_PUBLIC_BASE_URL:-}
+      STORAGE_PRESIGNED_URL_EXPIRATION: ${PERF_STORAGE_PRESIGNED_URL_EXPIRATION:-10m}
+      JAVA_TOOL_OPTIONS: ${PERF_JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75 -XX:+UseG1GC}
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${PERF_HIKARI_MAXIMUM_POOL_SIZE:-20}
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: ${PERF_HIKARI_MINIMUM_IDLE:-5}
+      SPRING_DATASOURCE_HIKARI_CONNECTION_TIMEOUT: ${PERF_HIKARI_CONNECTION_TIMEOUT:-30000}
+      SPRING_DATASOURCE_HIKARI_IDLE_TIMEOUT: ${PERF_HIKARI_IDLE_TIMEOUT:-600000}
+      SPRING_DATASOURCE_HIKARI_MAX_LIFETIME: ${PERF_HIKARI_MAX_LIFETIME:-1800000}
+    ports:
+      - "127.0.0.1:${PERF_BACKEND_PORT:-8080}:8080"
+    depends_on:
+      mysql-perf:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -fsS http://127.0.0.1:8080/actuator/prometheus >/dev/null || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    cpus: ${PERF_BACKEND_CPUS:-2.0}
+    mem_limit: ${PERF_BACKEND_MEMORY:-2g}
+
+  frontend:
+    build:
+      context: ./frontendv2
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${PERF_VITE_API_BASE_URL:-/api/v1}
+        VITE_KAKAO_MAP_APP_KEY: ${PERF_VITE_KAKAO_MAP_APP_KEY:-}
+    restart: "no"
+    ports:
+      - "127.0.0.1:${PERF_HTTP_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -O /dev/null http://127.0.0.1/ || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    cpus: ${PERF_FRONTEND_CPUS:-1.0}
+    mem_limit: ${PERF_FRONTEND_MEMORY:-512m}
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter:v0.16.0
+    restart: "no"
+    environment:
+      DATA_SOURCE_NAME: "perf_exporter:perf_exporter@(mysql-perf:3306)/"
+    depends_on:
+      mysql-perf:
+        condition: service_healthy
+    cpus: ${PERF_MYSQL_EXPORTER_CPUS:-0.25}
+    mem_limit: ${PERF_MYSQL_EXPORTER_MEMORY:-256m}
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    restart: "no"
+    ports:
+      - "127.0.0.1:${PERF_PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./perf/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - perf-prometheus-data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+      mysqld-exporter:
+        condition: service_started
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    cpus: ${PERF_PROMETHEUS_CPUS:-1.0}
+    mem_limit: ${PERF_PROMETHEUS_MEMORY:-1g}
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    restart: "no"
+    ports:
+      - "127.0.0.1:${PERF_TEMPO_PORT:-3200}:3200"
+    expose:
+      - "4317"
+      - "4318"
+    volumes:
+      - ./perf/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - perf-tempo-data:/var/tempo
+    command:
+      - -config.file=/etc/tempo/tempo.yml
+    cpus: ${PERF_TEMPO_CPUS:-1.0}
+    mem_limit: ${PERF_TEMPO_MEMORY:-1g}
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    restart: "no"
+    ports:
+      - "127.0.0.1:${PERF_GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${PERF_GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${PERF_GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./perf/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - perf-grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_started
+      tempo:
+        condition: service_started
+    cpus: ${PERF_GRAFANA_CPUS:-1.0}
+    mem_limit: ${PERF_GRAFANA_MEMORY:-1g}
+
+volumes:
+  perf-mysql-data:
+  perf-prometheus-data:
+  perf-tempo-data:
+  perf-grafana-data:
