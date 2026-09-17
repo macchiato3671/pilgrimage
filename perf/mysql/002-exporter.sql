@@ -1,0 +1,3 @@
+CREATE USER IF NOT EXISTS 'perf_exporter'@'%' IDENTIFIED BY 'perf_exporter';
+GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'perf_exporter'@'%';
+FLUSH PRIVILEGES;
