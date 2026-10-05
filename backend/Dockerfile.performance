@@ -1,0 +1,38 @@
+FROM eclipse-temurin:21-jdk AS build
+
+WORKDIR /build
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG OTEL_JAVA_AGENT_VERSION=2.31.1
+RUN curl -fsSL --retry 3 \
+    "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_JAVA_AGENT_VERSION}/opentelemetry-javaagent.jar" \
+    -o /build/opentelemetry-javaagent.jar
+
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+
+COPY src src
+RUN ./mvnw -B -DskipTests package
+
+
+FROM eclipse-temurin:21-jre
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl webp imagemagick \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN useradd --system --uid 10001 --create-home app \
+    && mkdir -p /app /tmp/pilgrimage-ingest \
+    && chown -R app:app /app /tmp/pilgrimage-ingest
+
+WORKDIR /app
+COPY --from=build /build/target/pilgrimage-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=build /build/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
+
+USER app
+EXPOSE 8080
+ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-jar", "/app/app.jar"]

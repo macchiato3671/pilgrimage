@@ -134,7 +134,7 @@ CREATE TABLE `content_type` (
 DROP TABLE IF EXISTS `place`;
 CREATE TABLE `place` (
   `place_id` int NOT NULL AUTO_INCREMENT,
-  `content_id` varchar(255) NOT NULL,
+  `content_id` int NOT NULL,
   `content_type_id` int NOT NULL,
   `name` varchar(255) NOT NULL,
   `address` varchar(255) NOT NULL,
@@ -221,7 +221,7 @@ INSERT INTO `content_type` (`content_type_id`, `name`) VALUES
   (28, '레포츠'),
   (32, '숙박'),
   (38, '쇼핑'),
-  (39, '관광지');
+  (39, '음식점');
 
 -- Source: DBSchema.sql.sql (table definitions only)
 DROP TABLE IF EXISTS `attractions`;
