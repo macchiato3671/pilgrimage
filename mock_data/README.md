@@ -104,7 +104,7 @@ Docker 내부의 backend는 `mysql-perf:3306`을 사용한다.
 | `run --dry-run` | DB Schema·FK·기준값·namespace·`local_infile` 사전 확인 |
 | `run` | chunk별 CSV 생성과 `LOAD DATA LOCAL INFILE` 적재 |
 | `load` | 기존 manifest가 가리키는 CSV 적재 |
-| `verify` | 생성 namespace의 건수·분포·무결성 수치 출력 |
+| `inspect` | 생성 namespace의 건수·분포·무결성 수치 출력 (통과·실패 판정 없음) |
 
 DB 명령에는 `--database`를 명시한다. 성능 Compose는 MySQL의 `local_infile=1`을 설정한다.
 성공한 chunk CSV는 기본 삭제되고 manifest는 남는다. CSV를 보존하려면 `--keep-files`를 사용한다.
@@ -119,9 +119,9 @@ python mock_data/generate_place_mock.py --config mock_data/place_mock_config.jso
 `small`은 실행 점검용이다. 실제 성능 비교에는 Dataset 계약의 `real`을 사용한다.
 CSV와 MySQL 데이터가 각각 디스크 공간을 사용하므로 600만 건 적재 전에 여유 공간을 확인한다.
 
-## 검증과 실패 재개
+## 적재 상태 조회와 실패 재개
 
-`verify`는 유형·주소 기반 지역·description 길이/NULL·좌표·중복·날짜 순서·이름 토큰 수치를 출력한다.
+`inspect`는 유형·주소 기반 지역·description 길이/NULL·좌표·중복·날짜 순서·이름 토큰 수치를 출력한다.
 분포 허용 오차의 통과 여부는 자동 판정하지 않으므로 [Dataset 검증 기준](../.harness/datasets/perf-dataset-v1.md#적재와-검증)과 비교한다.
 수동 확인에는 [검증 SQL](validate_place_mock.sql)을 사용하고 seed 변경 시 파일 상단 namespace 범위도 맞춘다.
 

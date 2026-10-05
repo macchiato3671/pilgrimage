@@ -1131,7 +1131,7 @@ def load_chunks(
     return 0
 
 
-def print_verification(options: DatabaseOptions, settings: DatasetSettings) -> None:
+def print_inspection(options: DatabaseOptions, settings: DatasetSettings) -> None:
     preflight(
         options,
         settings,
@@ -1195,7 +1195,7 @@ def print_verification(options: DatabaseOptions, settings: DatasetSettings) -> N
     )[0]
     min_created, max_updated, invalid_dates = date_row
 
-    print("Place Mock Data verification")
+    print("Place Mock Data inspection")
     print(f"  namespace rows       : {total:,} (expected {settings.count:,})")
     print(f"  content_id duplicates: {duplicate_count:,}")
     print("  content_type counts  :")
@@ -1295,10 +1295,10 @@ def load_command(settings: DatasetSettings, args: argparse.Namespace) -> int:
     )
 
 
-def verify_command(settings: DatasetSettings, args: argparse.Namespace) -> int:
+def inspect_command(settings: DatasetSettings, args: argparse.Namespace) -> int:
     options = make_database_options(args)
     print_plan(settings, options.database)
-    print_verification(options, settings)
+    print_inspection(options, settings)
     return 0
 
 
@@ -1364,12 +1364,12 @@ def build_parser() -> argparse.ArgumentParser:
     load_parser.add_argument("--keep-files", action="store_true")
     load_parser.add_argument("--dry-run", action="store_true")
 
-    verify_parser = subparsers.add_parser(
-        "verify",
-        help="생성 namespace의 분포와 제약조건 검증",
+    inspect_parser = subparsers.add_parser(
+        "inspect",
+        help="생성 namespace의 건수·분포·무결성 수치 조회 (통과·실패 판정 없음)",
     )
-    add_dataset_args(verify_parser)
-    add_db_args(verify_parser)
+    add_dataset_args(inspect_parser)
+    add_db_args(inspect_parser)
 
     return parser
 
@@ -1382,8 +1382,8 @@ def dispatch(args: argparse.Namespace) -> int:
         return run_command(settings, args)
     if args.command == "load":
         return load_command(settings, args)
-    if args.command == "verify":
-        return verify_command(settings, args)
+    if args.command == "inspect":
+        return inspect_command(settings, args)
     fail(f"지원하지 않는 command입니다: {args.command}")
     return 2
 

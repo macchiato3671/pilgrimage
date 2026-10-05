@@ -70,7 +70,7 @@
 
 1. 전용 `mysql-perf`를 초기화하고 [init.sql](../../backend/src/test/resources/init.sql)로 Schema와 `content_type` 8개를 적재한다.
 2. Generator의 `run --dry-run`으로 Schema·FK·기준값·`local_infile`을 확인한다.
-3. `run`으로 CSV를 생성·적재하고, `verify`로 아래 검증 수치를 수집한다.
+3. `run`으로 CSV를 생성·적재하고, `inspect`로 아래 검증 수치를 수집한다.
 4. 실제 검증 결과와 manifest를 보관하고 기준을 만족한 뒤 워밍업을 시작한다.
 
 | 검증 대상 | 확인할 내용 |
@@ -83,7 +83,7 @@
 
 Weighted random의 기대 비율과 실제 비율 차이는 적재 구현에서 정한 허용 오차로 검증한다.
 이 허용 오차는 Before / After에 서로 다른 데이터를 사용해도 된다는 의미가 아니다.
-`verify`는 생성 namespace의 수치를 출력하며 분포 허용 오차를 자동 판정하지 않는다.
+`inspect`는 생성 namespace의 수치를 출력하며 통과·실패를 자동 판정하지 않는다.
 전체 `place` Count, Hotspot 분포, 시나리오 조건별 매칭 Count도 별도 확인한다.
 수동 검증은 [SQL 템플릿](../../mock_data/validate_place_mock.sql)을 사용하며 seed 변경 시 namespace 범위를 맞춘다.
 
@@ -115,8 +115,8 @@ python mock_data/generate_place_mock.py @generatorArgs run @datasetArgs @databas
 if ($LASTEXITCODE -ne 0) { throw "Dataset 사전 검사 실패" }
 python mock_data/generate_place_mock.py @generatorArgs run @datasetArgs @databaseArgs
 if ($LASTEXITCODE -ne 0) { throw "Dataset 적재 실패" }
-python mock_data/generate_place_mock.py @generatorArgs verify @datasetArgs @databaseArgs | Tee-Object -FilePath "$outputDir/verify.txt"
-if ($LASTEXITCODE -ne 0) { throw "Dataset 검증 수집 실패" }
+python mock_data/generate_place_mock.py @generatorArgs inspect @datasetArgs @databaseArgs | Tee-Object -FilePath "$outputDir/inspect.txt"
+if ($LASTEXITCODE -ne 0) { throw "Dataset 상태 조회 실패" }
 ```
 
 MySQL CLI가 PATH에 없으면 `$databaseArgs`에 `--mysql-bin`과 실행 파일 경로를 추가한다.
@@ -145,7 +145,7 @@ DB 초기화는 Host에 저장된 이전 manifest·검증 기록을 삭제하지
 - Before / After는 같은 생성 코드·설정·Python 버전과 위 seed/profile/chunk를 사용한다. 행별 seed로 생성 값을 재현한다.
 - 빈 테이블과 같은 AUTO_INCREMENT에서 같은 순서로 적재해 `place_id`와 정렬·페이지 결과를 유지한다.
 - DB 기본값인 `created_at`·`updated_at`은 재적재 시 달라질 수 있다. 이 시나리오의 검색 조건에는 사용하지 않는다.
-- 각 단계의 `*.manifest.json`과 `verify.txt`를 보고서에 연결한다. manifest의 `config_sha256`·`fingerprint`를 비교하고 생성 코드 버전은 별도 기록한다.
+- 각 단계의 `*.manifest.json`과 `inspect.txt`를 보고서에 연결한다. manifest의 `config_sha256`·`fingerprint`를 비교하고 생성 코드 버전은 별도 기록한다.
 - 성공한 chunk CSV는 기본 삭제되므로 manifest는 데이터 Snapshot 자체가 아니다. CSV 보관이 필요하면 `run --keep-files`를 사용한다.
 - 생성 설정·Schema·데이터 분포가 바뀌면 새 Dataset Version을 부여한다.
 - 실험 Patch의 Index / Schema 변경은 기준 Dataset을 복원한 뒤 적용하고, 데이터 자체는 유지한다.

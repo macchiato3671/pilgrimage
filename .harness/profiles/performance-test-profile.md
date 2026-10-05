@@ -41,7 +41,7 @@ Git SHA·이미지의 차이는 의도한 Patch로 한정한다.
 ## 데이터 준비
 
 [perf-dataset-v1](../datasets/perf-dataset-v1.md)의 초기화·적재·검증 계약을 따른다.
-Host의 Python·MySQL CLI로 `run --dry-run → run → verify`를 수행한다. 생성 기준과 명령은 Dataset 문서에 둔다.
+Host의 Python·MySQL CLI로 `run --dry-run → run → inspect`를 수행한다. 생성 기준과 명령은 Dataset 문서에 둔다.
 접속 대상은 `mysql-perf`의 호스트 공개 주소이며 성능 Compose 기본값은 `127.0.0.1:3306/moonbackdb`다.
 개발 DB 또는 이전 실험의 잔존 Volume에 이어서 적재하지 않는다.
 After에서는 기준 환경과 데이터를 복원하고 Patch에 포함된 Schema / Index 변경만 적용한다.

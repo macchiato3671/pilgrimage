@@ -45,7 +45,7 @@
 
 | 원본·근거 | Before 링크 | After 링크 |
 |---|---|---|
-| Dataset manifest / fingerprint / verify.txt·추가 검증 | | |
+| Dataset manifest / fingerprint / inspect.txt·추가 검증 | | |
 | k6 Run별·Case별 결과 | | |
 | Prometheus 측정 구간·결과 | | |
 | Tempo 주요 Trace | | |
