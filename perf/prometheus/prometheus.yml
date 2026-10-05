@@ -8,8 +8,3 @@ scrape_configs:
     static_configs:
       - targets:
           - backend:8080
-
-  - job_name: pilgrimage-perf-mysql
-    static_configs:
-      - targets:
-          - mysqld-exporter:9104

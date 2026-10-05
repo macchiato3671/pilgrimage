@@ -22,7 +22,6 @@ services:
       # Schema bootstrap only. The fixed Performance Dataset is loaded by the
       # Harness after the database has become healthy.
       - ./backend/src/test/resources/init.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
-      - ./perf/mysql/002-exporter.sql:/docker-entrypoint-initdb.d/002-exporter.sql:ro
     healthcheck:
       test:
         [
@@ -102,17 +101,6 @@ services:
     cpus: ${PERF_FRONTEND_CPUS:-1.0}
     mem_limit: ${PERF_FRONTEND_MEMORY:-512m}
 
-  mysqld-exporter:
-    image: prom/mysqld-exporter:v0.16.0
-    restart: "no"
-    environment:
-      DATA_SOURCE_NAME: "perf_exporter:perf_exporter@(mysql-perf:3306)/"
-    depends_on:
-      mysql-perf:
-        condition: service_healthy
-    cpus: ${PERF_MYSQL_EXPORTER_CPUS:-0.25}
-    mem_limit: ${PERF_MYSQL_EXPORTER_MEMORY:-256m}
-
   prometheus:
     image: prom/prometheus:v2.55.1
     restart: "no"
@@ -124,8 +112,6 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-      mysqld-exporter:
-        condition: service_started
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
