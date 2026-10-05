@@ -91,6 +91,8 @@ Weighted random의 기대 비율과 실제 비율 차이는 적재 구현에서 
 
 저장소 루트의 PowerShell에서 Python 3.10 이상과 MySQL CLI를 사용한다.
 [환경변수 예시](../../perf/.env.example)를 `perf/.env`로 복사하고, 아래 포트·사용자를 해당 파일과 동일하게 맞춘다.
+예시의 비밀번호 3개와 JWT secret은 비어 있다. 로컬 전용 값으로 채워야 Compose를 실행할 수 있으며 JWT secret은 32바이트 이상으로 설정한다.
+`perf/.env`는 Git 제외 대상이다. 기존 MySQL·Grafana 볼륨의 계정 비밀번호는 env 수정만으로 변경되지 않으므로 별도 갱신이 필요하다.
 [성능 Compose](../../docker-compose.performance.yml)는 새 DB 볼륨의 첫 기동에 `init.sql`을 적용하며 `local_infile=1`을 설정한다.
 기존 볼륨에서 `up`만 다시 실행하면 초기화되지 않는다. 재사용 시 [로컬 DB 초기화](#로컬-db-초기화)를 수행한다.
 Before / After 모두 빈 `place`와 초기 AUTO_INCREMENT에서 시작해야 한다.

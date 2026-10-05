@@ -7,8 +7,8 @@ services:
     environment:
       MYSQL_DATABASE: moonbackdb
       MYSQL_USER: ${PERF_MYSQL_USER:-moonback}
-      MYSQL_PASSWORD: ${PERF_MYSQL_PASSWORD:-moonback}
-      MYSQL_ROOT_PASSWORD: ${PERF_MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_PASSWORD: ${PERF_MYSQL_PASSWORD:?Set PERF_MYSQL_PASSWORD in perf/.env}
+      MYSQL_ROOT_PASSWORD: ${PERF_MYSQL_ROOT_PASSWORD:?Set PERF_MYSQL_ROOT_PASSWORD in perf/.env}
       TZ: ${PERF_TZ:-Asia/Seoul}
     ports:
       - "127.0.0.1:${PERF_MYSQL_PORT:-3306}:3306"
@@ -43,8 +43,8 @@ services:
     environment:
       SPRING_DATASOURCE_URL: "jdbc:mysql://mysql-perf:3306/moonbackdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8"
       SPRING_DATASOURCE_USERNAME: ${PERF_MYSQL_USER:-moonback}
-      SPRING_DATASOURCE_PASSWORD: ${PERF_MYSQL_PASSWORD:-moonback}
-      JWT_SECRET: ${PERF_JWT_SECRET:-local-performance-harness-secret-change-me}
+      SPRING_DATASOURCE_PASSWORD: ${PERF_MYSQL_PASSWORD:?Set PERF_MYSQL_PASSWORD in perf/.env}
+      JWT_SECRET: ${PERF_JWT_SECRET:?Set PERF_JWT_SECRET in perf/.env}
       JWT_ACCESS_TOKEN_EXPIRATION: ${PERF_JWT_ACCESS_TOKEN_EXPIRATION:-5000000}
       JWT_REFRESH_TOKEN_EXPIRATION: ${PERF_JWT_REFRESH_TOKEN_EXPIRATION:-20160}
       AWS_REGION: ${PERF_AWS_REGION:-ap-northeast-2}
@@ -142,7 +142,7 @@ services:
       - "127.0.0.1:${PERF_GRAFANA_PORT:-3000}:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${PERF_GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${PERF_GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${PERF_GRAFANA_ADMIN_PASSWORD:?Set PERF_GRAFANA_ADMIN_PASSWORD in perf/.env}
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - ./perf/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
