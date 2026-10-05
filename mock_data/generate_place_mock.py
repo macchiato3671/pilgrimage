@@ -469,9 +469,7 @@ def build_address(rng: random.Random, hotspot: Mapping[str, Any]) -> str:
 
 
 def truncate_utf8(value: str, max_bytes: int) -> str:
-    while len(value.encode("utf-8")) > max_bytes:
-        value = value[:-1]
-    return value
+    return value.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
 
 
 def build_description(
