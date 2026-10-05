@@ -221,7 +221,7 @@ INSERT INTO `content_type` (`content_type_id`, `name`) VALUES
   (28, '레포츠'),
   (32, '숙박'),
   (38, '쇼핑'),
-  (39, '관광지');
+  (39, '음식점');
 
 -- Source: DBSchema.sql.sql (table definitions only)
 DROP TABLE IF EXISTS `attractions`;

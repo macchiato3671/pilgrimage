@@ -107,15 +107,15 @@
       },
       {
         "id": 39,
-        "name": "관광지",
+        "name": "음식점",
         "weight": 14,
         "suffixes": [
-          {"value": "공원", "weight": 28},
-          {"value": "전망대", "weight": 18},
-          {"value": "해변", "weight": 16},
-          {"value": "산책로", "weight": 14},
-          {"value": "명소", "weight": 14},
-          {"value": "유적지", "weight": 10}
+          {"value": "식당", "weight": 30},
+          {"value": "한식당", "weight": 20},
+          {"value": "카페", "weight": 18},
+          {"value": "분식집", "weight": 14},
+          {"value": "레스토랑", "weight": 10},
+          {"value": "칼국수집", "weight": 8}
         ]
       }
     ],
