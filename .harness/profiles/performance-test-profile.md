@@ -51,3 +51,27 @@ After에서는 기준 환경과 데이터를 복원하고 Patch에 포함된 Sch
 - 요청값, Case 비중, 단계별 시간·VU는 [Place Search 시나리오](../scenarios/place-search.md)에만 정의한다.
 - 수집 지표와 분석 원칙은 [공통 계약](../README.md#분석-근거)을 따른다.
 - 필요한 지표·Span이 수집되는지 측정 전에 확인한다. 관측 보강은 성능 Patch와 분리한다.
+
+## Trace 초기 설정
+
+성능용 Backend 이미지는 `Dockerfile.performance`에서 버전을 고정한 OpenTelemetry Java agent를 받아 JVM에 연결한다.
+HTTP·JDBC 호출을 자동 계측하고 Docker 내부의 `http://tempo:4318`로 OTLP HTTP Trace를 전송한다.
+검색 Service의 `PlaceServiceImpl.searchPlace`는 Java agent의 메서드 지정 설정으로 추가 계측한다. HTTP 요청 아래에 Service Span이 생기고, 그 안에 JDBC Span이 연결된다.
+별도 Collector나 Service별 수동 Span은 추가하지 않는다. Metric은 기존 Actuator/Micrometer → Prometheus 경로를 사용하고 OTel Metric·Log export는 끈다.
+
+- 서비스 이름: `PERF_OTEL_SERVICE_NAME` (기본 `pilgrimage-backend`).
+- 신규 루트 요청의 sampling 비율: `PERF_OTEL_TRACES_SAMPLER_ARG` (기본 `1.0`, 초기 확인용 100%). 부모 Trace가 있으면 부모의 sampling 결정을 따른다.
+- 추가 계측 메서드: `PERF_OTEL_INSTRUMENTATION_METHODS_INCLUDE` (기본 `com.moonback.pilgrimage.model.service.impl.PlaceServiceImpl[searchPlace]`). `패키지.클래스[메서드1,메서드2];패키지.다른클래스[메서드]` 형식으로 지정하며, 빈 값으로 설정하면 추가 메서드 계측을 끈다. Java 코드나 dependency 추가 없이 사용할 수 있다.
+- 기존 `perf/.env`에 위 변수가 없어도 Compose 기본값이 적용된다. Before / After에서는 같은 sampling 비율과 계측 메서드를 사용한다.
+- 메서드 설정만 바꾸면 이미지 재빌드 없이 `docker compose --env-file perf/.env -f docker-compose.performance.yml up -d backend`로 적용한다. 단순 `restart`는 변경한 환경 변수를 반영하지 않는다.
+
+Dataset 준비 후 저장소 루트에서 실행한다.
+
+```powershell
+docker compose --env-file perf/.env -f docker-compose.performance.yml up -d --build backend prometheus grafana
+```
+
+기본 포트 기준 `http://localhost:8080/api/v1/places/search?contentTypeId=12&page=0&size=10`을 호출한다.
+전송에 수 초가 걸릴 수 있다. Grafana Explore에서 Tempo datasource와 최근 시간 범위를 선택하고
+`{ resource.service.name = "pilgrimage-backend" }`로 검색해 HTTP → `PlaceServiceImpl.searchPlace` → JDBC Span을 확인한다.
+Backend/Grafana 포트나 서비스 이름을 변경했다면 실제 설정값을 사용한다.
